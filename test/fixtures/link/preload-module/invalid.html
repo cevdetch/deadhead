@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Preload as script for a module</title>
+    <link rel="preload" href="/app.js" as="script">
+    <link rel="preload" href="/vendor.js" as="script" crossorigin>
+    <script type="module" src="/app.js"></script>
+    <script type="module" src="/vendor.js"></script>
+  </head>
+  <body>
+    <p>Each preload above names the module below it, so the browser fetches each file twice.</p>
+  </body>
+</html>
