@@ -9,18 +9,12 @@ interface Props {
 const { rules } = Astro.props;
 ---
 
-<ul class="rule-list">
-  {
-    rules.map((rule) => (
-      <li>
-        <a href={`/rules/${rule.data.ruleId}`}>
-          <b>{rule.data.ruleId}</b>
-          <span class="badge" data-severity={rule.data.severity}>
-            {severityLabels[rule.data.severity]}
-          </span>
-          <p>{rule.data.description}</p>
-        </a>
-      </li>
-    ))
-  }
+<ul class="rules">
+  {rules.map((rule) => (
+    <li>
+      <a href={`/rules/${rule.data.ruleId}`}><code>{rule.data.ruleId}</code></a>{" "}
+      <span data-severity={rule.data.severity}>{severityLabels[rule.data.severity]}</span>
+      <p>{rule.data.description}</p>
+    </li>
+  ))}
 </ul>

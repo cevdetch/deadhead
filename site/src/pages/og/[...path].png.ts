@@ -47,10 +47,6 @@ export async function getStaticPaths(): Promise<
         title: `All ${rules.length} rules`,
       },
     },
-    {
-      urlPath: "/404",
-      input: { eyebrow: "no page at this address", title: "Not found" },
-    },
     ...[...byTag].map(([tag, list]) => ({
       urlPath: `/topics/${tag}`,
       input: { eyebrow: "topic", title: `${tagLabels[tag]}: ${list.length} rules` } as OgInput,

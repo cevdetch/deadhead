@@ -1,6 +1,6 @@
 ---
 ruleId: "meta/http-equiv-content-script-style-type"
-title: "<meta http-equiv=\"content-script-type\">, <meta http-equiv=\"content-style-type\">"
+title: "<meta http-equiv> content-script-type, content-style-type"
 description: "The HTML 4.01 default-language declarations have no pragma in the HTML Standard; JavaScript and CSS are the defaults, so delete these tags."
 pubDate: "2026-09-14"
 status: "avoid"

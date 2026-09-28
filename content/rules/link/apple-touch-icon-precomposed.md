@@ -1,6 +1,6 @@
 ---
 ruleId: "link/apple-touch-icon-precomposed"
-title: "<link rel=\"apple-touch-icon-precomposed\"> next to <link rel=\"apple-touch-icon\">"
+title: "<link rel=\"apple-touch-icon-precomposed\"> as a second icon"
 description: "A second declaration of the home-screen icon whose only effect, skipping iOS's gloss overlay, has been the default since iOS 7."
 pubDate: "2026-09-13"
 status: "avoid"

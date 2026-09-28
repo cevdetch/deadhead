@@ -46,9 +46,8 @@ const toArrayBuffer = (buf: Buffer): ArrayBuffer => {
 const decodeFont = (dataUrl: string): ArrayBuffer =>
   toArrayBuffer(Buffer.from(dataUrl.split(",", 2)[1] ?? "", "base64"));
 
-// `color-mix` isn't parseable by satori, so the card's tint is the same idea
-// spelled as rgba: 10% severity color over paper. Mirrors
-// `.badges li[data-severity]` in `global.css`.
+// `color-mix` isn't parseable by satori, so the OG badge's tint is spelled
+// as rgba by hand: 10% severity color over paper.
 const hexToRgba = (hex: string, alpha: number): string => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -104,8 +103,8 @@ const decodeVNodeText = <T>(node: T): T => {
 
 export async function generateOG(input: OgInput): Promise<Buffer> {
   const badge = input.badge;
-  // Outline pill with a whisper of fill, mirroring the site's own
-  // `.badges li[data-severity]` (outline + 10% `currentColor` tint).
+  // Outline pill with a whisper of fill: the severity color draws the
+  // border and a 10% tint, never a solid background.
   // Tint over solid fill: the card echoes the page it represents, and the
   // hue still reads at feed-thumbnail size without depending on
   // white-on-color legibility.

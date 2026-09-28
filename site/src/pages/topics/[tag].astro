@@ -17,6 +17,6 @@ export async function getStaticPaths() {
 const { tag, rules } = Astro.props as { tag: Tag; rules: CollectionEntry<"rules">[] };
 ---
 
-<Layout title={`Topic: ${tagLabels[tag]}`} description={tagBlurbs[tag]}>
+<Layout title={`${tagLabels[tag]} HTML: ${rules.length} lint rules with sources`} description={tagBlurbs[tag]}>
   <RuleGroup back={{ href: "/topics", label: "topics" }} heading={tagLabels[tag]} blurb={tagBlurbs[tag]} rules={rules} />
 </Layout>

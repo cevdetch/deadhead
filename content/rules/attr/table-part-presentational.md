@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/table-part-presentational"
-title: "<caption>, <col>, <thead>, <tbody>, <tfoot>, <tr>, <td>, <th> presentational attributes"
+title: "<td>, <tr> and other table-part presentational attributes"
 description: "Presentational attributes on table parts are obsolete. Browsers apply them as low-priority hints. Move styling to CSS."
 pubDate: "2026-09-21"
 status: "avoid"

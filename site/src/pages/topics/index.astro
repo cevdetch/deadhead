@@ -9,22 +9,14 @@ const topics = [...groupRules(await getCollection("rules"), (rule) => rule.data.
 );
 ---
 
-<Layout title="Topics" description="Every deadhead rule, grouped by the feature area or platform it is about.">
-  <article class="shell flow">
-    <header class="flow">
-      <h1>Topics</h1>
-      <p class="lede">The feature area or platform each rule is about. A rule can sit in more than one topic.</p>
-    </header>
-    <ul class="rule-list">
+<Layout title="HTML lint rules by topic" description="Every deadhead rule, grouped by the feature area or platform it is about.">
+    <h1>Topics</h1>
+    <p class="lede">The feature area or platform each rule is about. A rule can sit in more than one topic.</p>
+    <ul class="rules">
       {topics.map(([tag, list]) => (
         <li>
-          <a href={`/topics/${tag}`}>
-            <b>{tagLabels[tag]}</b>
-            <span class="badge">{list.length} rules</span>
-            <p>{tagBlurbs[tag]}</p>
-          </a>
+          <a href={`/topics/${tag}`}><code>{tagLabels[tag]}</code></a> <span>{list.length} rules</span><p>{tagBlurbs[tag]}</p>
         </li>
       ))}
     </ul>
-  </article>
 </Layout>

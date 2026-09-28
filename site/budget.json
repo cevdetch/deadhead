@@ -1,0 +1,6 @@
+{
+  "homeGzip": 6000,
+  "rulesIndexGzip": 12000,
+  "rulePageAvgGzip": 3000,
+  "cssRaw": 4000
+}

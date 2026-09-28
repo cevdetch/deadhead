@@ -7,22 +7,14 @@ import { impactBlurbs, impactLabels } from "../../vocabulary.ts";
 const impacts = [...groupRules(await getCollection("rules"), (rule) => rule.data.impacts)];
 ---
 
-<Layout title="Impacts" description="Every deadhead rule, grouped by what the markup costs: performance, interop, accessibility, SEO, security or upkeep.">
-  <article class="shell flow">
-    <header class="flow">
-      <h1>Impacts</h1>
-      <p class="lede">What leaving the markup in place costs. A rule can have more than one impact.</p>
-    </header>
-    <ul class="rule-list">
+<Layout title="HTML lint rules by impact" description="Every deadhead rule, grouped by what the markup costs: performance, interop, accessibility, SEO, security or upkeep.">
+    <h1>Impacts</h1>
+    <p class="lede">What leaving the markup in place costs. A rule can have more than one impact.</p>
+    <ul class="rules">
       {impacts.map(([impact, list]) => (
         <li>
-          <a href={`/impacts/${impact}`}>
-            <b>{impactLabels[impact]}</b>
-            <span class="badge">{list.length} rules</span>
-            <p>{impactBlurbs[impact]}</p>
-          </a>
+          <a href={`/impacts/${impact}`}><code>{impactLabels[impact]}</code></a> <span>{list.length} rules</span><p>{impactBlurbs[impact]}</p>
         </li>
       ))}
     </ul>
-  </article>
 </Layout>

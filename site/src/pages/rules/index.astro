@@ -18,27 +18,25 @@ const count = rules.length;
 ---
 
 <Layout
-  title="Rules"
+  title={`All ${count} HTML lint rules, by namespace`}
   description={`All ${count} deadhead rules, grouped by where in the markup the thing lives.`}
 >
-  <article class="shell flow">
-    <header class="flow">
-      <h1>Rules</h1>
-      <p class="lede">
-        {count} rules, grouped by where the thing lives.
-        Severity is a mutable field; the namespace in a ruleId is
-        permanent, because suppression comments and CI baselines are written
-        against it.
-      </p>
-      <p>Browse the same rules <a href="/topics">by topic</a> or <a href="/impacts">by impact</a>.</p>
-    </header>
+    <h1>Rules</h1>
+    <p class="lede">
+      {count} rules, grouped by where the thing lives.
+      Severity is a mutable field; the namespace in a ruleId is
+      permanent, because suppression comments and CI baselines are written
+      against it.
+    </p>
+    <p>Browse the same rules <a href="/topics">by topic</a> or <a href="/impacts">by impact</a>.</p>
+
+    <nav aria-label="Namespaces">{namespaces.map(({ namespace }) => <a href={`#${namespace}`}><code>{namespace}/</code></a>)}</nav>
 
     {namespaces.map(({ namespace, blurb, rules: list }) => (
-      <section class="namespace">
-        <h2 id={namespace}>{namespace}/</h2>
+      <section>
+        <h2 id={namespace}><code>{namespace}/</code></h2>
         {blurb && <p>{blurb}</p>}
         <RuleList rules={list} />
       </section>
     ))}
-  </article>
 </Layout>

@@ -1,6 +1,6 @@
 ---
 ruleId: "meta/http-equiv-robots"
-title: "<meta http-equiv=\"robots\"> and <meta http-equiv=\"X-Robots-Tag\">"
+title: "<meta http-equiv> robots and X-Robots-Tag"
 description: "robots and X-Robots-Tag in http-equiv map to no state, so a noindex written there is ignored. Use <meta name=\"robots\">."
 pubDate: "2026-09-14"
 status: "avoid"

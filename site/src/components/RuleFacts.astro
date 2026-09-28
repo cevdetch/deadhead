@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import { parseSelector, presenceTests } from "../../../packages/core/selector.ts";
+import { REPO } from "../layouts/Layout.astro";
 import {
   basisBlurbs,
   basisLabels,
@@ -12,13 +14,19 @@ import {
   scopeLabels,
   severityBlurbs,
   severityLabels,
+  statusLabels,
+  tagLabels,
 } from "../vocabulary.ts";
 
 interface Props {
   rule: CollectionEntry<"rules">;
+  sourceUrl: string;
 }
 
-const { data } = Astro.props.rule;
+const { rule, sourceUrl } = Astro.props;
+const { data } = rule;
+
+const known = new Set((await getCollection("rules")).map((r) => r.data.ruleId));
 
 // `fix` is the one field whose label is not a straight lookup: the op alone
 // does not say which attribute or keyword it acts on, and that is exactly the
@@ -45,58 +53,18 @@ const matcher =
       : data.selector;
 ---
 
-<dl class="facts">
-  <dt>Severity</dt>
-  <dd>{severityLabels[data.severity]}<small>{severityBlurbs[data.severity]}</small></dd>
-
-  <dt>Basis</dt>
-  <dd>{basisLabels[data.standardsBasis]}<small>{basisBlurbs[data.standardsBasis]}</small></dd>
-
-  <dt>Detectable</dt>
-  <dd>{detectLabels[data.detectability]}<small>{detectBlurbs[data.detectability]}</small></dd>
-
-  <dt>Matches</dt>
-  <dd>
-    {matcher ? <code>{matcher}</code> : "the whole document"}
-    <small>
-      {kindLabels[data.kind]} rule, {scopeLabels[data.scope]}.
-    </small>
-  </dd>
-
-  <dt>Fix</dt>
-  <dd>{fixLabels[data.fix.op]}{fixDetail}</dd>
-
-  {
-    data.impacts.length > 0 && (
-      <>
-        <dt>Impacts</dt>
-        <dd>
-          {data.impacts.map((impact, index) => (
-            <>
-              {index > 0 && (index === data.impacts.length - 1 ? " and " : ", ")}
-              <a href={`/impacts/${impact}`}>{impactLabels[impact]}</a>
-            </>
-          ))}
-        </dd>
-      </>
-    )
-  }
-
-  {
-    data.related.length > 0 && (
-      <>
-        <dt>Related</dt>
-        <dd>
-          {data.related.map((id, index) => (
-            <>
-              {index > 0 && ", "}
-              <a href={`/rules/${id}`}>
-                <code>{id}</code>
-              </a>
-            </>
-          ))}
-        </dd>
-      </>
-    )
-  }
+<dl>
+  <div><dt>Severity</dt><dd data-severity={data.severity}>{severityLabels[data.severity]} <small>{severityBlurbs[data.severity]}</small></dd></div>
+  <div><dt>Status</dt><dd>{statusLabels[data.status]}</dd></div>
+  <div><dt>Basis</dt><dd>{basisLabels[data.standardsBasis]} <small>{basisBlurbs[data.standardsBasis]}</small></dd></div>
+  <div><dt>Detectable</dt><dd>{detectLabels[data.detectability]} <small>{detectBlurbs[data.detectability]}</small></dd></div>
+  <div><dt>Matches</dt><dd>{matcher ? <code>{matcher}</code> : "the whole document"} <small>{kindLabels[data.kind]} rule, {scopeLabels[data.scope]}.</small></dd></div>
+  <div><dt>Fix</dt><dd>{fixLabels[data.fix.op]}{fixDetail}</dd></div>
+  {data.impacts.length > 0 && <div><dt>Impacts</dt><dd>{data.impacts.map((impact, i) => <>{i > 0 && ", "}<a href={`/impacts/${impact}`}>{impactLabels[impact]}</a></>)}</dd></div>}
+  {data.tags.length > 0 && <div><dt>Topics</dt><dd>{data.tags.map((tag, i) => <>{i > 0 && ", "}<a href={`/topics/${tag}`}>{tagLabels[tag]}</a></>)}</dd></div>}
+  {data.related.length > 0 && (
+    <div><dt>Related</dt><dd>{data.related.map((id, i) => <>{i > 0 && ", "}{known.has(id) ? <a href={`/rules/${id}`}><code>{id}</code></a> : <code>{id}</code>}</>)}</dd></div>
+  )}
+  <div><dt>Published</dt><dd><time datetime={data.pubDate.toISOString().slice(0, 10)}>{data.pubDate.toISOString().slice(0, 10)}</time></dd></div>
+  <div><dt>Source</dt><dd><a href={sourceUrl}><code>content/rules/{data.ruleId}.md</code></a>. Out of date? <a href={`${REPO}/issues/new`}>Say so</a>.</dd></div>
 </dl>

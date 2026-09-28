@@ -12,11 +12,7 @@ interface Props {
 const { back, heading, blurb, rules } = Astro.props;
 ---
 
-<article class="shell flow">
-  <header class="rule-head">
-    <a href={back.href}>{back.label}</a>
-    <h1>{heading}</h1>
-    <p class="lede">{blurb}</p>
-  </header>
-  <RuleList rules={rules} />
-</article>
+<nav aria-label="Breadcrumb"><a href={back.href}>{back.label}</a></nav>
+<h1>{heading}</h1>
+<p class="lede">{blurb}</p>
+<RuleList rules={rules} />

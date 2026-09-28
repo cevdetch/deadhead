@@ -1,6 +1,6 @@
 ---
 ruleId: "meta/csp-block-all-mixed-content"
-title: "<meta http-equiv=\"Content-Security-Policy\"> block-all-mixed-content"
+title: "<meta http-equiv> CSP block-all-mixed-content"
 description: "block-all-mixed-content is obsolete; browsers autoupgrade by default, so strip the directive and list upgrade-insecure-requests."
 pubDate: "2026-09-19"
 status: "avoid"

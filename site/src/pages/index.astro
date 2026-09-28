@@ -2,13 +2,12 @@
 import { getCollection } from "astro:content";
 import Layout, { REPO } from "../layouts/Layout.astro";
 import RuleList from "../components/RuleList.astro";
-import { severityOrder } from "../vocabulary.ts";
 
-const rules = (await getCollection("rules")).sort(
-  (a, b) =>
-    severityOrder[a.data.severity] - severityOrder[b.data.severity] ||
-    a.data.ruleId.localeCompare(b.data.ruleId),
-);
+const rules = await getCollection("rules");
+const count = (severity: string) => rules.filter((r) => r.data.severity === severity).length;
+const newest = [...rules]
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf() || a.data.ruleId.localeCompare(b.data.ruleId))
+  .slice(0, 8);
 
 const sample = `$ npx deadhead dist
 
@@ -23,18 +22,15 @@ dist/index.html
 ---
 
 <Layout
-  title="deadhead"
+  title="deadhead: lint HTML <head> for dead and harmful markup"
   description="A documentation-driven linter for HTML <head>. Every finding links to a researched explanation with sources."
 >
-  <article class="shell flow">
-    <header class="flow">
-      <h1>Deadheading is cutting the spent growth off a plant.</h1>
-      <p class="lede">
-        This does that to your <code>&lt;head&gt;</code>. It finds markup that
-        is harmful, deprecated or dead weight. For every finding, it
-        links to a written explanation of why, with sources.
-      </p>
-    </header>
+    <h1>Deadheading is cutting the spent growth off a plant.</h1>
+    <p class="lede">
+      This does that to your <code>&lt;head&gt;</code>. It finds markup that
+      is harmful, deprecated or dead weight. For every finding, it
+      links to a written explanation of why, with sources.
+    </p>
 
     <pre><samp>{sample}</samp></pre>
 
@@ -55,31 +51,29 @@ dist/index.html
     </p>
 
     <h2>Three runtimes, one rule set</h2>
-    <ul class="runtimes">
-      <li>
-        <h3>CLI</h3>
-        <p>
-          Walks files and directories, and expands globs itself. Stylish, JSON and
-          SARIF output, so
-          CI annotates the diff. Exit codes are the contract.
-        </p>
-      </li>
-      <li>
-        <h3>Bookmarklet</h3>
-        <p>
-          One IIFE with the rules inlined and no <code>fetch</code>, so a strict
-          CSP cannot block it. It inspects rendered output, which is ground
-          truth.
-        </p>
-      </li>
-      <li>
-        <h3>ESLint plugin</h3>
-        <p>
-          The same findings inside <code>eslint</code>, with autofix, because a
-          fix is a text edit over a byte range either way.
-        </p>
-      </li>
-    </ul>
+    <section>
+      <h3>CLI</h3>
+      <p>
+        Walks files and directories, and expands globs itself. Stylish, JSON and
+        SARIF output, so
+        CI annotates the diff. Exit codes are the contract.
+      </p>
+    </section>
+    <section>
+      <h3>Bookmarklet</h3>
+      <p>
+        One IIFE with the rules inlined and no <code>fetch</code>, so a strict
+        CSP cannot block it. It inspects rendered output, which is ground
+        truth.
+      </p>
+    </section>
+    <section>
+      <h3>ESLint plugin</h3>
+      <p>
+        The same findings inside <code>eslint</code>, with autofix, because a
+        fix is a text edit over a byte range either way.
+      </p>
+    </section>
     <p>
       A conformance suite runs every fixture through all three and asserts
       identical findings. That is what stops them
@@ -88,15 +82,17 @@ dist/index.html
 
     <h2>The rules</h2>
     <p>
-      {rules.length} so far, worst first.{" "}
-      <a href="/rules">Browse them by namespace</a>.
+      {rules.length} rules: {count("harmful")} harmful, {count("deprecated")} deprecated,{" "}
+      {count("unnecessary")} unnecessary.{" "}
+      <a href="/rules">Browse them by namespace</a>, <a href="/topics">by topic</a> or{" "}
+      <a href="/impacts">by impact</a>.
     </p>
-    <RuleList rules={rules} />
+    <h3>Newest</h3>
+    <RuleList rules={newest} />
 
     <h2>Get it</h2>
     <p>
       <a href="/install">Installation and usage</a>, or read the{" "}
       <a href={REPO}>source on GitHub</a>.
     </p>
-  </article>
 </Layout>

@@ -161,7 +161,7 @@ pnpm test             # full test suite (node:test)
 pnpm test:conformance # every fixture through every adapter
 pnpm typecheck        # strict typecheck (core, rules, cli, scripts, tests)
 pnpm check:self       # run the linter over its own clean fixtures
-pnpm check:site       # build the docs site, then lint its own <head> with the CLI
+pnpm check:site       # build the docs site, lint its own <head>, and check the byte budget, headers, 404 page, and page titles and descriptions
 pnpm lint:deps        # dependency hygiene check
 ```
 

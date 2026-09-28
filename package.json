@@ -19,7 +19,7 @@
     "check": "node packages/cli/bin/deadhead.ts",
     "check:self": "node packages/cli/bin/deadhead.ts \"test/fixtures/*/*/valid.html\"",
     "check:bookmarklet": "node scripts/check-bookmarklet-csp.ts",
-    "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist",
+    "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist && node scripts/site-budget.ts site/dist",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/browser/tsconfig.json && tsc --noEmit -p test/conformance/tsconfig.json",
     "validate:rules": "node scripts/validate-rules.ts",
     "site:dev": "pnpm --filter @deadhead/site dev",
