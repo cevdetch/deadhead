@@ -2,12 +2,13 @@ import type { MatchFn } from "../../types.ts";
 import { stripAsciiWhitespace } from "../../lib/text.ts";
 
 /**
- * The valid robots directive names, lowercased, from Google's valid-rules
- * table. Historical names (`noarchive`, `nocache`, `nositelinkssearchbox`)
- * and retired vendor names (`noodp`, `noydir`) are absent on purpose:
- * Google ignores them, so they trip the rule like any other unknown token.
+ * The directive names Google documents, lowercased: its valid-rules table
+ * plus `index` and `follow`, which Google names as the defaults. Google
+ * ignores everything else, including its own historical `noarchive`,
+ * `nocache` and `nositelinkssearchbox`, so on a tag addressed to Google's
+ * crawlers those trip like any other unknown token.
  */
-const VALID_NAMES: ReadonlySet<string> = new Set([
+const GOOGLE_NAMES: ReadonlySet<string> = new Set([
   "all",
   "index",
   "follow",
@@ -24,7 +25,24 @@ const VALID_NAMES: ReadonlySet<string> = new Set([
   "unavailable_after",
 ]);
 
-/** Names that need a value; a bare one is ignored by Google, so it trips. */
+/**
+ * `name="robots"` addresses every crawler, so a token is live when any crawler
+ * documents it: Google's names, plus `noarchive` (Bing, Yandex), `nocache`
+ * (Bing) and `archive` (Yandex). `noodp`, `noydir` and `nositelinkssearchbox`
+ * stay out: no crawler documents them today.
+ */
+const ANY_CRAWLER_NAMES: ReadonlySet<string> = new Set([...GOOGLE_NAMES, "noarchive", "nocache", "archive"]);
+
+/**
+ * Google documents two crawler names and ignores other values, so those tags
+ * are held to Google's table. `robots` addresses every crawler, and `bingbot`,
+ * `yandex` and `applebot` publish lists without saying what happens to other
+ * tokens, so those tags are held to the wider table: a token no crawler
+ * documents trips there, and a token another engine documents does not.
+ */
+const GOOGLE_AGENTS: ReadonlySet<string> = new Set(["googlebot", "googlebot-news"]);
+
+/** Names that need a value; a bare one sets no limit, so it trips. */
 const PARAMETRIZED: ReadonlySet<string> = new Set([
   "max-snippet",
   "max-image-preview",
@@ -32,7 +50,7 @@ const PARAMETRIZED: ReadonlySet<string> = new Set([
   "unavailable_after",
 ]);
 
-/** Integers, with the -1 Google documents for unlimited. */
+/** Integers, with the -1 Google and Bing document for unlimited. */
 const INTEGER = /^-?\d+$/;
 
 const paramOk = (name: string, value: string): boolean => {
@@ -65,14 +83,16 @@ const leadingName = (item: string): string =>
 /**
  * Split `content` into items. Google accepts RFC 822 and RFC 850 dates for
  * `unavailable_after` (`Sat, 25 Jun 2010 15:00:00 GMT`), whose own comma
- * would otherwise cut the date in two. The items after an `unavailable_after`
- * item therefore fold back into its value until one opens with a known name.
+ * would otherwise cut the date in two. Every comma inside such a date is
+ * followed by a digit, and no robots token opens with one, so an item that
+ * opens with a digit folds back into the `unavailable_after` item before it.
  */
+const DATE_TAIL = /^[\t\n\f\r ]*\d/;
 const items = (content: string): string[] => {
   const out: string[] = [];
   for (const item of content.split(",")) {
     const last = out.at(-1);
-    if (last !== undefined && leadingName(last) === "unavailable_after" && !VALID_NAMES.has(leadingName(item))) {
+    if (last !== undefined && leadingName(last) === "unavailable_after" && DATE_TAIL.test(item)) {
       out[out.length - 1] = `${last},${item}`;
     } else {
       out.push(item);
@@ -82,10 +102,11 @@ const items = (content: string): string[] => {
 };
 
 /**
- * The `meta[name="robots" i], meta[name="googlebot" i]` selector is only a
- * pre-filter. A tag trips the rule exactly when one of its content tokens
- * falls outside the valid table above: Google ignores such tokens, so a
- * typo voids indexing intent without warning.
+ * The selector (`robots`, `googlebot`, `googlebot-news`, `bingbot`, `yandex`,
+ * `applebot`) is only a pre-filter. A tag trips the rule when one of its
+ * content tokens is outside the table for the crawlers it addresses, or a
+ * parameter carries no well-formed value: no crawler the tag addresses
+ * documents such a token, so a typo voids indexing intent without warning.
  *
  * Tags with no `content` attribute, or with no parseable tokens, stay quiet:
  * there is nothing to judge.
@@ -93,17 +114,19 @@ const items = (content: string): string[] => {
 export const match: MatchFn = (element) => {
   const content = element.attr("content");
   if (content === undefined) return false;
+  const name = (element.attr("name") ?? "").toLowerCase();
+  const known = GOOGLE_AGENTS.has(name) ? GOOGLE_NAMES : ANY_CRAWLER_NAMES;
   for (const item of items(content.toLowerCase())) {
     const colon = item.indexOf(":");
     if (colon >= 0) {
-      const name = stripAsciiWhitespace(item.slice(0, colon));
+      const directive = stripAsciiWhitespace(item.slice(0, colon));
       const value = stripAsciiWhitespace(item.slice(colon + 1));
-      if (!VALID_NAMES.has(name) || !paramOk(name, value)) return true;
+      if (!known.has(directive) || !paramOk(directive, value)) return true;
       continue;
     }
     for (const token of item.split(WHITESPACE)) {
       if (token === "") continue;
-      if (!VALID_NAMES.has(token) || PARAMETRIZED.has(token)) return true;
+      if (!known.has(token) || PARAMETRIZED.has(token)) return true;
     }
   }
   return false;

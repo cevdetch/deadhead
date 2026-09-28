@@ -64,6 +64,17 @@ test("each valid.html is clean, and clean of every rule, not just its own", asyn
   assert.deepEqual(findings, []);
 });
 
+test("meta/robots-value reads robots and every crawler name with published docs", () => {
+  const robotsFindings = (name: string) =>
+    run(rules, parseHtml(`<head><meta name="${name}" content="noindex, no-follow"></head>`)).filter(
+      (f) => f.ruleId === "meta/robots-value",
+    ).length;
+  for (const name of ["robots", "googlebot", "googlebot-news", "GOOGLEBOT-NEWS", "bingbot", "yandex", "applebot"]) {
+    assert.equal(robotsFindings(name), 1, name);
+  }
+  assert.equal(robotsFindings("description"), 0);
+});
+
 // --- exit codes are the contract CI depends on ------------------------------
 
 test("exit 0 when nothing is found", () => {

@@ -14,10 +14,12 @@ export const portOf = (html: string, selector: string): ElementPort => {
 /** Logic modules only read ctx.ruleId; report() is never called by match(). */
 const ctx = { ruleId: "test", report: () => { throw new Error("unused"); } } as unknown as RuleContext;
 
-const robots = async (content: string): Promise<boolean> => {
+/** robots-value's match() on one `<meta name=… content=…>` tag. */
+const robotsTag = async (name: string, content: string): Promise<boolean> => {
   const { match } = await import("../packages/rules/logic/meta/robots-value.ts");
-  return match(portOf(`<meta name="robots" content="${content}">`, "meta"), ctx);
+  return match(portOf(`<meta name="${name}" content="${content}">`, "meta"), ctx);
 };
+const robots = (content: string): Promise<boolean> => robotsTag("robots", content);
 
 test("robots: Google's spaced name: value form is valid", async () => {
   assert.equal(await robots("max-snippet: 50"), false);
@@ -30,15 +32,64 @@ test("robots: RFC 822 and RFC 850 dates keep their comma", async () => {
   assert.equal(await robots("unavailable_after: Sat, 25 Jun 2010 15:00:00 GMT"), false);
   assert.equal(await robots("unavailable_after: Saturday, 25-Jun-10 15:00:00 GMT"), false);
   assert.equal(await robots("noindex, unavailable_after: Sat, 25 Jun 2010 15:00:00 GMT, nofollow"), false);
-  // The date fold stops at the next known name, so a bad value after the date still trips.
+  // The date fold takes an item when it opens with a digit, so a bad value after the date still trips.
   assert.equal(await robots("unavailable_after: Sat, 25 Jun 2010 15:00:00 GMT, max-snippet: lots"), true);
 });
 
 test("robots: unknown names and bad values still trip", async () => {
-  assert.equal(await robots("noarchive"), true);
+  assert.equal(await robots("no-index"), true);
+  assert.equal(await robots("noindex, no-follow"), true);
   assert.equal(await robots("max-snippet: lots"), true);
   assert.equal(await robots("max-snippet"), true);
   assert.equal(await robots("noindex nofollow"), false);
+});
+
+test("robots: a token some crawler documents is live on a tag every crawler reads", async () => {
+  // Bing and Yandex honor noarchive, Bing nocache, Yandex archive; Google ignores all three.
+  assert.equal(await robots("noarchive"), false);
+  assert.equal(await robots("nocache"), false);
+  assert.equal(await robots("archive"), false);
+  assert.equal(await robots("noindex, noarchive, nocache"), false);
+  assert.equal(await robots("all"), false);
+  assert.equal(await robots("index, follow"), false);
+});
+
+test("googlebot, googlebot-news: a token Google does not document trips", async () => {
+  for (const name of ["googlebot", "googlebot-news", "GoogleBot"]) {
+    assert.equal(await robotsTag(name, "noarchive"), true, `${name} noarchive`);
+    assert.equal(await robotsTag(name, "nocache"), true, `${name} nocache`);
+    assert.equal(await robotsTag(name, "archive"), true, `${name} archive`);
+    assert.equal(await robotsTag(name, "noindex, nosnippet, max-image-preview: large"), false, `${name} Google rules`);
+    // index and follow are the defaults Google names; an explicit default voids nothing.
+    assert.equal(await robotsTag(name, "index, follow"), false, `${name} index, follow`);
+  }
+});
+
+test("robots: a date folds its own comma and no more, so a token after it is still judged", async () => {
+  assert.equal(await robots("unavailable_after: 2026-09-21, no-index"), true);
+  assert.equal(await robots("unavailable_after: Sat, 25 Jun 2010 15:00:00 GMT, noodp"), true);
+  assert.equal(await robotsTag("googlebot", "unavailable_after: 2026-09-21, noarchive"), true);
+  assert.equal(await robots("unavailable_after: Jun 25, 2010, noindex"), false);
+});
+
+test("robots: a Google-only token is live on a tag every crawler reads", async () => {
+  assert.equal(await robots("notranslate, indexifembedded, noimageindex"), false);
+});
+
+test("bingbot, yandex, applebot: checked against every crawler's tokens", async () => {
+  for (const name of ["bingbot", "yandex", "applebot"]) {
+    assert.equal(await robotsTag(name, "no-index"), true, `${name} no-index`);
+    assert.equal(await robotsTag(name, "noodp"), true, `${name} noodp`);
+    assert.equal(await robotsTag(name, "noindex, nofollow, noarchive, nocache, archive"), false, `${name} documented tokens`);
+  }
+});
+
+test("retired names trip under every name", async () => {
+  for (const name of ["robots", "googlebot", "googlebot-news", "bingbot", "yandex", "applebot"]) {
+    for (const token of ["noodp", "noydir", "nositelinkssearchbox"]) {
+      assert.equal(await robotsTag(name, `noindex, ${token}`), true, `${name} ${token}`);
+    }
+  }
 });
 
 for (const directive of [

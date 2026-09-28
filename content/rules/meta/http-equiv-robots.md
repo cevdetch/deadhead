@@ -20,8 +20,9 @@ related: ["meta/http-equiv-description", "meta/http-equiv-header-only-pragmas"]
 A `robots` or `X-Robots-Tag` in `http-equiv` reaches no crawler. `robots` is a metadata
 *name* that ended up in the `http-equiv` attribute, and `X-Robots-Tag` names an HTTP response
 header. The pragma table holds neither keyword, so both map to no state and browsers skip
-them. Google documents two working syntaxes, `<meta name="robots">` in markup and
-`X-Robots-Tag` in the header, and no third one.
+them. Google, Bing, Yandex and Apple each document the same two working forms,
+`<meta name="robots">` in markup and `X-Robots-Tag` in the response header, and none
+documents a third.
 
 ## Why avoid
 
@@ -36,7 +37,9 @@ The move has its own trap, which the replacement carries: robots.txt governs *cr
 exclusion. Google's guidance is that robots.txt "is not a mechanism for keeping a web page
 out of Google". To keep a page out, use noindex. A noindex works only if the page is not
 blocked in robots.txt, because a blocked page is never fetched and its noindex never seen.
-Disallow in robots.txt or noindex in the page, never both on the same URL.
+Bing asks for crawl access to read the tag, and Yandex states that a meta tag or header on a
+page robots.txt prohibits does not apply. Disallow in robots.txt or noindex in the page,
+never both on the same URL.
 
 ## Use instead
 
@@ -70,6 +73,9 @@ of edit a human should confirm.
 ## Resources
 
 - [Google Search Central: Robots meta tag, data-nosnippet, and X-Robots-Tag](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag): page-level settings go in `<meta name="robots">` on HTML pages or in the `X-Robots-Tag` HTTP response header; documents noindex semantics and the robots.txt interaction.
+- [Bing Webmaster Tools: Robots meta tags and attributes that Bing supports](https://www.bing.com/webmasters/help/robots-meta-tags-and-attributes-that-bing-supports-5198d240): every Bing robots value works in `<meta name="robots">` or in the `X-Robots-Tag` response header; Bing must crawl the page to see the tag.
+- [Yandex Webmaster: robots meta tag and X-Robots-Tag](https://yandex.com/support/webmaster/controlling-robot/meta-robots.html): the two forms, the meta tag and the `X-Robots-Tag` header; neither applies to a page robots.txt prohibits.
+- [Apple Support: About Applebot](https://support.apple.com/en-us/119829): Applebot reads robots meta tags in the `<head>` and the same directives in the `X-Robots-Tag` response header.
 - [RFC 9309: Robots Exclusion Protocol](https://www.rfc-editor.org/rfc/rfc9309.txt): crawling rules "MUST be accessible in a file named /robots.txt (all lowercase) in the top-level path of the service."
 - [HTML Standard: Pragma directives](https://html.spec.whatwg.org/multipage/semantics.html#pragma-directives): the closed pragma set has no entry for `robots` or `x-robots-tag`, so either `http-equiv` spelling maps to no state.
 - [MDN: `<meta name="robots">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/robots): the in-document form is `<meta name="robots">`; Google, Yahoo, and Bing support the directives in the `X-Robots-Tag` HTTP header.
