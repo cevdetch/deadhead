@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A module build with legacy fallbacks</title>
+    <script type="module" src="/app.js"></script>
+    <script nomodule src="/app-legacy.js"></script>
+  </head>
+  <body>
+    <p>Browsers with module support skip every fallback on this page.</p>
+    <script nomodule>document.documentElement.className = "legacy";</script>
+    <script nomodule id="vite-legacy-polyfill" src="/polyfills-legacy.js"></script>
+  </body>
+</html>

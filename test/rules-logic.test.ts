@@ -246,3 +246,19 @@ test("http-equiv-unregistered-pragmas leaves every value another rule owns to th
   }
   assert.equal(match(portOf('<meta http-equiv="x-made-up" content="x">', "meta"), ctx), true);
 });
+
+test("script-nomodule: classic scripts only, and no fix for an element a script can find by id", async () => {
+  const { match, fixable } = await import("../packages/rules/logic/attr/script-nomodule.ts");
+  const on = (attrs: string) => match(portOf(`<script nomodule ${attrs}></script>`, "script"), ctx);
+  assert.equal(on('src="legacy.js"'), true);
+  assert.equal(on('type="" src="legacy.js"'), true);
+  assert.equal(on('type=" Text/JavaScript " src="legacy.js"'), true);
+  assert.equal(on('language="javascript" src="legacy.js"'), true);
+  // HTML skips none of these for nomodule; the attribute is inert there.
+  assert.equal(on('type="module" src="app.js"'), false);
+  assert.equal(on('type="importmap"'), false);
+  assert.equal(on('type="application/json"'), false);
+  assert.equal(on('language="vbscript"'), false);
+  assert.equal(fixable(portOf('<script nomodule src="legacy.js"></script>', "script")), true);
+  assert.equal(fixable(portOf('<script nomodule id="vite-legacy-polyfill" src="p.js"></script>', "script")), false);
+});
