@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integrity without crossorigin</title>
+    <script src="https://cdn.example.com/lib.js" integrity="sha384-aaa"></script>
+    <link rel="stylesheet" href="https://cdn.example.com/lib.css" integrity="sha384-bbb">
+    <link rel="preload" href="https://cdn.example.com/app.js" as="script" integrity="sha384-ccc">
+    <script src="//cdn.example.com/widget.js" integrity="sha384-ddd"></script>
+    <script src="/app.js" integrity="sha384-eee"></script>
+    <script type="module" src="https://cdn.example.com/app.js" integrity="sha384-fff"></script>
+    <link rel="preload" href="https://cdn.example.com/inter.woff2" as="font" type="font/woff2" integrity="sha384-ggg" crossorigin>
+  </head>
+  <body>
+    <p>The first four resources are cross-origin with integrity and no crossorigin, so the browser blocks them. The last three are the near misses this rule leaves alone.</p>
+  </body>
+</html>

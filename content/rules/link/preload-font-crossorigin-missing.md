@@ -12,7 +12,7 @@ scope: "any"
 selector: 'link[rel~="preload" i][as="font" i]:not([crossorigin])'
 fix: { op: "none" }
 replacement: "Add crossorigin to every font preload, same-origin or not: <link rel=\"preload\" href=\"/fonts/inter.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>."
-tags: ["resource-hints"]
+tags: ["cors", "resource-hints"]
 impacts: ["performance"]
 related: ["link/preload-as-missing"]
 ---

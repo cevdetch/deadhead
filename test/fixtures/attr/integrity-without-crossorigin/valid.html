@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integrity with crossorigin</title>
+    <script src="https://cdn.example.com/lib.js" integrity="sha384-aaa" crossorigin></script>
+    <link rel="stylesheet" href="https://cdn.example.com/lib.css" integrity="sha384-bbb" crossorigin>
+    <link rel="preload" href="https://cdn.example.com/app.js" as="script" integrity="sha384-ccc" crossorigin="anonymous">
+    <script src="//cdn.example.com/widget.js" integrity="sha384-ddd" crossorigin></script>
+    <script src="/app.js" integrity="sha384-eee"></script>
+    <script type="module" src="https://cdn.example.com/app.js" integrity="sha384-fff"></script>
+    <link rel="preload" href="https://cdn.example.com/inter.woff2" as="font" type="font/woff2" integrity="sha384-ggg" crossorigin>
+  </head>
+  <body>
+    <p>Each cross-origin resource carries crossorigin, so the integrity check runs and the resource loads. The relative, module and font lines need nothing more.</p>
+  </body>
+</html>

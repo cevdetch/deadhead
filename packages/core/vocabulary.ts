@@ -49,6 +49,7 @@ export const TAGS = [
   "apple",
   "caching",
   "charset",
+  "cors",
   "csp",
   "defaults",
   "doctype",
