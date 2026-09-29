@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>async where it does nothing</title>
+    <script type="importmap" async>{"imports": {"preact": "/vendor/preact.mjs"}}</script>
+    <script async>window.dataLayer = window.dataLayer || [];</script>
+  </head>
+  <body>
+    <p>Three inline scripts; the fix deletes async from each and all run as before.</p>
+    <script type="speculationrules" async>{"prefetch": [{"where": {"href_matches": "/*"}}]}</script>
+  </body>
+</html>
