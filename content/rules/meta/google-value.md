@@ -1,7 +1,7 @@
 ---
 ruleId: "meta/google-value"
-title: "<meta name=\"google\"> with an unsupported token"
-description: "Google reads notranslate and nopagereadaloud under meta name=google. Any other token, retired or misspelt, does nothing."
+title: "<meta name=\"google\"> in a form Google ignores"
+description: "Google reads notranslate and nopagereadaloud under name=google. Other tokens do nothing; Chrome needs notranslate alone, name lowercase."
 pubDate: "2026-09-28"
 status: "avoid"
 severity: "harmful"
@@ -12,7 +12,7 @@ scope: "head"
 selector: 'meta[name="google" i]'
 match: "logic"
 fix: { op: "remove-element" }
-replacement: "Keep notranslate or nopagereadaloud, one per tag: <meta name=\"google\" content=\"notranslate\">. Delete nositelinkssearchbox."
+replacement: "One token per tag, name in lowercase: <meta name=\"google\" content=\"notranslate\">. Delete nositelinkssearchbox."
 tags: ["i18n", "search"]
 impacts: ["seo"]
 related: ["meta/robots-value"]
@@ -21,7 +21,8 @@ related: ["meta/robots-value"]
 `<meta name="google">` speaks to Google's own products. Google documents two tokens for it:
 `nopagereadaloud` keeps Google's text-to-speech services from reading the page aloud, and
 `notranslate` turns off Chrome's offer to translate it. Google ignores the meta tags it does
-not support. Any other token does nothing, and a misspelt opt-out fails with no warning.
+not support. Any other token does nothing, and an opt-out that is misspelt, or written in a
+form Chrome skips, fails with no warning.
 
 ## Why avoid
 
@@ -38,13 +39,14 @@ same way. Google reads robots rules under `robots`, `googlebot` and `googlebot-n
 
 Chrome's reader is strict. It walks the `<meta>` children of `<head>`, requires the name
 `google` in lowercase, and compares the whole `content` with `notranslate`, ignoring ASCII
-case. `<meta name="Google" content="notranslate">` and
-`content="notranslate, nopagereadaloud"` both leave translation on. This rule reports
-neither, since each token in them is documented.
+case. `<meta name="Google" content="notranslate">`, `content="notranslate, nopagereadaloud"`
+and a padded `content=" notranslate"` all leave translation on. HTML says meta names "are
+case-insensitive, and must be compared in an ASCII case-insensitive manner", so the name
+check is Chrome's own. The author loses the opt-out all the same.
 
 ## Use instead
 
-One documented token per tag:
+One documented token per tag, with the name in lowercase:
 
 ```html
 <meta name="google" content="notranslate">
@@ -62,12 +64,16 @@ report the same findings; none skips. The selector prefilters to `meta[name="goo
 The module in `packages/rules/logic/meta/google-value.ts` folds `content` to ASCII lowercase
 and splits it on commas and ASCII whitespace. Google documents no separator for this name, so
 the module splits as `meta/robots-value` does. A token other than `notranslate` or
-`nopagereadaloud` trips the rule. A tag with no `content`, or with no tokens in it, stays
-quiet. Chrome's older `value="notranslate"` form has no `content` and stays quiet too.
+`nopagereadaloud` trips the rule. So does a tag that means `notranslate` in a form Chrome
+skips: when the value Chrome reads (`content`, or `value` when `content` is absent) holds a
+`notranslate` token, the name has to be `google` in lowercase and that whole value
+`notranslate`, ignoring ASCII case. A tag with no `content`, or with no tokens in it, stays
+quiet otherwise; Chrome's older `<meta name="google" value="notranslate">` is one.
 
 The autofix removes the element when every token is `nositelinkssearchbox`: that tag has no
 reader left. Every other finding carries no fix. A typo stands for an intent the author has
-to restore. Dropping the retired token from `nositelinkssearchbox, notranslate` would switch
+to restore, and the repair of a Chrome form adds text: a lowercased name, a second tag. No
+fix op adds text, and each repair would switch Chrome's opt-out on. Dropping the retired token from `nositelinkssearchbox, notranslate` would switch
 Chrome's opt-out on, since Chrome honours `notranslate` as the whole content and in no other
 form.
 
@@ -75,5 +81,6 @@ form.
 
 - [Google Search Central: meta tags Google supports](https://developers.google.com/search/docs/crawling-indexing/special-tags): `<meta name="google" content="nopagereadaloud">`, `notranslate` shown under `name="googlebot"`, `nositelinkssearchbox` "is no longer used by Google Search ... as the feature no longer exists", and "Google will ignore meta tags that it doesn't support".
 - [Google Search Central Blog: Farewell, Sitelinks Search Box (October 2024)](https://developers.google.com/search/blog/2024/10/sitelinks-search-box): "we'll be removing this visual element starting on November 21, 2024", "globally across all search results".
+- [HTML Standard: the `name` attribute of `<meta>`](https://html.spec.whatwg.org/multipage/semantics.html#attr-meta-name): "Names are case-insensitive, and must be compared in an ASCII case-insensitive manner".
 - [Chromium: `HasNoTranslate` in `web_language_detection_details.cc`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/exported/web_language_detection_details.cc): the `<meta>` children of `<head>` whose `name` is `google`, with `content` (or `value` when `content` is absent) equal to `notranslate` ignoring ASCII case.
 - [Google Search Central: robots meta tag specifications](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag): robots rules under `robots`, `googlebot` and `googlebot-news`; Google ignores other name values.
