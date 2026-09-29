@@ -40,8 +40,8 @@ export const ARTICLE_LD = ld({
       headline: "Rule meta/a",
       description: "A synthetic page, described at a length the checks accept.",
       url: "https://deadhead.cevdet.ch/rules/meta/a",
-      datePublished: "2026-09-28",
-      dateModified: "2026-09-29",
+      datePublished: "2026-09-28T00:00:00.000Z",
+      dateModified: "2026-09-29T00:00:00.000Z",
       author: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetta" },
       citation: ["https://example.com/one", "https://example.com/two"],
     },
@@ -130,7 +130,7 @@ test("fails a JSON-LD block that does not parse", async () => {
 
 test("fails a rule page whose TechArticle lacks a field", async () => {
   const pages = defaultPages();
-  pages["rules/meta/a.html"] = page({ title: "Rule meta/a", head: ARTICLE_LD.replace('"dateModified":"2026-09-29",', "") });
+  pages["rules/meta/a.html"] = page({ title: "Rule meta/a", head: ARTICLE_LD.replace('"dateModified":"2026-09-29T00:00:00.000Z",', "") });
   const { status, out } = await runGate(pages);
   assert.equal(status, 1);
   assert.match(out, /rules\/meta\/a\.html: TechArticle lacks dateModified/);
@@ -175,4 +175,12 @@ test("fails a dist without llms-full.txt", async () => {
   const { status, out } = await runGate(pages);
   assert.equal(status, 1);
   assert.match(out, /llms-full\.txt: missing/);
+});
+
+test("fails a TechArticle date without a time zone", async () => {
+  const pages = defaultPages();
+  pages["rules/meta/a.html"] = page({ title: "Rule meta/a", head: ARTICLE_LD.replace("2026-09-29T00:00:00.000Z", "2026-09-29") });
+  const { status, out } = await runGate(pages);
+  assert.equal(status, 1);
+  assert.match(out, /rules\/meta\/a\.html: TechArticle dateModified is not a datetime with a time zone: 2026-09-29/);
 });

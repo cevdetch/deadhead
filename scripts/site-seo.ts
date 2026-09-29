@@ -99,6 +99,13 @@ for (const { path } of pages.filter((p) => p.path.startsWith("rules/"))) {
   for (const field of ARTICLE_FIELDS) {
     if (article[field] === undefined) problems.push(`${path}: TechArticle lacks ${field}`);
   }
+  // Google's Rich Results Test flags a bare date as invalid and zoneless.
+  for (const field of ["datePublished", "dateModified"] as const) {
+    const value = article[field];
+    if (value !== undefined && !(typeof value === "string" && /^\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:\d{2})$/.test(value))) {
+      problems.push(`${path}: TechArticle ${field} is not a datetime with a time zone: ${String(value)}`);
+    }
+  }
   const cited = Array.isArray(article["citation"]) ? article["citation"].length : 0;
   if (cited < 2) problems.push(`${path}: TechArticle cites ${cited} sources, want 2 or more`);
 }
