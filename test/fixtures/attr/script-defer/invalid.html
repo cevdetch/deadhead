@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>defer where it does nothing</title>
+    <script type="importmap" defer>{"imports": {"preact": "/vendor/preact.mjs"}}</script>
+    <script type="module" src="/app.js" defer></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=KEY&amp;loading=async&amp;callback=initMap"></script>
+  </head>
+  <body>
+    <p>Four scripts; the fix deletes defer from each and nothing runs differently.</p>
+    <script defer>document.documentElement.className = "js";</script>
+  </body>
+</html>
