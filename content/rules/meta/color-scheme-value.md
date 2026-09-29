@@ -13,6 +13,7 @@ selector: 'meta[name="color-scheme" i][content]'
 match: "logic"
 fix: { op: "none" }
 replacement: "Separate keywords with spaces, no commas: <meta name=\"color-scheme\" content=\"light dark\">. Put only first or last: only light."
+tags: ["theming"]
 impacts: ["a11y", "interop"]
 related: ["meta/viewport-value", "meta/google-value"]
 ---

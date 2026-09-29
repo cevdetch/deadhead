@@ -73,6 +73,7 @@ export const TAGS = [
   "svg",
   "tables",
   "text",
+  "theming",
   "web-app",
   "web-components",
 ] as const;

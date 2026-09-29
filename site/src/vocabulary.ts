@@ -141,6 +141,7 @@ export const tagLabels: Record<Tag, string> = {
   svg: "SVG",
   tables: "Tables",
   text: "Text and lists",
+  theming: "Theming",
   "web-app": "Web apps",
   "web-components": "Web Components",
 };
@@ -173,6 +174,7 @@ export const tagBlurbs: Record<Tag, string> = {
   svg: "Inline SVG attributes that SVG 2 removed or deprecated.",
   tables: "Table attributes that CSS and scope/headers replaced.",
   text: "Text, list and preformatted elements with a semantic or CSS replacement.",
+  theming: "Colors a page hands the browser for its own interface and defaults: theme-color and color-scheme.",
   "web-app": "Install and home-screen metadata that the web app manifest replaced.",
   "web-components": "The first, abandoned Web Components drafts: <content>, <shadow> and HTML Imports.",
 };
