@@ -2,12 +2,23 @@
 import { getCollection } from "astro:content";
 import Layout, { REPO } from "../layouts/Layout.astro";
 import RuleList from "../components/RuleList.astro";
+import { AUTHOR, SITE_NAME } from "../lib/seo.ts";
+import { namespaceBlurbs } from "../vocabulary.ts";
 
 const rules = await getCollection("rules");
 const count = (severity: string) => rules.filter((r) => r.data.severity === severity).length;
 const newest = [...rules]
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf() || a.data.ruleId.localeCompare(b.data.ruleId))
   .slice(0, 8);
+
+// Namespaces in the order the rules index lists them, with their counts.
+const namespaces = [...new Set(rules.map((r) => r.data.ruleId.split("/")[0]!))]
+  .sort()
+  .map((namespace) => ({
+    namespace,
+    count: rules.filter((r) => r.data.ruleId.startsWith(`${namespace}/`)).length,
+    blurb: namespaceBlurbs[namespace] ?? "",
+  }));
 
 const sample = `$ npx deadhead dist
 
@@ -19,17 +30,34 @@ dist/index.html
        https://deadhead.cevdet.ch/rules/meta/revisit-after
 
 ✖ 1 finding (1 unnecessary)`;
+
+const description =
+  "A documentation-driven linter for the HTML head: it finds deprecated, unnecessary and harmful markup, and every finding links to a sourced explanation.";
+
+// The site name Google shows in results comes from a WebSite node on the
+// home page. No SearchAction: meta/json-ld-search-action reports it.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: new URL("/", Astro.site).href,
+  description,
+  inLanguage: "en",
+  publisher: { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url },
+};
 ---
 
 <Layout
-  title="deadhead: lint HTML <head> for dead and harmful markup"
-  description="A documentation-driven linter for HTML <head>. Every finding links to a researched explanation with sources."
+  title="deadhead: lint the HTML head for dead and harmful markup"
+  description={description}
+  jsonLd={jsonLd}
 >
-    <h1>Deadheading is cutting the spent growth off a plant.</h1>
+    <h1>Lint the HTML head for dead, deprecated and harmful markup</h1>
     <p class="lede">
-      This does that to your <code>&lt;head&gt;</code>. It finds markup that
-      is harmful, deprecated or dead weight. For every finding, it
-      links to a written explanation of why, with sources.
+      Deadheading is cutting the spent growth off a plant. This does that to
+      your <code>&lt;head&gt;</code>: it finds markup that is harmful,
+      deprecated or dead weight, and every finding links to a written
+      explanation of why, with sources.
     </p>
 
     <pre><samp>{sample}</samp></pre>
@@ -79,6 +107,16 @@ dist/index.html
       identical findings. That is what stops them
       drifting.
     </p>
+
+    <h2>What it catches</h2>
+    <dl>
+      {namespaces.map(({ namespace, count, blurb }) => (
+        <div>
+          <dt><a href={`/rules#${namespace}`}><code>{namespace}/</code></a></dt>
+          <dd>{blurb}<small>{count} rules</small></dd>
+        </div>
+      ))}
+    </dl>
 
     <h2>The rules</h2>
     <p>

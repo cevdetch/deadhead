@@ -4,6 +4,9 @@
 import type { Severity, Status } from "../../../packages/core/vocabulary.ts";
 
 export const SITE_NAME = "deadhead";
+
+/** The person behind the site, for JSON-LD `author` and `publisher`. */
+export const AUTHOR = { name: "Cevdet", url: "https://github.com/cevdetta" } as const;
 const MAX = 60;
 
 /** The core title plus the brand when both fit in 60 characters; the core alone otherwise. Never truncated. */

@@ -12,13 +12,14 @@ interface Props {
   /** Rule pages are articles; the index pages are not. */
   ogType?: "website" | "article";
   publishedTime?: Date | undefined;
+  modifiedTime?: Date | undefined;
   /** True for pages with no lasting URL, like 404: no canonical, no Open Graph block. */
   noindex?: boolean;
   /** Structured data, rendered as one JSON-LD script after the Open Graph tags. */
   jsonLd?: object;
 }
 
-const { title, description, ogType = "website", publishedTime, noindex = false, jsonLd } = Astro.props;
+const { title, description, ogType = "website", publishedTime, modifiedTime, noindex = false, jsonLd } = Astro.props;
 
 const fullTitle = pageTitle(title);
 
@@ -77,6 +78,12 @@ const nav = [
           <meta
             property="article:published_time"
             content={publishedTime.toISOString()}
+          />
+        )}
+        {ogType === "article" && modifiedTime && (
+          <meta
+            property="article:modified_time"
+            content={modifiedTime.toISOString()}
           />
         )}
       </>

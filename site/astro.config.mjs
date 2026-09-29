@@ -4,14 +4,17 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
+import { modifiedDate, ruleCommitDates } from "./src/lib/lastmod.ts";
 
-// Rule `pubDate` frontmatter mapped to sitemap `lastmod`, so crawlers
-// prioritize updates. Read here rather than in a content loader: the
-// sitemap integration only sees final URLs, so the config joins them.
+// Sitemap `lastmod` per rule: the later of its `pubDate` frontmatter and the
+// rule file's newest commit, so a revised rule signals the change. Read here
+// rather than in a content loader: the sitemap integration only sees final
+// URLs, so the config joins them.
 const contentRulesDir = fileURLToPath(new URL("../content/rules/", import.meta.url));
 
 /** @returns {Map<string, string>} URL path (`/rules/<ruleId>`) to `YYYY-MM-DD`. */
 function loadLastmod() {
+  const committed = ruleCommitDates(process.cwd());
   const out = new Map();
   let files = [];
   try {
@@ -24,7 +27,7 @@ function loadLastmod() {
     const ruleId = file.replace(/\.md$/, "").split("\\").join("/");
     const body = readFileSync(join(contentRulesDir, file), "utf8");
     const match = /^pubDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body);
-    if (match?.[1]) out.set(`/rules/${ruleId}`, match[1]);
+    if (match?.[1]) out.set(`/rules/${ruleId}`, modifiedDate(match[1], committed.get(ruleId)));
   }
   return out;
 }

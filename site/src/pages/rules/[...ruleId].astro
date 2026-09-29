@@ -2,34 +2,56 @@
 import { getCollection, render } from "astro:content";
 import Layout, { REPO } from "../../layouts/Layout.astro";
 import RuleFacts from "../../components/RuleFacts.astro";
-import { ruleCoreTitle } from "../../lib/seo.ts";
+import { AUTHOR, ruleCoreTitle } from "../../lib/seo.ts";
+import { resourceUrls } from "../../lib/citations.ts";
+import { modifiedDate, ruleCommitDates } from "../../lib/lastmod.ts";
 
 // The route is `[...ruleId]` rather than `[ruleId]` because a ruleId contains a
 // slash: `meta/keywords` is one id, not two segments. This URL is the contract
 // `packages/core/vocabulary.ts` prints in every finding.
 export async function getStaticPaths() {
   const rules = await getCollection("rules");
+  // One git pass for all rule pages, not one per page.
+  const committed = ruleCommitDates(process.cwd());
   return rules.map((rule) => ({
     params: { ruleId: rule.data.ruleId },
-    props: { rule },
+    props: { rule, modified: modifiedDate(rule.data.pubDate.toISOString().slice(0, 10), committed.get(rule.data.ruleId)) },
   }));
 }
 
-const { rule } = Astro.props;
+const { rule, modified } = Astro.props;
 const { Content } = await render(rule);
 const { data } = rule;
 
 const sourceUrl = `${REPO}/blob/main/content/rules/${data.ruleId}.md`;
 const namespace = data.ruleId.split("/")[0]!;
 
-// The visible breadcrumb, as structured data search results can show.
+const url = new URL(`/rules/${data.ruleId}`, Astro.site).href;
+const person = { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url };
+
+// The rule as an article, plus the visible breadcrumb. `citation` carries the
+// sources every rule is required to have; that is the site's point.
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Rules", item: new URL("/rules", Astro.site).href },
-    { "@type": "ListItem", position: 2, name: `${namespace}/`, item: new URL(`/rules#${namespace}`, Astro.site).href },
-    { "@type": "ListItem", position: 3, name: data.title },
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      headline: data.title,
+      description: data.description,
+      url,
+      datePublished: data.pubDate.toISOString().slice(0, 10),
+      dateModified: modified,
+      author: person,
+      citation: resourceUrls(rule.body ?? ""),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Rules", item: new URL("/rules", Astro.site).href },
+        { "@type": "ListItem", position: 2, name: `${namespace}/`, item: new URL(`/rules#${namespace}`, Astro.site).href },
+        { "@type": "ListItem", position: 3, name: data.title },
+      ],
+    },
   ],
 };
 ---
@@ -39,6 +61,7 @@ const jsonLd = {
   description={data.description}
   ogType="article"
   publishedTime={data.pubDate}
+  modifiedTime={new Date(`${modified}T00:00:00Z`)}
   jsonLd={jsonLd}
 >
   <article>
