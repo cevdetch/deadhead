@@ -21,7 +21,7 @@ import { fromProgram } from "../../packages/eslint-plugin/adapter.ts";
 import { collectFiles } from "../../packages/cli/lint.ts";
 import { loadRules } from "../../packages/rules/load.ts";
 import { type Rule, run } from "../../packages/core/index.ts";
-import type { Finding } from "../../packages/core/types.ts";
+import type { ElementPort, Finding } from "../../packages/core/types.ts";
 
 /**
  * Rules that cannot be evaluated in a live DOM, because their verdict depends
@@ -311,12 +311,33 @@ test("<script> and <style> are elements in every adapter", () => {
   for (const adapter of ADAPTERS) {
     const tags = new Set<string>();
     const parsed = adapter.parse(html);
-    const walkAll = (port: NonNullable<typeof parsed.root>): void => {
+    const walkAll = (port: ElementPort): void => {
       tags.add(port.tag);
       for (const child of port.children()) walkAll(child);
     };
-    if (parsed.root) walkAll(parsed.root);
+    for (const root of parsed.roots) walkAll(root);
     assert.ok(tags.has("script"), `${adapter.name} does not see <script>`);
     assert.ok(tags.has("style"), `${adapter.name} does not see <style>`);
+  }
+});
+
+test("every adapter tells a page from a fragment the same way", () => {
+  const cases: Record<string, boolean> = {
+    "<!doctype html>\n<title>t</title>": true,
+    '<html lang="en"><body></body></html>': true,
+    "<!-- note -->\n<!doctype html>\n<p>x</p>": true,
+    '<meta charset="utf-8">\n<title>t</title>': false,
+    "<nav></nav>": false,
+    // A doctype after text is one the tree builder ignores.
+    "hello <!doctype html><p>x</p>": false,
+  };
+  for (const [html, page] of Object.entries(cases)) {
+    for (const adapter of ADAPTERS.filter((a) => a.hasSource)) {
+      assert.equal(adapter.parse(html).doc.isPage(), page, `${adapter.name}: ${html}`);
+    }
+    // A live document is the page the browser assembled, whatever the source was.
+    const dom = ADAPTERS.find((a) => a.name === "dom");
+    assert.ok(dom);
+    assert.equal(dom.parse(html).doc.isPage(), true, `dom: ${html}`);
   }
 });

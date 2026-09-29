@@ -44,6 +44,8 @@ Emit the full required set with true values:
 
 Countable in one document pass, which is why this is a `kind: "document"` rule: no selector can say "some but not all". The logic in `packages/rules/logic/meta/og-required-properties.ts` censuses `property` tags starting with `og:`; zero such tags stays quiet, and any missing required name lands in the finding detail on `head`. The check reads attributes, never source offsets, so it reports in all three adapters.
 
+A fragment, a file with no doctype and no `<html>` tag, is not checked: the other required properties can sit in another partial of the same page.
+
 ## Resources
 
 - [ogp.me: the Open Graph protocol](https://ogp.me/): four required properties for every page, with the permanent-ID role of `og:url`.

@@ -26,6 +26,8 @@ const insideSvg = (element: ElementPort): boolean => {
 export const check: CheckFn = (doc, ctx) => {
   const titles = doc.querySelectorAll("title").filter((title) => !insideSvg(title));
   if (titles.length === 0) {
+    // A fragment's title can live in another file; only a page lacks one.
+    if (!doc.isPage()) return [];
     const head = doc.querySelector("head");
     if (head === null) return [];
     return [ctx.report(head, { detail: "head has no title element" })];

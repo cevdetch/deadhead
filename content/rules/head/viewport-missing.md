@@ -63,11 +63,11 @@ there. The finding lands on `<head>`. A viewport `<meta>` anywhere in the docume
 browsers apply one even when it's misplaced in `<body>`. Presence is all this checks: a
 viewport without `width=device-width` is a different problem.
 
-The rule reports nothing unless there is a `<head>` with at least one element in it. Fragments,
-partials and component templates aren't whole documents, and shouldn't be told to add a
-tag that belongs to the page around them. One edge remains: a file with head content but no
-`<head>` tag, like `<!doctype html><title>…`, gets reported by the CLI without a line
-number and not by the ESLint plugin, because only the CLI's parser invents the missing head.
+The rule reports nothing on a fragment, a file with no doctype and no `<html>` tag such as
+a partial or a component template: the viewport belongs to the page around it. On a page it
+also needs a `<head>` with at least one element in it. One edge remains: a page that omits its
+`<head>` tag, like `<!doctype html><title>…`, gets reported by the CLI without a line number
+and not by the ESLint plugin, because only the CLI's parser invents the missing head.
 
 There is no autofix. The remedy adds an element, and every fix here only removes.
 

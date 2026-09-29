@@ -258,7 +258,7 @@ export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: Ru
   if (options.skipTemplates !== undefined) walkOptions.skipTemplates = options.skipTemplates;
 
   walk(
-    parsed.root,
+    parsed.roots,
     (element, region) => {
       const visit = ++visitCounter;
       let local: Finding[] | null = null;
@@ -267,8 +267,10 @@ export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: Ru
       const consider = (entry: Dispatched): void => {
         const rule = entry.rule;
         const scope = rule.meta.scope;
-        if (scope === "head" && region !== "head") return;
-        if (scope === "body" && region !== "body") return;
+        // Unplaced markup lands in the head or the body of a page this run
+        // cannot see, so rules of either scope check it.
+        if (scope === "head" && region !== "head" && region !== "unplaced") return;
+        if (scope === "body" && region !== "body" && region !== "unplaced") return;
         if (rule.stamp === visit) return;
         if (entry.compounds !== null && !matches(element, entry.compounds)) return;
         rule.stamp = visit;

@@ -73,6 +73,15 @@ export type DocumentPort = {
   querySelectorAll(selector: string): ElementPort[];
   /** The doctype the parser honoured, or `null` when there is none. */
   doctype(): DoctypePort | null;
+  /**
+   * True for a page: the parser honoured a doctype, or the source writes an
+   * `<html>` tag. False for a fragment (a layout partial, a component, a
+   * framework template), which other files assemble into a page. A rule that
+   * reports head content as missing returns nothing on a fragment; every other
+   * rule ignores this. Always true in the DOM adapter: a live document is the
+   * assembled page.
+   */
+  isPage(): boolean;
 };
 
 export type Finding = {
@@ -127,8 +136,13 @@ export type CheckFn = (doc: DocumentPort, ctx: RuleContext) => Finding[];
  * ranges, suppression comments — degrades to "unavailable" rather than wrong.
  */
 export type Parsed = {
-  /** The `<html>` element, or `null` for an empty document. */
-  root: ElementPort | null;
+  /**
+   * The top-level elements the walk starts from: `[<html>]` for a page the
+   * tree builder completed, and every top-level element of a fragment, or of
+   * a page whose source omits `<html>` in the ESLint adapter. Empty for an
+   * empty document. A root's `parent()` is `null`.
+   */
+  roots: ElementPort[];
   doc: DocumentPort;
   source: string | null;
 };

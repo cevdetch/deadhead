@@ -15,7 +15,7 @@ trim_trailing_whitespace = false
 # whitespace in a fixture changes the byte offsets the tests assert on.
 # end_of_line/charset repeat [*] on purpose: these paths must stay LF/UTF-8
 # even if the global section ever changes.
-[test/fixtures/**]
+[test/{fixtures,fragments}/**]
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = false

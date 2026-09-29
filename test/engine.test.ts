@@ -5,6 +5,8 @@ import { type Rule, run } from "../packages/core/engine.ts";
 import { parseSuppressions } from "../packages/core/suppressions.ts";
 import type { Finding, RuleMeta } from "../packages/core/index.ts";
 import { parseHtml } from "../packages/cli/adapter.ts";
+import { parseForESLint } from "@html-eslint/parser";
+import { fromProgram } from "../packages/eslint-plugin/adapter.ts";
 
 /**
  * The engine is exercised through the real parse5 adapter rather than a hand
@@ -33,6 +35,10 @@ const meta = (overrides: Partial<RuleMeta> & { ruleId: string }): RuleMeta => ({
 
 const lint = (html: string, rules: Rule[], suppress = false): Finding[] =>
   run(rules, parseHtml(html), suppress ? { suppressions: parseSuppressions(html) } : {});
+
+/** A fragment through @html-eslint/parser, which builds exactly what was written. */
+const lintAsWritten = (html: string, rules: Rule[]): Finding[] =>
+  run(rules, fromProgram(parseForESLint(html, {}).ast, html));
 
 const doc = (head: string, body = ""): string =>
   `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`;
@@ -233,4 +239,21 @@ test("makeDocumentQueries narrows by leading tag and keeps document order", asyn
   const q = makeDocumentQueries(nodes, byTag, portFor);
   assert.deepEqual(q.querySelectorAll("meta[name]").map((p) => p.attr("name")), ["x", "z"]);
   assert.equal(ported, 2);
+});
+
+test("head and body rules both check unplaced markup: the page decides where it lands", () => {
+  const rules: Rule[] = [
+    { meta: meta({ ruleId: "meta/h", selector: "meta", scope: "head" }) },
+    { meta: meta({ ruleId: "element/b", selector: "center", scope: "body" }) },
+  ];
+  assert.deepEqual(ids(lintAsWritten('<meta name="a">\n<center>x</center>', rules)), ["meta/h", "element/b"]);
+});
+
+test("neither head nor body rules check <html> itself", () => {
+  const rules: Rule[] = [
+    { meta: meta({ ruleId: "document/h", selector: "html", scope: "head" }) },
+    { meta: meta({ ruleId: "document/b", selector: "html", scope: "body" }) },
+    { meta: meta({ ruleId: "document/a", selector: "html", scope: "any" }) },
+  ];
+  assert.deepEqual(ids(lint(doc(""), rules)), ["document/a"]);
 });

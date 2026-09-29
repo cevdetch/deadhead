@@ -12,6 +12,7 @@ import test from "node:test";
 import { parseHTML } from "linkedom";
 
 import { fromDocument } from "../../packages/browser/adapter.ts";
+import type { ElementPort } from "../../packages/core/types.ts";
 
 test("template children sit behind content", () => {
   const { document } = parseHTML(
@@ -31,11 +32,11 @@ test("template children sit behind content", () => {
   // The adapter steps into content, so it sees the span either way.
   const parsed = fromDocument(document);
   const seen: string[] = [];
-  const walk = (port: NonNullable<typeof parsed.root>): void => {
+  const walk = (port: ElementPort): void => {
     seen.push(port.tag);
     for (const child of port.children()) walk(child);
   };
-  if (parsed.root) walk(parsed.root);
+  for (const root of parsed.roots) walk(root);
   assert.ok(seen.includes("template"), "adapter must visit <template>");
   assert.ok(seen.includes("span"), "adapter must step into template content");
 });

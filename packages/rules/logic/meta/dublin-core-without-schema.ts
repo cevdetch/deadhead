@@ -23,6 +23,8 @@ const SPACES = /[\t\n\f\r ]+/;
  * Prefix matching is ASCII case-insensitive in both directions.
  */
 export const check: CheckFn = (doc, ctx) => {
+  // The schema.DC link can sit in another partial of the page.
+  if (!doc.isPage()) return [];
   const declared = new Set<string>();
   for (const element of doc.querySelectorAll("link[rel]")) {
     const rel = element.attr("rel");

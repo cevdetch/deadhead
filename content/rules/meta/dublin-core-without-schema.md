@@ -42,6 +42,8 @@ Declare the namespace beside the names it binds:
 
 Unpairable by selector, which is why this is a `kind: "document"` rule: no selector can pair `meta` names with `link` declarations. The logic in `packages/rules/logic/meta/dublin-core-without-schema.ts` collects declared prefixes from `schema.` rel tokens carrying `href`, then reports each `DC.*` or `DCTERMS.*` name with no declaration. The check reads attributes, never source offsets, so it reports in all three adapters.
 
+A fragment, a file with no doctype and no `<html>` tag, is not checked: the `schema.DC` link can sit in another partial of the same page.
+
 ## Resources
 
 - [DCMI: expressing Dublin Core in HTML meta/link](https://www.dublincore.org/specifications/dublin-core/dc-html/): no declaration means no URI for the name, with worked bound and unbound examples.

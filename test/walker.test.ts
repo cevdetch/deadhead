@@ -3,16 +3,25 @@ import test from "node:test";
 
 import { type Region, walk } from "../packages/core/walker.ts";
 import { parseHtml } from "../packages/cli/adapter.ts";
+import { parseForESLint } from "@html-eslint/parser";
+import { fromProgram } from "../packages/eslint-plugin/adapter.ts";
+
+/** Every element with its region, walked from what @html-eslint/parser built. */
+const regionsAsWritten = (html: string): [string, Region][] => {
+  const seen: [string, Region][] = [];
+  walk(fromProgram(parseForESLint(html, {}).ast, html).roots, (element, region) => seen.push([element.tag, region]));
+  return seen;
+};
 
 const visited = (html: string, options = {}): string[] => {
   const seen: string[] = [];
-  walk(parseHtml(html).root, (element) => seen.push(element.tag), options);
+  walk(parseHtml(html).roots, (element) => seen.push(element.tag), options);
   return seen;
 };
 
 const regions = (html: string): Record<string, Region> => {
   const out: Record<string, Region> = {};
-  walk(parseHtml(html).root, (element, region) => {
+  walk(parseHtml(html).roots, (element, region) => {
     out[element.tag] ??= region;
   });
   return out;
@@ -62,9 +71,9 @@ test("<template> is walked by default and skippable on request", () => {
 });
 
 test("an empty document walks nothing rather than throwing", () => {
-  assert.deepEqual(visited(""), ["html", "head", "body"], "parse5 implies the structure");
+  assert.deepEqual(visited(""), [], "an empty file is a fragment: nothing is invented around it");
   const seen: string[] = [];
-  walk(null, (element) => seen.push(element.tag));
+  walk([], (element) => seen.push(element.tag));
   assert.deepEqual(seen, []);
 });
 
@@ -79,5 +88,22 @@ test("deeply nested markup does not overflow the stack", async () => {
     parsed,
   );
   assert.equal(findings.length, 1);
-  assert.equal(parsed.root?.children()[1]?.children()[0]?.text().length, 1);
+  assert.equal(parsed.roots[0]?.children()[1]?.children()[0]?.text().length, 1);
+});
+
+test("a fragment's top-level markup is unplaced, and so is everything inside it", () => {
+  assert.deepEqual(regionsAsWritten('<meta name="a"><nav><a href="/">x</a></nav>'), [
+    ["meta", "unplaced"],
+    ["nav", "unplaced"],
+    ["a", "unplaced"],
+  ]);
+});
+
+test("a written <head> or <body> places what it holds; other children of <html> stay unplaced", () => {
+  assert.deepEqual(regionsAsWritten('<html lang="en"><title>t</title><body><p>x</p></body></html>'), [
+    ["html", null],
+    ["title", "unplaced"],
+    ["body", "body"],
+    ["p", "body"],
+  ]);
 });

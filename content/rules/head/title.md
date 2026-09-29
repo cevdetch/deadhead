@@ -43,6 +43,8 @@ Countable in one document pass, which is why this is a `kind: "document"` rule: 
 
 A `title` inside `<svg>` is not counted. The HTML parser makes it SVG's own `title`, the accessible name of a drawing, and the rule tells the two apart by an `<svg>` ancestor.
 
+On a fragment, a file with no doctype and no `<html>` tag such as a layout partial, a missing title is not reported: another file supplies it. Duplicate and empty titles in a fragment still are.
+
 ## Resources
 
 - [WHATWG HTML: the head element](https://html.spec.whatwg.org/multipage/semantics.html#the-head-element): the head model wants a title in most documents, and no document holds more than one title.

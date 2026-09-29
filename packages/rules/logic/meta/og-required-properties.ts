@@ -18,6 +18,8 @@ const REQUIRED: string[] = ["og:title", "og:type", "og:url", "og:image"];
  * here. A page with the full set reports nothing.
  */
 export const check: CheckFn = (doc, ctx) => {
+  // The other required properties can sit in another partial of the page.
+  if (!doc.isPage()) return [];
   const present = new Set<string>();
   for (const element of doc.querySelectorAll("meta[property]")) {
     const property = element.attr("property");

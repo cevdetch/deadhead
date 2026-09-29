@@ -41,13 +41,17 @@ The pull request template carries the full definition of done.
 - [ ] `## Use instead` has runnable markup, or explicitly says "delete it"
 - [ ] `severity` is justified: `harmful` breaks something for users; `deprecated` is
       formally obsolete but inert; `unnecessary` works but is dead weight
+- [ ] A rule that reports head content as missing returns nothing when
+      `!doc.isPage()`: a fragment (no doctype, no `<html>`) gets that content from
+      another file. Every other rule ignores `isPage()`
 
 ### Rules never touch a parser
 
 Rule logic only sees the element port (`tag`, `attr`, `hasAttr`, `attrNames`,
 `text`, `parent`, `children`, `index`, `range`, `loc`). No `parse5` types, no DOM
 `Element`, no ESLint AST. If a rule needs something the port lacks, extend the port
-for all three adapters at once.
+for all three adapters at once. Document rules also get `querySelector`,
+`querySelectorAll`, `doctype()` and `isPage()`.
 
 ### Fixtures must be well-formed HTML
 
@@ -58,6 +62,10 @@ malformed input (implicit `<head>`, misnested tags, stray `</p>`) against the pa
 adapter only, in its own suite. Fixtures are byte-offset-sensitive: do not reformat
 them, and leave trailing whitespace and final newlines alone (enforced by
 [`.editorconfig`](.editorconfig) and [`.gitattributes`](.gitattributes)).
+
+Fragments (partials and components, with no doctype and no `<html>`) live in
+`test/fragments/` and run through the parse5 and ESLint adapters only: the DOM
+adapter only ever sees an assembled page.
 
 ## Naming a rule
 

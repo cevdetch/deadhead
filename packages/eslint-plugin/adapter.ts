@@ -218,6 +218,7 @@ export function fromProgram(program: unknown, source: string): Parsed {
   // An explicit stack: markup nested thousands deep is legal HTML, and a
   // recursive walk dies on it. Children are pushed in reverse so they pop in
   // document order.
+  const roots: Node[] = [];
   const stack: [Node, Node | null][] = [[program, null]];
   while (stack.length > 0) {
     const [node, parent] = stack.pop()!;
@@ -232,21 +233,22 @@ export function fromProgram(program: unknown, source: string): Parsed {
         const siblings = elementChildren.get(parent);
         if (siblings === undefined) elementChildren.set(parent, [node]);
         else siblings.push(node);
-      }
+      } else roots.push(node);
     }
     const children = childrenOf(node);
     for (let i = children.length - 1; i >= 0; i--) stack.push([children[i]!, tag !== null ? node : parent]);
   }
 
   const portFor = makePorts(parents, elementChildren);
-  const root = elements.find((node) => ELEMENT_TAG(node) === "html") ?? elements[0];
-
   const doctype = doctypeOf(program);
+  // @html-eslint/parser invents nothing: an `html` tag is one the author wrote.
+  const page = doctype !== null || byTag.has("html");
 
   const doc: DocumentPort = {
     doctype: () => doctype,
+    isPage: () => page,
     ...makeDocumentQueries(elements, byTag, portFor),
   };
 
-  return { root: root === undefined ? null : portFor(root), doc, source };
+  return { roots: roots.map(portFor), doc, source };
 }

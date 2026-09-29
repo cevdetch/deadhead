@@ -79,6 +79,20 @@ Exit codes are the CI contract: **0** nothing at or above the `--fail-on` thresh
 internal error. A broken invocation never looks
 like a clean run.
 
+### Pages and fragments
+
+A file is a **page** when it has a doctype or an `<html>` tag. Anything else is a
+**fragment**: a layout partial, a component, a framework template. Other files
+assemble fragments into the page, so a fragment is checked for the markup it holds
+and never for head content it lacks. Four checks skip fragments: a missing viewport
+(`head/viewport-missing`), a missing title (`head/title`; duplicate and empty titles
+still report), Open Graph tags without the required set
+(`meta/og-required-properties`) and Dublin Core names without their schema link
+(`meta/dublin-core-without-schema`). Every other rule checks a fragment in full.
+Markup outside a written `<head>` or `<body>` gets both the head and the body rules,
+because the page decides where it lands. The CLI and the ESLint plugin build the same
+tree for a fragment, so they report the same findings.
+
 ### Fixes are text edits, never re-serialised markup
 
 `--fix` splices byte ranges out of the original file. It never parses your document and

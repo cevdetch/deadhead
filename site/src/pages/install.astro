@@ -33,6 +33,16 @@ deadhead --fix dist               # rewrite files, then report what is left</cod
       looks like a clean run.
     </p>
 
+    <h2>Pages and fragments</h2>
+    <p>
+      A file with a doctype or an <code>&lt;html&gt;</code> tag is a page.
+      Anything else is a fragment: a layout partial, a component, a template.
+      A fragment is checked for the markup it holds, never for head content it
+      lacks, since other files supply that. Markup outside a written{" "}
+      <code>&lt;head&gt;</code> or <code>&lt;body&gt;</code> gets both the head
+      and the body rules.
+    </p>
+
     <h2>Fixes are text edits, never re-serialised markup</h2>
     <p>
       <code>--fix</code> splices byte ranges out of the original file. It never

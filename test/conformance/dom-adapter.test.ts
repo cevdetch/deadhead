@@ -24,7 +24,7 @@ const svgLike = (attrs: Record<string, string>): Element => {
 
 test("DOM port reads SVG attributes case-insensitively, as the port promises", () => {
   const root = svgLike({ viewBox: "0 0 1 1", baseProfile: "full" });
-  const { root: port } = fromDocument({ documentElement: root, doctype: null } as unknown as Document);
+  const { roots: [port] } = fromDocument({ documentElement: root, doctype: null } as unknown as Document);
   assert.ok(port);
   assert.equal(port.attr("viewbox"), "0 0 1 1");
   assert.equal(port.attr("VIEWBOX"), "0 0 1 1");

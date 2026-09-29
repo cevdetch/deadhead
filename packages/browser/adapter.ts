@@ -107,6 +107,9 @@ export function fromDocument(document: Document): Parsed {
 
   const doc: DocumentPort = {
     doctype: () => doctypeOf(document),
+    // A live document is the page the browser assembled from whatever files
+    // produced it, so it is never a fragment.
+    isPage: () => true,
     querySelector: (selector) => {
       const found = document.querySelector(selector);
       return found === null ? null : portFor(found);
@@ -114,5 +117,5 @@ export function fromDocument(document: Document): Parsed {
     querySelectorAll: (selector) => [...document.querySelectorAll(selector)].map(portFor),
   };
 
-  return { root: root === null ? null : portFor(root), doc, source: null };
+  return { roots: root === null ? [] : [portFor(root)], doc, source: null };
 }

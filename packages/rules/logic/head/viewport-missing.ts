@@ -19,6 +19,8 @@ import type { CheckFn } from "../../types.ts";
  * Closing that needs the port to say whether an element was implied.
  */
 export const check: CheckFn = (doc, ctx) => {
+  // A fragment's viewport lives in the layout around it.
+  if (!doc.isPage()) return [];
   if (doc.querySelector('meta[name="viewport" i]') !== null) return [];
   const head = doc.querySelector("head");
   if (head === null || head.children().length === 0) return [];
