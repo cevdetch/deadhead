@@ -164,7 +164,7 @@ export const tagBlurbs: Record<Tag, string> = {
   microsoft: "Internet Explorer, Windows and Live Writer hooks: data binding, script events, document modes and tiles.",
   mobile: "Small-screen hints from before the viewport meta, and viewport settings that hurt.",
   mozilla: "Firefox features that were removed: Microsummary bookmark titles and sidebar links.",
-  "one-per-page": "Declarations a page gets one of: base, canonical, charset, main, title.",
+  "one-per-page": "Declarations a page gets one of: base, canonical, charset, main, manifest, title.",
   presentational: "Styling written as HTML attributes and elements, such as align, bgcolor and <font>, which CSS replaced.",
   "resource-hints": "Preload, prefetch and prerender hints: the dead ones and the malformed ones.",
   scripting: "Script attributes, menus and data binding that browsers dropped.",

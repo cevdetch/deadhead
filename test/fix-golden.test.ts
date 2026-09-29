@@ -45,16 +45,19 @@ for (const id of MUST_NOT_FIX) {
 /**
  * Every rule with an op must fix something on its own invalid fixture. A rule
  * with `fixable()` has unfixable cases there by design: the loop must end with
- * each remaining finding carrying no fix. The rest must clear every finding,
- * or, for KNOWN_PARTIAL, no more than they started with.
+ * each remaining finding carrying no fix. A document rule vetoes inside
+ * `check()` instead, by reporting a finding without a fix; one that does so on
+ * its fixture ends the same way. The rest must clear every finding, or, for
+ * KNOWN_PARTIAL, no more than they started with.
  */
 for (const rule of fixable) {
   const id = rule.meta.ruleId;
-  const ends = rule.fixable !== undefined ? "only vetoed findings" : KNOWN_PARTIAL.has(id) ? "no more findings" : "no findings";
+  const original = await readFile(new URL(`fixtures/${id}/invalid.html`, import.meta.url), "utf8");
+  const lint = (source: string) => run([rule], parseHtml(source), { suppressions: parseSuppressions(source), fix: true });
+  const before = lint(original);
+  const vetoes = rule.fixable !== undefined || (rule.meta.kind === "document" && before.some((f) => f.fix === null));
+  const ends = vetoes ? "only vetoed findings" : KNOWN_PARTIAL.has(id) ? "no more findings" : "no findings";
   test(`${id}: --fix emits a fix and leaves ${ends} of its own`, async () => {
-    const original = await readFile(new URL(`fixtures/${id}/invalid.html`, import.meta.url), "utf8");
-    const lint = (source: string) => run([rule], parseHtml(source), { suppressions: parseSuppressions(source), fix: true });
-    const before = lint(original);
     assert.ok(before.some((f) => f.fix !== null), "invalid.html produced no fix");
 
     let source = original;
@@ -64,7 +67,7 @@ for (const rule of fixable) {
       source = applyFixes(source, fixes).output;
     }
     const after = lint(source);
-    if (rule.fixable !== undefined) {
+    if (vetoes) {
       assert.notEqual(source, original, "the fix changed nothing");
       assert.ok(after.length > 0, "invalid.html needs a case fixable() vetoes");
       assert.deepEqual(after.filter((f) => f.fix !== null).map((f) => f.node.snippet), []);
