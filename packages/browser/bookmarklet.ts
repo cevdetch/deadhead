@@ -111,6 +111,8 @@ async function inflate(payload: string): Promise<unknown> {
 }
 
 export async function start(payload: string, logic: Record<string, MatchFn | CheckFn>): Promise<Finding[]> {
+  // The payload leaves out `fix`: only `computeFix` reads it, and the
+  // bookmarklet build swaps that for a stub returning null.
   const metas = (await inflate(payload)) as RuleMeta[];
   const rules: Rule[] = metas.map((meta) => {
     const fn = logic[meta.ruleId];

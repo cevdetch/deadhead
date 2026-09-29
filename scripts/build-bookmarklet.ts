@@ -29,7 +29,7 @@
  */
 
 import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { styleText } from "node:util";
 import { gzipSync } from "node:zlib";
@@ -48,9 +48,10 @@ export const GLOBAL = "__deadhead";
 /**
  * Exactly the keys the bookmarklet reads: the engine dispatches on selector,
  * kind, scope and match, and reports ruleId, severity, description,
- * replacement, detectability and fix. The rest (title, pubDate, status,
+ * replacement and detectability. The rest (title, pubDate, status,
  * standardsBasis, tags, impacts, related) is prose and site data that would
- * ride the javascript: URL unread.
+ * ride the javascript: URL unread; `fix` feeds `computeFix` alone, which the
+ * bookmarklet swaps for a stub.
  */
 export const SLIM_KEYS = [
   "ruleId",
@@ -61,7 +62,6 @@ export const SLIM_KEYS = [
   "scope",
   "selector",
   "match",
-  "fix",
   "replacement",
 ] as const;
 
@@ -77,7 +77,6 @@ export function toSlimMeta(meta: RuleMeta): SlimMeta {
     scope: meta.scope,
     selector: meta.selector,
     match: meta.match,
-    fix: meta.fix,
     replacement: meta.replacement,
   };
 }
@@ -109,6 +108,8 @@ export function logicVarName(meta: RuleMeta): string {
 }
 
 const ENTRY_ID = "\0deadhead-bookmarklet-entry";
+const NO_FIX_ID = "\0deadhead-no-fix";
+const ENGINE_SUFFIX = join("packages", "core", "engine.ts");
 
 /** The bookmarklet for a rule set, bundled in memory. No file is written. */
 export async function bundleBookmarklet(rules: RuleMeta[]): Promise<string> {
@@ -134,6 +135,15 @@ export async function bundleBookmarklet(rules: RuleMeta[]): Promise<string> {
         name: "deadhead-entry",
         resolveId: (id) => (id === ENTRY_ID ? ENTRY_ID : null),
         load: (id) => (id === ENTRY_ID ? entryCode : null),
+      },
+      {
+        // The live DOM has no source text, so `computeFix` returns null there
+        // and `start` never asks for fixes. Swapping the module for a stub
+        // keeps its 3 kB of range arithmetic off the javascript: URL.
+        name: "deadhead-no-fix",
+        resolveId: (id, importer) =>
+          id === "./fix.ts" && importer !== undefined && importer.endsWith(ENGINE_SUFFIX) ? NO_FIX_ID : null,
+        load: (id) => (id === NO_FIX_ID ? "export const computeFix = () => null;\n" : null),
       },
     ],
   });

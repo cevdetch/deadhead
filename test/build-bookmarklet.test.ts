@@ -42,7 +42,6 @@ test("slim literals carry exactly the keys the bookmarklet reads", () => {
   assert.deepEqual([...SLIM_KEYS].sort(), [
     "description",
     "detectability",
-    "fix",
     "kind",
     "match",
     "replacement",
@@ -52,7 +51,7 @@ test("slim literals carry exactly the keys the bookmarklet reads", () => {
     "severity",
   ]);
   // Prose and site data must not ride the javascript: URL.
-  for (const dropped of ["title", "pubDate", "status", "standardsBasis", "tags", "impacts", "related"]) {
+  for (const dropped of ["title", "pubDate", "status", "standardsBasis", "tags", "impacts", "related", "fix"]) {
     assert.ok(!(dropped in slim), `${dropped} leaked into the slim literal`);
   }
 });
