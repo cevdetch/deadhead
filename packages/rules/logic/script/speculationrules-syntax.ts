@@ -1,4 +1,6 @@
 import type { CheckFn } from "../../types.ts";
+import { asciiLowercase } from "../../lib/text.ts";
+import { scriptTypeString } from "../../lib/script.ts";
 
 /**
  * A document rule for the same reason as `script/json-ld-syntax`: the
@@ -6,13 +8,14 @@ import type { CheckFn } from "../../types.ts";
  *
  * The HTML Standard's "parse a speculation rule set string" parses the text
  * as JSON and throws a TypeError when the result is not a map; either throw
- * drops the whole set. A `src` attribute fires `error` and loads nothing, so
- * it gets its own detail in place of the empty text's parse message.
+ * drops the whole set. HTML strips ASCII whitespace from the type, so `*=`
+ * pre-filters and the exact match sits here. A set with `src` belongs to
+ * `attr/script-src`: the browser never reads its text.
  * https://html.spec.whatwg.org/multipage/speculative-loading.html
  */
 export const check: CheckFn = (doc, ctx) =>
-  doc.querySelectorAll('script[type="speculationrules" i]').flatMap((element) => {
-    if (element.hasAttr("src")) return [ctx.report(element, { detail: "src is not supported" })];
+  doc.querySelectorAll('script[type*="speculationrules" i]').flatMap((element) => {
+    if (element.hasAttr("src") || asciiLowercase(scriptTypeString(element)) !== "speculationrules") return [];
     let parsed: unknown;
     try {
       parsed = JSON.parse(element.text());

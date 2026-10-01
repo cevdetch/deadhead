@@ -342,7 +342,7 @@ test("tdm-reservation-value: 0 and 1 pass, trimmed; anything else, or no value, 
   assert.equal(on(""), true);
 });
 
-test("speculationrules-syntax: bad JSON, a non-object top level and src report; an object passes", async () => {
+test("speculationrules-syntax: bad JSON and a non-object top level report; src and other types stay quiet", async () => {
   const { check } = await import("../packages/rules/logic/script/speculationrules-syntax.ts");
   const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
   const details = (body: string, attrs = ""): unknown[] =>
@@ -354,5 +354,26 @@ test("speculationrules-syntax: bad JSON, a non-object top level and src report; 
   }
   assert.equal(details('{"prefetch": [],}').length, 1);
   assert.equal(details("   ").length, 1);
-  assert.deepEqual(details("", ' src="/rules.json"'), ["src is not supported"]);
+  // attr/script-src owns src; the type is matched after HTML strips its whitespace.
+  assert.deepEqual(details("", ' src="/rules.json"'), []);
+  assert.equal(check(parseHtml('<script type=" SpeculationRules ">[]</script>').doc, { ...ctx, report }).length, 1);
+  assert.deepEqual(check(parseHtml('<script type="speculationrules-x">[]</script>').doc, { ...ctx, report }), []);
+});
+
+test("importmap-syntax: bad JSON and a non-object top level or key report; src and importmap-shim stay quiet", async () => {
+  const { check } = await import("../packages/rules/logic/script/importmap-syntax.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const details = (body: string, attrs = ""): unknown[] =>
+    check(parseHtml(`<!doctype html><html><head><script type="importmap"${attrs}>${body}</script></head></html>`).doc, { ...ctx, report });
+  assert.deepEqual(details('{"imports": {"lit": "/lit.js"}, "scopes": {}, "integrity": {}}'), []);
+  assert.deepEqual(details("{}"), []);
+  assert.deepEqual(details("[]"), ["top-level value is not a JSON object"]);
+  assert.deepEqual(details('{"imports": ["/lit.js"]}'), ['"imports" is not a JSON object']);
+  assert.deepEqual(details('{"scopes": null}'), ['"scopes" is not a JSON object']);
+  assert.deepEqual(details('{"integrity": "sha384-x"}'), ['"integrity" is not a JSON object']);
+  assert.equal(details('{"imports": {},}').length, 1);
+  // attr/script-src owns src; es-module-shims' importmap-shim is not an import map.
+  assert.deepEqual(details("", ' src="/map.json"'), []);
+  assert.equal(check(parseHtml('<script type=" ImportMap ">[]</script>').doc, { ...ctx, report }).length, 1);
+  assert.deepEqual(check(parseHtml('<script type="importmap-shim">[]</script>').doc, { ...ctx, report }), []);
 });
