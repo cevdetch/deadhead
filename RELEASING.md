@@ -83,10 +83,27 @@ which the PR title workflow holds to Conventional Commits.
    ```
 
    `npm stage reject <stage-id>` drops a staged package instead.
-5. Check from the registry, not the website: `npm view deadhead dist-tags
-   --prefer-online` shows the new `latest`, and `npx deadhead@X.Y.Z --version`
-   works in an empty directory. npmjs.com caches package pages and can lag
-   behind for a while.
+
+   A freshly staged package shows `status: validating` while npm's automated
+   review runs, and `approve` answers `409 Conflict … automated review hasn't
+   finished` until it is done. Wait a few minutes and run `npm stage list` again.
+   The `shasum` it lists can be compared with a tarball packed locally from the
+   tagged commit (`npm pack` in each package): for 0.2.0 both matched.
+5. Check from the registry, not the website. After approval the version reaches
+   the registry metadata within a minute or two, the tarball and the
+   attestations URL some minutes later, so a 404 on either right after approval
+   is lag:
+
+   ```sh
+   npm view deadhead dist-tags --prefer-online
+   cd "$(mktemp -d)" && npm init -y && npm install deadhead@X.Y.Z eslint-plugin-deadhead@X.Y.Z --prefer-online
+   npx deadhead --version
+   npm audit signatures            # once the attestations URL answers
+   ```
+
+   Without `--prefer-online`, npm can answer from a cached copy of the package
+   list that predates the release (`ETARGET`). npmjs.com caches package pages and
+   can lag behind longer.
 
 The workflow runs in the GitHub environment `npm`, which the trusted publishers
 check. Cloudflare Pages builds `main`, so the rule pages match each release.
