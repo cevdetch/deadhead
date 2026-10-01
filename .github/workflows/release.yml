@@ -52,8 +52,15 @@ jobs:
       # below, so what was tested is what ships.
       - run: node scripts/smoke-packages.ts --out tarballs
 
-      # Node 24 ships npm 11.19: `stage` needs 11.15, OIDC 11.5.1. No token and
+      # pnpm/setup installs Node without its npm, so `npm` here is the runner
+      # image's (10.9.9 on 2026-10-01), which has no `stage`. Pin one that has
+      # it: `stage` needs 11.15, trusted publishing (OIDC) 11.5.1. No token and
       # no registry-url: trusted publishing exchanges this job's OIDC token.
+      - name: npm with `stage`
+        run: |
+          npm install --global npm@12.2.0
+          npm --version
+
       # A version already on npm (0.1.0, published by hand before trusted
       # publishing could exist) is left alone; the release notes still follow.
       - name: Stage both packages

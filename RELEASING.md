@@ -16,6 +16,12 @@ or passkey requires, while `pnpm` can only pass a 6-digit `--otp` code. Log in f
 the task and out afterwards (`npm login`, `npm logout`). Read-only commands
 (`view`, `stage list`) work with either.
 
+`npm stage` needs npm 11.15 or newer; check `npm --version` first. A version
+manager can put an older npm first on `PATH` (mise's Node 24.15 ships 11.12.1),
+which answers `Unknown command: "stage"`. Run the system npm by its path, or
+`npx npm@12.2.0 stage list`. The Release workflow pins its own npm for the same
+reason: `pnpm/setup` installs Node without npm, and the runner's npm is older.
+
 The changelog is written with [git-cliff](https://git-cliff.org), run by hand
 (`cliff.toml`; not a dependency). It reads the squash-merged pull request titles,
 which the PR title workflow holds to Conventional Commits.
@@ -43,6 +49,19 @@ which the PR title workflow holds to Conventional Commits.
 3. The Release workflow checks the tag against both manifests, runs the full
    chain, `pnpm check:packages` and the smoke test, stages the exact tarballs the
    smoke test installed, and creates the GitHub Release.
+
+   If the workflow fails before it stages anything (no staged package, no GitHub
+   Release), fix the cause on `main`, then move the tag to the fixed commit, since
+   a re-run uses the workflow file at the tagged commit:
+
+   ```sh
+   git switch main && git pull --ff-only
+   git push origin :refs/tags/vX.Y.Z && git tag -d vX.Y.Z
+   git tag -s vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z
+   ```
+
+   Never move a tag once anything was staged or published.
+
 4. Approve, once per package, with 2FA:
 
    ```sh
