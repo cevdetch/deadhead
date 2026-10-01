@@ -262,3 +262,37 @@ test("script-nomodule: classic scripts only, and no fix for an element a script 
   assert.equal(fixable(portOf('<script nomodule src="legacy.js"></script>', "script")), true);
   assert.equal(fixable(portOf('<script nomodule id="vite-legacy-polyfill" src="p.js"></script>', "script")), false);
 });
+
+test("twitter-card-names: layout, attribution and override tags stay; duplicates of Open Graph go", async () => {
+  const { match, fixable } = await import("../packages/rules/logic/meta/twitter-card-names.ts");
+  const og =
+    '<meta property="og:title" content="Post"><meta property="og:description" content="About">' +
+    '<meta property="og:image" content="/c.jpg"><meta property="og:url" content="/post">';
+  /** The twitter:* tag in a page head, after `before`: [match, fixable]. */
+  const on = (tag: string, before = og): [boolean, boolean] => {
+    const element = portOf(`<!doctype html><html><head>${before}${tag}</head></html>`, 'meta[name^="twitter:"]');
+    return [match(element, ctx), fixable(element)];
+  };
+  // No twitter:card value is reported: summary_large_image and player change the layout.
+  for (const value of ["summary", "summary_large_image", "player", "app", "photo"]) {
+    assert.deepEqual(on(`<meta name="twitter:card" content="${value}">`), [false, false], value);
+  }
+  for (const name of ["twitter:site", "twitter:creator", "twitter:creator:id", "twitter:label1", "twitter:data2", "twitter:player", "twitter:player:stream"]) {
+    assert.deepEqual(on(`<meta name="${name}" content="x">`), [false, false], name);
+  }
+  // A differing value, or one with no counterpart, is an override X shows.
+  assert.deepEqual(on('<meta name="twitter:title" content="Other">'), [false, false]);
+  assert.deepEqual(on('<meta name="twitter:title" content="Post">', ""), [false, false]);
+  assert.deepEqual(on('<meta name="twitter:url" content="/post">', ""), [false, false]);
+  // Identical duplicates, twitter:url beside og:url, and twitter:domain carry the fix.
+  assert.deepEqual(on('<meta name="twitter:title" content=" Post ">'), [true, true]);
+  assert.deepEqual(on('<meta name="twitter:image:src" content="/c.jpg">'), [true, true]);
+  assert.deepEqual(on('<meta name="twitter:url" content="/elsewhere">'), [true, true]);
+  assert.deepEqual(on('<meta name="twitter:domain" content="example.com">', ""), [true, true]);
+  // No documented reader, none ruled out: reported without a fix.
+  assert.deepEqual(on('<meta name="twitter:app:id:iphone" content="1">'), [true, false]);
+  assert.deepEqual(on('<meta name="twitter:made-up" content="x">'), [true, false]);
+  // A top-level tag in a fragment has no parent to find its og:* counterpart in.
+  const loose = portOf(`${og}<meta name="twitter:title" content="Post">`, 'meta[name^="twitter:"]');
+  assert.equal(match(loose, ctx), false);
+});
