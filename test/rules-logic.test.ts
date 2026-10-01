@@ -65,6 +65,17 @@ test("googlebot, googlebot-news: a token Google does not document trips", async 
   }
 });
 
+test("noai, noimageai: live on every name but Google's", async () => {
+  // DeviantArt defined both for every site; Google documents its list as complete.
+  for (const name of ["robots", "bingbot", "yandex", "applebot"]) {
+    assert.equal(await robotsTag(name, "noai, noimageai"), false, `${name} noai, noimageai`);
+  }
+  for (const name of ["googlebot", "googlebot-news"]) {
+    assert.equal(await robotsTag(name, "noai"), true, `${name} noai`);
+    assert.equal(await robotsTag(name, "noimageai"), true, `${name} noimageai`);
+  }
+});
+
 test("robots: a date folds its own comma and no more, so a token after it is still judged", async () => {
   assert.equal(await robots("unavailable_after: 2026-09-21, no-index"), true);
   assert.equal(await robots("unavailable_after: Sat, 25 Jun 2010 15:00:00 GMT, noodp"), true);

@@ -27,11 +27,20 @@ const GOOGLE_NAMES: ReadonlySet<string> = new Set([
 
 /**
  * `name="robots"` addresses every crawler, so a token is live when any crawler
- * documents it: Google's names, plus `noarchive` (Bing, Yandex), `nocache`
- * (Bing) and `archive` (Yandex). `noodp`, `noydir` and `nositelinkssearchbox`
- * stay out: no crawler documents them today.
+ * or tool documents it: Google's names, plus `noarchive` (Bing, Yandex),
+ * `nocache` (Bing), `archive` (Yandex), and `noai` and `noimageai`, which
+ * DeviantArt defined for every site and img2dataset honours.
+ * `noodp`, `noydir` and `nositelinkssearchbox` stay out: no crawler documents
+ * them today.
  */
-const ANY_CRAWLER_NAMES: ReadonlySet<string> = new Set([...GOOGLE_NAMES, "noarchive", "nocache", "archive"]);
+const ANY_CRAWLER_NAMES: ReadonlySet<string> = new Set([
+  ...GOOGLE_NAMES,
+  "noarchive",
+  "nocache",
+  "archive",
+  "noai",
+  "noimageai",
+]);
 
 /**
  * Google documents two crawler names and ignores other values, so those tags
