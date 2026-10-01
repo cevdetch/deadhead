@@ -47,11 +47,12 @@ export const GLOBAL = "__deadhead";
 
 /**
  * Exactly the keys the bookmarklet reads: the engine dispatches on selector,
- * kind, scope and match, and reports ruleId, severity, description,
- * replacement and detectability. The rest (title, pubDate, status,
- * standardsBasis, tags, impacts, related) is prose and site data that would
- * ride the javascript: URL unread; `fix` feeds `computeFix` alone, which the
- * bookmarklet swaps for a stub.
+ * kind, scope and match, and reports ruleId, severity, description and
+ * detectability. The rest (title, pubDate, status, standardsBasis, tags,
+ * impacts, related) is prose and site data that would ride the javascript:
+ * URL unread; `fix` feeds `computeFix` alone, which the bookmarklet swaps for
+ * a stub. `replacement` stays on the rule page each finding links to: it was
+ * a third of the payload (10.9 kB of 29.3) against the browsers' 64 kB cap.
  */
 export const SLIM_KEYS = [
   "ruleId",
@@ -62,7 +63,6 @@ export const SLIM_KEYS = [
   "scope",
   "selector",
   "match",
-  "replacement",
 ] as const;
 
 export type SlimMeta = Pick<RuleMeta, (typeof SLIM_KEYS)[number]>;
@@ -77,7 +77,6 @@ export function toSlimMeta(meta: RuleMeta): SlimMeta {
     scope: meta.scope,
     selector: meta.selector,
     match: meta.match,
-    replacement: meta.replacement,
   };
 }
 

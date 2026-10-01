@@ -44,14 +44,14 @@ test("slim literals carry exactly the keys the bookmarklet reads", () => {
     "detectability",
     "kind",
     "match",
-    "replacement",
     "ruleId",
     "scope",
     "selector",
     "severity",
   ]);
-  // Prose and site data must not ride the javascript: URL.
-  for (const dropped of ["title", "pubDate", "status", "standardsBasis", "tags", "impacts", "related", "fix"]) {
+  // Prose and site data must not ride the javascript: URL; the replacement
+  // lives on the rule page each finding links to.
+  for (const dropped of ["title", "pubDate", "status", "standardsBasis", "tags", "impacts", "related", "fix", "replacement"]) {
     assert.ok(!(dropped in slim), `${dropped} leaked into the slim literal`);
   }
 });
@@ -104,6 +104,8 @@ test("the URL helper stays import-free so the site can use it", async () => {
   const { bookmarkletUrl, MAX_URL_BYTES } = await import("../packages/browser/bookmarklet-url.ts");
   assert.equal(MAX_URL_BYTES, 65_536);
   assert.equal(bookmarkletUrl("a b#c%d"), "javascript:a%20b%23c%25d");
+  // The leading comment is for DevTools readers; a later comment is code's business.
+  assert.equal(bookmarkletUrl("/* deadhead\n * header */\nrun();/* x */"), "javascript:run();/*%20x%20*/");
 });
 test("bundleBookmarklet builds in memory and never touches .git", async () => {
   const { bundleBookmarklet } = await import("../scripts/build-bookmarklet.ts");

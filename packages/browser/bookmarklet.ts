@@ -40,7 +40,7 @@ li{padding:.6rem .8rem;border-bottom:1px solid #f0f0f0}
 .sev{display:inline-block;padding:0 .4em;border-radius:3px;color:#fff;font:11px/1.6 ui-monospace,monospace}
 .sev.harmful{background:#d7263d}.sev.deprecated{background:#e08700}.sev.unnecessary{background:#2d7dd2}
 code{font:11px/1.6 ui-monospace,monospace;color:#555}
-p{margin:.35rem 0}.fix{color:#1a7f37}
+p{margin:.35rem 0}
 a{display:block;color:#2d7dd2;font:11px/1.6 ui-monospace,monospace}
 `;
 
@@ -85,7 +85,6 @@ function render(findings: Finding[]): HTMLElement {
         document.createTextNode(" "),
         el("code", finding.ruleId),
         el("p", finding.message),
-        el("p", finding.replacement, "fix"),
       );
       const link = el("a", finding.url);
       link.href = finding.url;
@@ -112,8 +111,10 @@ async function inflate(payload: string): Promise<unknown> {
 
 export async function start(payload: string, logic: Record<string, MatchFn | CheckFn>): Promise<Finding[]> {
   // The payload leaves out `fix`: only `computeFix` reads it, and the
-  // bookmarklet build swaps that for a stub returning null.
-  const metas = (await inflate(payload)) as RuleMeta[];
+  // bookmarklet build swaps that for a stub returning null. It leaves out
+  // `replacement` too, for size; findings carry an empty one and link to the
+  // rule page, which has it.
+  const metas = ((await inflate(payload)) as RuleMeta[]).map((meta) => ({ ...meta, replacement: "" }));
   const rules: Rule[] = metas.map((meta) => {
     const fn = logic[meta.ruleId];
     // A module exporting only `fixable` inlines nothing: the DOM has no source
