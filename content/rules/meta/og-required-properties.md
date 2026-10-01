@@ -1,52 +1,78 @@
 ---
 ruleId: "meta/og-required-properties"
-title: "<meta property> missing required properties"
-description: "A page starting Open Graph markup without all four required properties ships broken cards."
+title: "Open Graph tags on a page with no og:image"
+description: "A page with Open Graph tags and no og:image shares a card without a picture; title, URL and description fall back."
 pubDate: "2026-09-21"
 status: "avoid"
-severity: "harmful"
+severity: "unnecessary"
 standardsBasis: "vendor"
 detectability: "yes"
 kind: "document"
 scope: "any"
 match: "logic"
 fix: { op: "none" }
-replacement: "Complete the set with true page values: <meta property=\"og:title\" content=\"The title\">, <meta property=\"og:type\" content=\"article\">, <meta property=\"og:url\" content=\"https://example.com/post\">, <meta property=\"og:image\" content=\"https://example.com/cover.jpg\">."
+replacement: "Add <meta property=\"og:image\" content=\"https://example.com/cover.jpg\"> with an absolute URL. <title>, rel=canonical and the meta description cover the rest."
 tags: ["social"]
 impacts: ["seo"]
-related: ["meta/og-name-attribute"]
+related: ["meta/og-name-attribute", "meta/og-relative-url", "meta/twitter-card-names"]
 ---
 
-A page carrying Open Graph tags without all four required properties ships a broken card. The set is title, type, url and image; a page with none of them is not this rule's business.
+A page with Open Graph tags and no `og:image` shares as a card without a picture. Of the four
+properties ogp.me calls required, the image is the one no other tag on the page stands in for.
+A page with no Open Graph tags is not this rule's business.
 
 ## Why avoid
 
-ogp.me names four required properties for every page. A page starting the set without finishing it promises a card it cannot render.
+A link preview takes its picture from `og:image`. Mastodon's extractor reads the image from that
+tag and from no other. Meta's crawler guesses one with internal heuristics when the tag is
+missing, and Meta warns the guess can miss the picture the author meant. Elsewhere the card
+is text, the same card a page with no Open Graph gets.
 
-A missing image means no image, a missing title means a scraped headline, and a missing url scatters likes and shares across duplicate addresses instead of aggregating them.
+The rest of the set has fallbacks. Meta and ogp.me both treat a page without `og:type` as
+`website`. Mastodon takes the title from `<title>`, the description from
+`<meta name="description">` and the URL from `<link rel="canonical">`, which it reads before
+`og:url`. A page carrying those three needs `og:image` alone for a link preview.
 
-Facebook asks the same four of every content type. A half-tagged page lands between explicit markup and heuristic guessing, with the tags suppressing guesses but missing the pieces.
+Write `og:image` and not its structured twin `og:image:url`. ogp.me defines the two as
+identical, `og:image` is the shorter tag, and Mastodon reads `og:image` and nothing else. The
+rule counts `og:image` alone; `og:image:secure_url` is an alternate address for the same
+image, not a replacement for it.
 
-The shape traps incremental adoption. The author adds two tags, sees a card of some kind, and never learns the remaining two were load-bearing.
+The gap costs the card its picture and breaks nothing else, which is why the rule rates it at
+the lowest severity.
 
 ## Use instead
 
-Emit the full required set with true values:
+Give the page its own title, description and canonical URL, and add the image:
 
 ```html
-<meta property="og:title" content="How to deadhead roses">
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://example.com/posts/my-post">
+<title>How to deadhead roses</title>
+<meta name="description" content="Pinch off spent blooms above the first five-leaflet leaf.">
+<link rel="canonical" href="https://example.com/posts/deadhead-roses">
 <meta property="og:image" content="https://example.com/cover.jpg">
 ```
 
+Add `og:title`, `og:description` or `og:url` where they say something the page's own tags do
+not. Meta asks for an `og:title` without the site name that `<title>` carries, and counts likes
+and shares against `og:url`. The rule leaves those choices to the author.
+
 ## Detectability
 
-Countable in one document pass, which is why this is a `kind: "document"` rule: no selector can say "some but not all". The logic in `packages/rules/logic/meta/og-required-properties.ts` censuses `property` tags starting with `og:`; zero such tags stays quiet, and any missing required name lands in the finding detail on `head`. The check reads attributes, never source offsets, so it reports in all three adapters.
+Countable in one document pass, which is why this is a `kind: "document"` rule: no selector can
+say "an `og:` tag but not this one". The logic in
+`packages/rules/logic/meta/og-required-properties.ts` collects every `property` value and reports
+on `head` when one starts with `og:` and none is `og:image`. A page with no `og:` tags stays
+quiet. `name`-form lookalikes count for nothing here; `meta/og-name-attribute` reports them. The
+check reads attributes, never source offsets, so it reports in all three adapters.
 
-A fragment, a file with no doctype and no `<html>` tag, is not checked: the other required properties can sit in another partial of the same page.
+The rule checks that the tag exists. A relative `content` is a different defect, which
+`meta/og-relative-url` reports.
+
+A fragment, a file with no doctype and no `<html>` tag, is not checked: the image can sit in
+another partial of the same page.
 
 ## Resources
 
-- [ogp.me: the Open Graph protocol](https://ogp.me/): four required properties for every page, with the permanent-ID role of `og:url`.
-- [Facebook: sharing for webmasters](https://developers.facebook.com/docs/sharing/webmasters/): the basic-tags table for every content type, plus heuristic guessing for untagged pages.
+- [ogp.me: the Open Graph protocol](https://ogp.me/): four required properties, "Any non-marked up webpage should be treated as og:type website", and `og:image:url` defined as "Identical to og:image".
+- [Meta: A Guide to Sharing for Webmasters](https://developers.facebook.com/docs/sharing/webmasters/): `og:type` defaults to `website`, `og:title` without branding, `og:url` aggregating likes and shares, and heuristic guessing when `og:image` is missing.
+- [Mastodon: link_details_extractor.rb](https://github.com/mastodon/mastodon/blob/main/app/lib/link_details_extractor.rb): the title falls back to `<title>`, the description to the meta description, the URL reads `rel=canonical` first, and the image reads `og:image` with no fallback.

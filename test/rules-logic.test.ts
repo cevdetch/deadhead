@@ -296,3 +296,25 @@ test("twitter-card-names: layout, attribution and override tags stay; duplicates
   const loose = portOf(`${og}<meta name="twitter:title" content="Post">`, 'meta[name^="twitter:"]');
   assert.equal(match(loose, ctx), false);
 });
+
+test("og-required-properties: og:image alone completes a card; the rest falls back", async () => {
+  const { check } = await import("../packages/rules/logic/meta/og-required-properties.ts");
+  const report = ((element: { tag: string }, extra: { detail: string }) => ({ tag: element.tag, ...extra })) as unknown as RuleContext["report"];
+  const details = (head: string, page = true): unknown[] => {
+    const html = page ? `<!doctype html><html><head>${head}</head></html>` : head;
+    return check(parseHtml(html).doc, { ...ctx, report });
+  };
+  const image = '<meta property="og:image" content="https://example.com/c.jpg">';
+  // og:type, og:url, og:title and og:description no longer count.
+  assert.deepEqual(details(image), []);
+  assert.deepEqual(details(`<title>Post</title>${image}`), []);
+  assert.deepEqual(details('<meta property="og:title" content="Post">'), [{ tag: "head", detail: "missing og:image" }]);
+  // The structured forms stand in for nothing: Mastodon reads og:image alone.
+  assert.equal(details('<meta property="og:image:url" content="https://example.com/c.jpg">').length, 1);
+  assert.equal(details('<meta property="og:image:secure_url" content="https://example.com/c.jpg">').length, 1);
+  assert.deepEqual(details(' <meta property=" OG:Image " content="https://example.com/c.jpg">'), []);
+  // No Open Graph, a name-form lookalike, or a fragment: nothing to complete here.
+  assert.deepEqual(details("<title>Post</title>"), []);
+  assert.deepEqual(details('<meta name="og:title" content="Post">'), []);
+  assert.deepEqual(details('<meta property="og:title" content="Post">', false), []);
+});
