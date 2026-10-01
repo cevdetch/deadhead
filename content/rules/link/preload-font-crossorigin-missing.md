@@ -14,7 +14,7 @@ fix: { op: "none" }
 replacement: "Add crossorigin to every font preload, same-origin or not: <link rel=\"preload\" href=\"/fonts/inter.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>."
 tags: ["cors", "resource-hints"]
 impacts: ["performance"]
-related: ["link/preload-as-missing"]
+related: ["link/preload-as-missing", "link/preload-fetch-crossorigin-missing"]
 ---
 
 `<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2">` is the font

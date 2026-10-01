@@ -14,7 +14,7 @@ fix: { op: "none" }
 replacement: "Say what the resource is: <link rel=\"preload\" href=\"/hero.avif\" as=\"image\">. Fonts also need type and crossorigin."
 tags: ["resource-hints"]
 impacts: ["performance"]
-related: ["link/preload-font-crossorigin-missing"]
+related: ["link/preload-font-crossorigin-missing", "link/preload-fetch-crossorigin-missing"]
 ---
 
 A preload without `as` fetches nothing. `<link rel="preload" href="/fonts/inter.woff2">`

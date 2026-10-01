@@ -14,7 +14,7 @@ fix: { op: "none" }
 replacement: "Swap the rel token to modulepreload and keep the same href: <link rel=\"modulepreload\" href=\"/app.js\">. Do not add crossorigin to the preload instead."
 tags: ["resource-hints", "scripting"]
 impacts: ["performance"]
-related: ["link/preload-as-missing", "link/preload-font-crossorigin-missing"]
+related: ["link/preload-as-missing", "link/preload-font-crossorigin-missing", "link/preload-fetch-crossorigin-missing"]
 ---
 
 A `preload as=script` for a module script downloads the file twice. The preload
