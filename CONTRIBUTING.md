@@ -117,6 +117,12 @@ stopped being true because browsers changed, is the most useful issue you can fi
 - `packages/core` and `packages/rules` have zero runtime dependencies. `parse5`
   belongs to the CLI adapter alone.
 - Run `pnpm typecheck` before pushing.
+- PR titles are Conventional Commits, because a squash merge makes the title the
+  commit subject and git-cliff (`cliff.toml`) builds the changelog from those subjects:
+  `feat(rule): meta/keywords` for a new rule, `fix(rule): …` for a rule fix,
+  `fix(core): …`, `feat(cli): …`, `perf: …`, and `site: …`, `docs: …`, `chore: …`,
+  `ci: …` for changes that stay out of the changelog. A `!` before the colon marks a
+  breaking change. The PR title workflow checks the shape.
 
 ## Architecture
 

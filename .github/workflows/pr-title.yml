@@ -1,0 +1,34 @@
+name: PR title
+
+# Squash merges use the PR title as the commit subject, and git-cliff
+# (cliff.toml) builds the changelog from those subjects. So the title
+# must be a Conventional Commit: `feat(rule): meta/keywords`, `fix(core): …`,
+# `site: …`. Its own workflow, so editing a title re-runs this check alone.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+# A newer edit of the same PR supersedes an older check.
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Conventional Commit subject
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|perf|refactor|docs|chore|ci|build|test|style|site|revert)(\([a-z0-9/-]+\))?!?: [^ ].*$'
+          if printf '%s' "$TITLE" | grep -Eq "$pattern"; then
+            echo "ok: $TITLE"
+          else
+            echo "::error::PR title must look like 'feat(rule): meta/keywords' or 'fix(core): what changed' (types: feat fix perf refactor docs chore ci build test style site revert)"
+            exit 1
+          fi

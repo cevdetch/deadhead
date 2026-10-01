@@ -79,7 +79,7 @@ export const TAGS = [
 ] as const;
 
 /** `namespace/name`, kebab-case. Shared by validate-rules and the docs site. */
-export const RULE_ID = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+export const RULE_ID: RegExp = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 
 export type Status = (typeof STATUS)[number];
 export type Severity = (typeof SEVERITY)[number];

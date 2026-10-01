@@ -210,7 +210,10 @@ export async function lintFilesParallel(
 ): Promise<{ results: FileResult[]; visitBody: boolean }> {
   const slices: string[][] = Array.from({ length: jobs }, () => []);
   files.forEach((file, i) => slices[i % jobs]!.push(file));
-  const workerUrl = new URL("./worker.ts", import.meta.url);
+  // The worker sits next to this module: worker.ts in the repo, worker.js in
+  // the published bundle. A computed specifier keeps the bundler from
+  // treating it as an asset to copy.
+  const workerUrl = new URL(import.meta.url.endsWith(".ts") ? "./worker.ts" : "./worker.js", import.meta.url);
   const parts = await Promise.all(
     slices.filter((s) => s.length > 0).map(
       (slice) =>

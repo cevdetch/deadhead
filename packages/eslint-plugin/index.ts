@@ -19,6 +19,8 @@
  */
 
 import * as htmlParser from "@html-eslint/parser";
+import type { ESLint, Linter, Rule } from "eslint";
+import manifest from "./package.json" with { type: "json" };
 
 import { type CompiledRules, compile, runCompiled } from "../core/engine.ts";
 import { parseSuppressions } from "../core/suppressions.ts";
@@ -28,25 +30,6 @@ import { ruleUrl } from "../core/vocabulary.ts";
 import { RULES as loaded } from "../rules/registry.gen.ts";
 import { fromProgram } from "./adapter.ts";
 
-/** The slice of ESLint's API this plugin touches, described structurally. */
-type SourceCode = {
-  getText(): string;
-  getLocFromIndex(index: number): { line: number; column: number };
-};
-type Fixer = { replaceTextRange(range: [number, number], text: string): unknown };
-type Context = {
-  sourceCode: SourceCode;
-  report(descriptor: {
-    loc: { start: { line: number; column: number }; end: { line: number; column: number } };
-    messageId: string;
-    data: Record<string, string>;
-    fix?: (fixer: Fixer) => unknown;
-  }): void;
-};
-type EslintRule = {
-  meta: Record<string, unknown>;
-  create(context: Context): Record<string, (node: unknown) => void>;
-};
 
 /**
  * A fix is offered only when the engine produced one. It is `null` for
@@ -56,16 +39,16 @@ type EslintRule = {
  */
 const fixDescriptor = (
   fix: Finding["fix"],
-): { fix?: (fixer: Fixer) => unknown } =>
+): { fix?: (fixer: Rule.RuleFixer) => Rule.Fix } =>
   fix === null
     ? {}
-    : { fix: (fixer: Fixer) => fixer.replaceTextRange([fix.range[0], fix.range[1]], fix.text) };
+    : { fix: (fixer: Rule.RuleFixer) => fixer.replaceTextRange([fix.range[0], fix.range[1]], fix.text) };
 
 /**
  * `harmful` is a problem; the rest are suggestions. ESLint's `type` drives
  * editor presentation, not severity — severity is the user's config to set.
  */
-const eslintType = (rule: DeadheadRule): string =>
+const eslintType = (rule: DeadheadRule): "problem" | "suggestion" =>
   rule.meta.severity === "harmful" ? "problem" : "suggestion";
 
 /** One run per file: the rules enabled for it, and their findings once computed. */
@@ -92,7 +75,7 @@ function findingsFor(run: FileRun, program: unknown, source: string): Map<string
   return grouped;
 }
 
-function toEslintRule(rule: DeadheadRule): EslintRule {
+function toEslintRule(rule: DeadheadRule): Rule.RuleModule {
   return {
     meta: {
       type: eslintType(rule),
@@ -125,7 +108,7 @@ function toEslintRule(rule: DeadheadRule): EslintRule {
       run.requested.add(rule.meta.ruleId);
       const fileRun = run;
       return {
-        Program(node: unknown) {
+        Program(node) {
           const findings = findingsFor(fileRun, node, context.sourceCode.getText()).get(rule.meta.ruleId) ?? [];
           for (const finding of findings) {
             const range = finding.range;
@@ -152,32 +135,34 @@ function toEslintRule(rule: DeadheadRule): EslintRule {
   };
 }
 
-export const rules: Record<string, EslintRule> = Object.fromEntries(
+export const rules: Record<string, Rule.RuleModule> = Object.fromEntries(
   loaded.map((rule) => [rule.meta.ruleId, toEslintRule(rule)]),
 );
 
-export const meta = { name: "eslint-plugin-deadhead", version: "0.0.0" };
+/** `namespace` is the prefix users type: `deadhead/meta/keywords`. */
+export const meta: { name: string; version: string; namespace: string } = {
+  name: manifest.name,
+  version: manifest.version,
+  namespace: "deadhead",
+};
 
 const levels = (list: DeadheadRule[]): Record<string, "error" | "warn"> =>
   Object.fromEntries(list.map((r) => [`deadhead/${r.meta.ruleId}`, r.meta.severity === "harmful" ? "error" : "warn"]));
 
-type FlatConfig = {
-  name: string;
-  files: string[];
-  plugins: Record<string, unknown>;
-  languageOptions: Record<string, unknown>;
-  rules: Record<string, "error" | "warn">;
-};
 
-const plugin = {
+/** Test hook: engine passes so far. Not part of the public API. */
+export const __passes = (): number => passes;
+
+type Presets = { recommended: Linter.Config; all: Linter.Config };
+type DeadheadPlugin = ESLint.Plugin & { configs: Presets };
+
+const plugin: DeadheadPlugin = {
   meta,
   rules,
-  configs: {} as { recommended: FlatConfig; all: FlatConfig },
-  /** Test hook: engine passes so far. Not part of the public API. */
-  __passes: () => passes,
+  configs: {} as Presets,
 };
 
-const preset = (name: string, list: DeadheadRule[]) => ({
+const preset = (name: string, list: DeadheadRule[]): Linter.Config => ({
   name: `deadhead/${name}`,
   files: ["**/*.html"],
   plugins: { deadhead: plugin },
@@ -187,5 +172,5 @@ const preset = (name: string, list: DeadheadRule[]) => ({
 
 plugin.configs.recommended = preset("recommended", loaded.filter((r) => r.meta.severity !== "unnecessary"));
 plugin.configs.all = preset("all", loaded);
-export const configs = plugin.configs;
+export const configs: Presets = plugin.configs;
 export default plugin;

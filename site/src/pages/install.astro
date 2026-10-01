@@ -11,12 +11,13 @@ const href = bookmarkletUrl(bundle);
 >
     <h1>Install</h1>
     <p class="lede">
-      Node 24 or newer. No configuration is required to start. The defaults
-      are the point.
+      Node 24.8 or newer; both packages are ESM only. No configuration is
+      required to start. The defaults are the point.
     </p>
 
     <h2>CLI</h2>
-    <pre><code>npx deadhead dist</code></pre>
+    <pre><code>npx deadhead dist
+npm install --save-dev deadhead</code></pre>
     <p>
       It takes files and directories, and expands globs itself so they
       behave the same in every shell:
@@ -25,7 +26,12 @@ const href = bookmarkletUrl(bundle);
 deadhead "src/**/*.html"          # quote it; the CLI does the expanding
 deadhead --format=sarif dist      # stylish (default), json, sarif
 deadhead --fail-on=harmful dist   # exit 1 only on harmful findings
-deadhead --fix dist               # rewrite files, then report what is left</code></pre>
+deadhead --fix dist               # rewrite files, then report what is left
+deadhead --jobs 4 dist            # large trees in worker threads
+deadhead --quiet dist             # only findings at or above --fail-on
+deadhead --output-file r.sarif --format=sarif dist
+deadhead --list-rules             # every rule, then exit
+cat page.html | deadhead - --stdin-filename page.html</code></pre>
     <p>
       Exit codes are the CI contract: <strong>0</strong> nothing at or above the{" "}
       <code>--fail-on</code> threshold, <strong>1</strong> threshold met,{" "}
@@ -65,12 +71,14 @@ deadhead --fix dist               # rewrite files, then report what is left</cod
 &lt;!-- deadhead-enable --&gt;</code></pre>
     <p>
       A bare <code>deadhead-disable</code> with no rule id suppresses everything
-      until the matching enable. The engine skips contents of{" "}
-      <code>&lt;pre&gt;</code>,{" "}
-      <code>&lt;code&gt;</code>,{" "}
-      <code>&lt;textarea&gt;</code>,{" "}
-      <code>&lt;samp&gt;</code> and{" "}
-      <code>&lt;kbd&gt;</code> as content rather than markup.
+      until the matching enable. The engine reads the contents of{" "}
+      <code>&lt;pre&gt;</code>, <code>&lt;code&gt;</code>,{" "}
+      <code>&lt;textarea&gt;</code>, <code>&lt;samp&gt;</code> and{" "}
+      <code>&lt;kbd&gt;</code> as content rather than markup, and skips{" "}
+      <code>&lt;iframe&gt;</code>, <code>&lt;noembed&gt;</code>,{" "}
+      <code>&lt;noframes&gt;</code>, <code>&lt;noscript&gt;</code>,{" "}
+      <code>&lt;plaintext&gt;</code>, <code>&lt;title&gt;</code> and{" "}
+      <code>&lt;xmp&gt;</code>, which an HTML parser reads as text.
     </p>
 
     <h2>Bookmarklet</h2>
@@ -92,7 +100,19 @@ deadhead --fix dist               # rewrite files, then report what is left</cod
       <code>eslint-plugin-deadhead</code> reports the same findings through{" "}
       <code>@html-eslint/parser</code>, with autofix. It is a convenience for
       editor feedback: if your head tags live in JSX, Vue or Svelte, an HTML
-      parser will not see them, and the bookmarklet will.
+      parser will not see them, and the bookmarklet will. It needs ESLint 10.
+    </p>
+    <pre><code>npm install --save-dev eslint eslint-plugin-deadhead</code></pre>
+    <pre><code>// eslint.config.js
+import &lbrace; defineConfig &rbrace; from "eslint/config";
+import deadhead from "eslint-plugin-deadhead";
+
+export default defineConfig([deadhead.configs.recommended]);</code></pre>
+    <p>
+      <code>recommended</code> turns on every harmful and deprecated rule:
+      harmful ones are errors and the rest warnings. <code>all</code> adds the
+      unnecessary ones. Rule names are the rule ids:{" "}
+      <code>deadhead/meta/keywords</code>.
     </p>
 
     <p>

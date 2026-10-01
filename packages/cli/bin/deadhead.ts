@@ -40,7 +40,7 @@ const REPORTERS: Record<string, Reporter> = { stylish, json };
 
 const readVersion = async (): Promise<string> => {
   const pkg: { version?: string } = JSON.parse(
-    await readFile(new URL("../../../package.json", import.meta.url), "utf8"),
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
   );
   return pkg.version ?? "0.0.0";
 };

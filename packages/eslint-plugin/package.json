@@ -1,0 +1,20 @@
+{
+  "name": "eslint-plugin-deadhead",
+  "version": "0.1.0",
+  "description": "ESLint plugin for deadhead: deprecated, unnecessary and harmful HTML, with researched explanations and autofix.",
+  "keywords": ["eslint", "eslintplugin", "eslint-plugin", "html", "head", "meta"],
+  "homepage": "https://deadhead.cevdet.ch",
+  "bugs": "https://github.com/cevdetta/deadhead/issues",
+  "repository": { "type": "git", "url": "git+https://github.com/cevdetta/deadhead.git", "directory": "packages/eslint-plugin" },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "engines": { "node": ">=24.8.0" },
+  "dependencies": { "@html-eslint/parser": "0.66.1" },
+  "peerDependencies": { "eslint": "^10.0.0" },
+  "publishConfig": { "access": "public" }
+}

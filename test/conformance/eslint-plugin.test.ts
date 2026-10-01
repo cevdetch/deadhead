@@ -17,7 +17,7 @@ import { type ESLint, Linter } from "eslint";
 
 import { collectFiles, lintFiles } from "../../packages/cli/lint.ts";
 import { loadRules } from "../../packages/rules/load.ts";
-import plugin from "../../packages/eslint-plugin/index.ts";
+import plugin, { __passes, configs, rules as pluginRules } from "../../packages/eslint-plugin/index.ts";
 
 const rules = await loadRules();
 const linter = new Linter();
@@ -113,23 +113,23 @@ test("only the enabled rule runs, so severity stays the user's to configure", as
 });
 
 test("the shipped configs reference rules that exist", () => {
-  const names = new Set(Object.keys(plugin.rules).map((id) => `deadhead/${id}`));
-  for (const [config, body] of Object.entries(plugin.configs)) {
-    const referenced = Object.keys(body.rules);
+  const names = new Set(Object.keys(pluginRules).map((id) => `deadhead/${id}`));
+  for (const [config, body] of Object.entries(configs)) {
+    const referenced = Object.keys(body.rules ?? {});
     assert.ok(referenced.length > 0, `${config} enables nothing`);
     for (const id of referenced) assert.ok(names.has(id), `${config} references unknown ${id}`);
   }
   // `recommended` is the subset that is not merely dead weight.
   assert.ok(
-    Object.keys(plugin.configs.recommended.rules).length <
-      Object.keys(plugin.configs.all.rules).length,
+    Object.keys(configs.recommended.rules ?? {}).length <
+      Object.keys(configs.all.rules ?? {}).length,
     "recommended should be narrower than all",
   );
 });
 
 test("every ESLint rule advertises its documentation URL", () => {
-  for (const [ruleId, rule] of Object.entries(plugin.rules)) {
-    const docs = rule.meta["docs"] as { url?: string; description?: string } | undefined;
+  for (const [ruleId, rule] of Object.entries(pluginRules)) {
+    const docs = rule.meta?.docs;
     assert.equal(docs?.url, `https://deadhead.cevdet.ch/rules/${ruleId}`);
     assert.ok((docs?.description ?? "").length > 0);
   }
@@ -171,9 +171,9 @@ test("ESLint's autofix produces byte-identical output to the CLI's --fix", async
 
 test("a rule with no fix is never declared fixable", () => {
   for (const rule of rules) {
-    const eslintRule = plugin.rules[rule.meta.ruleId];
+    const eslintRule = pluginRules[rule.meta.ruleId];
     assert.ok(eslintRule);
-    const fixable = eslintRule.meta["fixable"];
+    const fixable = eslintRule.meta?.fixable;
     if (rule.meta.fix.op === "none") {
       assert.equal(fixable, undefined, `${rule.meta.ruleId} claims fixable but has no fix op`);
     } else {
@@ -197,19 +197,15 @@ test("ESLint never offers a fix the CLI would refuse", async () => {
 test("one engine pass per file, however many rules are on", async () => {
   // The plugin counts its own engine passes (a test hook); patching an ESM
   // binding from outside is not possible.
-  const plugin = (await import("../../packages/eslint-plugin/index.ts")).default as unknown as {
-    __passes?: () => number;
-    configs: { all: { rules: Record<string, "error" | "warn"> } };
-  };
   const { ESLint } = await import("eslint");
   const parser = await import("@html-eslint/parser");
   const eslint = new ESLint({
     overrideConfigFile: true,
-    overrideConfig: [{ files: ["**/*.html"], languageOptions: { parser }, plugins: { deadhead: plugin as never }, rules: plugin.configs.all.rules }],
+    overrideConfig: [{ files: ["**/*.html"], languageOptions: { parser }, plugins: { deadhead: plugin }, rules: configs.all.rules ?? {} }],
   });
-  const before = plugin.__passes?.() ?? 0;
+  const before = __passes();
   await eslint.lintText("<!doctype html><html><head><title>x</title></head><body></body></html>", { filePath: "a.html" });
-  assert.equal((plugin.__passes?.() ?? 0) - before, 1);
+  assert.equal(__passes() - before, 1);
 });
 
 test("configs.recommended is a complete flat config", async () => {

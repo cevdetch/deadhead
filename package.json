@@ -13,12 +13,15 @@
     "build": "node scripts/build-rules.ts",
     "build:css": "node scripts/build-css.ts",
     "build:bookmarklet": "node --disable-warning=ExperimentalWarning scripts/build-bookmarklet.ts",
+    "build:packages": "pnpm build && node scripts/build-packages.ts",
     "bench": "node scripts/bench.ts",
     "test": "node scripts/build-rules.ts && node --test",
     "test:conformance": "node scripts/build-rules.ts && node --test test/conformance/",
     "check": "node packages/cli/bin/deadhead.ts",
     "check:self": "node packages/cli/bin/deadhead.ts \"test/fixtures/*/*/valid.html\"",
     "check:bookmarklet": "node scripts/check-bookmarklet-csp.ts",
+    "check:packages": "pnpm build:packages && node scripts/check-packages.ts",
+    "smoke:packages": "node scripts/smoke-packages.ts",
     "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist && node scripts/site-budget.ts site/dist && node scripts/site-seo.ts site/dist",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/browser/tsconfig.json && tsc --noEmit -p test/conformance/tsconfig.json",
     "validate:rules": "node scripts/validate-rules.ts",
@@ -26,8 +29,7 @@
     "site:build": "pnpm build && pnpm build:css && pnpm build:bookmarklet && pnpm --filter @deadhead/site build",
     "site:preview": "pnpm --filter @deadhead/site preview",
     "site:check": "pnpm --filter @deadhead/site check",
-    "lint:deps": "e18e-cli analyze --log-level error --report-level warn",
-    "prepublishOnly": "publint"
+    "lint:deps": "e18e-cli analyze --log-level error --report-level warn"
   },
   "devDependencies": {
     "@e18e/cli": "0.7.0",
@@ -38,6 +40,7 @@
     "parse5": "^8.0.1",
     "publint": "^0.3.24",
     "rolldown": "^1.2.9",
+    "rolldown-plugin-dts": "0.28.6",
     "typescript": "^7.0.2",
     "yaml": "^2.9.0"
   },

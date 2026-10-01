@@ -1,0 +1,80 @@
+name: Release
+
+# A pushed v* tag (signed, pushed by the maintainer from main) builds, tests
+# and stages both packages. Nothing reaches npm until the maintainer approves
+# each staged package with 2FA: `npm stage list`, then `npm stage approve`.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+# One release at a time, and never cancelled halfway through staging.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The trusted publisher on npmjs.com names this workflow and environment.
+    environment: npm
+    permissions:
+      contents: write # gh release create
+      id-token: write # npm trusted publishing (OIDC); provenance follows from it
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3
+        with:
+          runtime: node@24
+          require-lockfile: true
+
+      - name: Tag matches both manifests
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          for pkg in packages/cli packages/eslint-plugin; do
+            test "v$(node -p "require('./$pkg/package.json').version")" = "$TAG"
+          done
+
+      - run: pnpm validate:rules
+      - run: pnpm build
+      - run: pnpm build:css
+      - run: pnpm build:bookmarklet
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm check:packages
+      # Packs into tarballs/, installs and uses them. The same files are staged
+      # below, so what was tested is what ships.
+      - run: node scripts/smoke-packages.ts --out tarballs
+
+      # Node 24 ships npm 11.19: `stage` needs 11.15, OIDC 11.5.1. No token and
+      # no registry-url: trusted publishing exchanges this job's OIDC token.
+      # A version already on npm (0.1.0, published by hand before trusted
+      # publishing could exist) is left alone; the release notes still follow.
+      - name: Stage both packages
+        run: |
+          npm --version
+          for pkg in packages/cli packages/eslint-plugin; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            version=$(node -p "require('./$pkg/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already on npm; not staging it"
+              continue
+            fi
+            npm stage publish "tarballs/$name-$version.tgz" --access public
+          done
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # The section headed "## X.Y.Z" or "## X.Y.Z - <date>", up to the next one.
+          awk -v v="## ${TAG#v}" '$0==v || index($0, v " - ")==1 {f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
+          test -s notes.md
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file notes.md

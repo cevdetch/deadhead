@@ -36,28 +36,20 @@ generated from those documents. If a rule cannot be explained, it does not ship.
 
 ## Requirements
 
-- Node `>=24.0.0` (enforced at install time via `engine-strict=true` in [`.npmrc`](.npmrc))
-- pnpm (version pinned in the `packageManager` field of [`package.json`](package.json))
+Node 24.8 or newer. Both packages are ESM only, and the ESLint plugin needs ESLint 10.
 
 ## Install
 
 ```bash
-pnpm install
+npm install --save-dev deadhead                        # the CLI
+npm install --save-dev eslint eslint-plugin-deadhead   # the ESLint plugin
 ```
 
 ## Usage
 
-> Not yet published. From a clone: `pnpm install && pnpm build && pnpm check <path>`.
-
-Build the rule set from the markdown source of truth, then run the CLI:
-
 ```bash
-pnpm build
-pnpm check -- path/to/your/html
+npx deadhead dist
 ```
-
-`pnpm build` comes first: it generates the rule registry typecheck and tests
-read, so run it before `pnpm typecheck` on a fresh clone.
 
 `deadhead` takes files, directories, or globs -- it expands globs itself, so they
 behave the same in every shell:
@@ -233,18 +225,13 @@ drawing it would outline markup the engine passes.
 
 ```js
 // eslint.config.js
-import htmlParser from "@html-eslint/parser";
+import { defineConfig } from "eslint/config";
 import deadhead from "eslint-plugin-deadhead";
 
-export default [
-  {
-    files: ["**/*.html"],
-    languageOptions: { parser: htmlParser },
-    plugins: { deadhead },
-    rules: deadhead.configs.recommended.rules,
-  },
-];
+export default defineConfig([deadhead.configs.recommended]);
 ```
+
+Each config applies to `**/*.html` with `@html-eslint/parser`. The plugin needs ESLint 10.
 
 Rule names are the `ruleId` verbatim (`deadhead/meta/http-equiv-x-ua-compatible`),
 because ESLint splits an unscoped rule id on its first slash. The ESLint config, the CLI
@@ -275,6 +262,15 @@ list. It grows one researched rule at a time, and that is the bottleneck by desi
 
 One rule per issue, one rule per pull request. Open a **New rule** issue; the form is
 the research checklist. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Working from a clone needs Node 24 or newer (`engine-strict=true` in [`.npmrc`](.npmrc))
+and pnpm at the version pinned in [`package.json`](package.json)'s `packageManager`:
+
+```bash
+pnpm install
+pnpm build              # generates the rule registry that typecheck and tests read
+pnpm check path/to/html
+```
 
 ## License
 

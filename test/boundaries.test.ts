@@ -11,6 +11,8 @@ async function specifiers(dir: string): Promise<{ file: string; spec: string }[]
   const out: { file: string; spec: string }[] = [];
   for (const entry of await readdir(join(ROOT, dir), { recursive: true })) {
     if (!entry.endsWith(".ts")) continue;
+    // A published package has its own node_modules and a built dist/; neither is source.
+    if (/(^|[\\/])(node_modules|dist)[\\/]/.test(entry)) continue;
     const file = `${dir}/${entry.split("\\").join("/")}`;
     const text = await readFile(join(ROOT, file), "utf8");
     for (const m of text.matchAll(SPEC)) out.push({ file, spec: m[1]! });

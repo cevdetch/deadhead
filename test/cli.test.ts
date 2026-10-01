@@ -105,7 +105,7 @@ test("--help and --version exit 0 and write to stdout", async () => {
   assert.match(help.stdout, /Usage: deadhead/);
 
   const pkg: { version: string } = JSON.parse(
-    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+    await readFile(new URL("../packages/cli/package.json", import.meta.url), "utf8"),
   );
   const version = deadhead("--version");
   assert.equal(version.status, 0);

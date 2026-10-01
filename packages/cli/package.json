@@ -1,0 +1,20 @@
+{
+  "name": "deadhead",
+  "version": "0.1.0",
+  "description": "Lint HTML for deprecated, unnecessary and harmful markup. Every finding links to a researched explanation with sources.",
+  "keywords": ["html", "lint", "linter", "head", "meta", "seo", "cli"],
+  "homepage": "https://deadhead.cevdet.ch",
+  "bugs": "https://github.com/cevdetta/deadhead/issues",
+  "repository": { "type": "git", "url": "git+https://github.com/cevdetta/deadhead.git", "directory": "packages/cli" },
+  "license": "MIT",
+  "type": "module",
+  "bin": { "deadhead": "./dist/deadhead.js" },
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "engines": { "node": ">=24.8.0" },
+  "dependencies": { "parse5": "^8.0.1" },
+  "publishConfig": { "access": "public" }
+}

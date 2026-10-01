@@ -1,0 +1,53 @@
+# git-cliff configuration (https://git-cliff.org). Run by hand, never installed:
+#   uvx git-cliff@2.14.2 --tag vX.Y.Z --unreleased --prepend CHANGELOG.md
+# (or pnpm dlx git-cliff@2.14.2 with the same arguments). It writes the section
+# for the commits since the last tag; the 0.1.0 section is written by hand,
+# because rule ids were renamed before the first release (roadmap D4) and the
+# commits before it name ids that no longer exist.
+# Pull request titles are Conventional Commits (.github/workflows/pr-title.yml)
+# and become the squash-merge subjects this reads.
+
+[changelog]
+header = """
+# Changelog
+
+Both packages, `deadhead` and `eslint-plugin-deadhead`, share one version.
+Adding or renaming a rule is a minor release; prose-only and fix-only changes
+are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
+is marked as breaking.
+
+"""
+body = """
+## {{ version | trim_start_matches(pat="v") }} - {{ timestamp | date(format="%Y-%m-%d") }}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% for commit in commits %}
+{%- set words = commit.message | split(pat=" ") %}
+- {% if commit.breaking %}**Breaking:** {% endif %}\
+{% if commit.group is containing("rule") or commit.group is containing("Rule") %}`{{ words | first }}` {{ words | slice(start=1) | join(sep=" ") }}\
+{% else %}{{ commit.message | upper_first }}{% endif %}\
+{% endfor %}
+{% endfor %}
+"""
+trim = true
+postprocessors = [
+  { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/cevdetta/deadhead/pull/${1}))" },
+]
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+filter_commits = true
+tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+sort_commits = "oldest"
+commit_parsers = [
+  # The docs site, the build and the repository itself reach neither package.
+  { message = "^(feat|fix)\\(site\\)", skip = true },
+  { message = "^(site|chore|ci|docs|build|test|refactor|style|revert)", skip = true },
+  { message = "^feat\\(rule\\)", group = "<!-- 0 -->New rules" },
+  { message = "^fix\\(rule\\)", group = "<!-- 1 -->Rule fixes" },
+  { message = "^feat", group = "<!-- 2 -->Features" },
+  { message = "^fix", group = "<!-- 3 -->Fixes" },
+  { message = "^perf", group = "<!-- 4 -->Performance" },
+  { message = ".*", skip = true },
+]
