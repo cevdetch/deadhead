@@ -88,6 +88,7 @@ const SELECTOR_OWNED: ReadonlySet<string> = new Set([
   "content-type", // meta/http-equiv-content-type
   "default-style", // meta/http-equiv-default-style
   "description", // meta/http-equiv-description
+  "origin-trial", // meta/http-equiv-origin-trial
   "pics-label", // meta/http-equiv-pics-p3p
   "p3p", // meta/http-equiv-pics-p3p
   "refresh", // meta/http-equiv-refresh

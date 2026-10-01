@@ -5,9 +5,8 @@ import { OWNED_HTTP_EQUIV } from "../../lib/http-equiv.ts";
 /**
  * The WHATWG pragma keywords, and nothing else.
  *
- * `origin-trial` stays out on purpose: Chromium and Firefox enroll trials
- * from the tag, but it has no spec entry, so the rule reports it and leaves
- * the edit to the author (fix: none).
+ * `origin-trial` has no spec entry either; `meta/http-equiv-origin-trial`
+ * owns it and reports a tag once its tokens expire.
  *
  * Compared ASCII case-insensitively, as an enumerated attribute demands.
  */
@@ -26,8 +25,8 @@ const ALLOWED: ReadonlySet<string> = new Set([
  * exactly when its value is neither a WHATWG pragma-table keyword nor a
  * value some other rule already owns (`OWNED_HTTP_EQUIV`, `lib/http-equiv.ts`):
  * such a value is no registered pragma, and no other rule reports it. The
- * rule reports without autofixing, since `origin-trial` still enrolls
- * trials in some engines today.
+ * rule reports without autofixing: MDN notes that some browsers honour
+ * extra values, so a tag can still do something in one engine.
  */
 export const match: MatchFn = (element) => {
   const value = element.attr("http-equiv");

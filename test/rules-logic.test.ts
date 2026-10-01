@@ -392,3 +392,27 @@ test("base-position: the capo.js top group may precede <base>; anything else is 
   // A fragment's top-level <base> has no parent to read.
   assert.deepEqual(check(parseHtml(`<title>T</title>${base}`).doc, { ...ctx, report }), []);
 });
+
+test("http-equiv-origin-trial: reports a tag whose every Chromium token has expired", async () => {
+  const { check } = await import("../packages/rules/logic/meta/http-equiv-origin-trial.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const token = (expiry: number, version = 3): string => {
+    const payload = Buffer.from(JSON.stringify({ origin: "https://example.com:443", feature: "F", expiry }));
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(payload.length);
+    return Buffer.concat([Buffer.from([version]), Buffer.alloc(64), length, payload]).toString("base64");
+  };
+  const details = (content: string, equiv = "origin-trial"): unknown[] =>
+    check(parseHtml(`<!doctype html><html><head><meta http-equiv="${equiv}" content="${content}"></head></html>`).doc, { ...ctx, report });
+  const past = 1700000000;
+  const future = 4102444800;
+  assert.deepEqual(details(token(past)), ["F expired 2023-11-14"]);
+  assert.deepEqual(details(token(past, 2), " Origin-Trial "), ["F expired 2023-11-14"]);
+  assert.deepEqual(details(`${token(past)}, ${token(past)}`), ["F expired 2023-11-14; F expired 2023-11-14"]);
+  // A live token, a token in another layout, a placeholder or no token: quiet.
+  assert.deepEqual(details(token(future)), []);
+  assert.deepEqual(details(`${token(past)}, ${token(future)}`), []);
+  assert.deepEqual(details(token(past, 1)), []);
+  assert.deepEqual(details("TOKEN_GOES_HERE"), []);
+  assert.deepEqual(details(""), []);
+});
