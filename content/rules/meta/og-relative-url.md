@@ -5,7 +5,7 @@ description: "Relative preview URLs point nowhere for crawlers; write absolute h
 pubDate: "2026-09-14"
 status: "avoid"
 severity: "harmful"
-standardsBasis: "community"
+standardsBasis: "vendor"
 detectability: "yes"
 kind: "element"
 scope: "head"
@@ -19,10 +19,8 @@ related: ["head/canonical-multiple", "meta/twitter-card-names"]
 ---
 
 A relative `og:image` points nowhere. `<meta property="og:image" content="/images/cover.jpg">`
-looks correct from inside the site:
-the path resolves and the file exists. But Open Graph values aren't read
-by a browser on your page. They're read by a scraper that fetched your HTML to build a link
-preview somewhere else, and to that scraper `/images/cover.jpg` doesn't point anywhere.
+resolves inside the site, and Open Graph values are read elsewhere: by a scraper that fetched
+the HTML to build a link preview, and to that scraper `/images/cover.jpg` points nowhere.
 
 ## Why avoid
 
@@ -41,10 +39,10 @@ document it was written in, so shares of the same page stop being recognised as 
 A consumer that follows the protocol has nothing to resolve a relative value against, so it
 treats it as invalid or absent. The share card appears without its image or video, or with
 one the scraper guessed. It fails silently: the page looks fine in every browser, and the broken
-card only shows up when someone shares the link. No platform documents how it handles
-an invalid value. A site that ships relative values is relying on leniency nobody promised.
-Facebook's Sharing Debugger shows "which meta tags the crawler scrapes as well as any errors or
-warnings" for a given URL.
+card shows up when someone shares the link. Meta states the rule: "All URLs must be absolute
+as they represent the canonical location of a resource (page/image), so that we can attribute
+shares and likes to the correct URL and cache images properly." Its Sharing Debugger flags
+relative `og:url` and `og:image` values.
 
 ## Use instead
 
@@ -71,4 +69,5 @@ doesn't carry.
 
 - [The Open Graph protocol: Types](https://ogp.me/#types): URL: "All valid URLs that utilize the http:// or https:// protocols"; `og:url` as the object's permanent ID.
 - [Open Graph schema: ogp.me.ttl](https://ogp.me/ns/ogp.me.ttl): `ogc:url`, "a valid URL having the http or https scheme", as the range of `og:url`, `og:image`, `og:video` and `og:audio`.
-- [Meta for Developers: A Guide to Sharing for Webmasters](https://developers.facebook.com/docs/sharing/webmasters): `og:url` is the page's canonical URL; the Sharing Debugger shows what the crawler scrapes and its errors.
+- [Meta for Developers: A Guide to Sharing for Webmasters](https://developers.facebook.com/docs/sharing/webmasters): `og:url` is the page's canonical URL.
+- [Meta for Developers: Sharing FAQ](https://developers.facebook.com/docs/sharing/webmasters/faq/): "All URLs must be absolute", and the debugger complains about relative `og:url` and `og:image`.
