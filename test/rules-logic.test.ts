@@ -377,3 +377,18 @@ test("importmap-syntax: bad JSON and a non-object top level or key report; src a
   assert.equal(check(parseHtml('<script type=" ImportMap ">[]</script>').doc, { ...ctx, report }).length, 1);
   assert.deepEqual(check(parseHtml('<script type="importmap-shim">[]</script>').doc, { ...ctx, report }), []);
 });
+
+test("base-position: the capo.js top group may precede <base>; anything else is named", async () => {
+  const { check } = await import("../packages/rules/logic/head/base-position.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const details = (head: string): unknown[] =>
+    check(parseHtml(`<!doctype html><html><head>${head}</head></html>`).doc, { ...ctx, report });
+  const base = '<base href="/docs/">';
+  assert.deepEqual(details(`<meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="Viewport" content="width=device-width">${base}`), []);
+  assert.deepEqual(details(`${base}<title>T</title>`), []);
+  assert.deepEqual(details(`<title>T</title>${base}`), ["after <title>"]);
+  assert.deepEqual(details(`<meta charset="utf-8"><link rel="icon" href="i.png"><script src="a.js"></script>${base}`), ["after <link>"]);
+  assert.deepEqual(details(`<meta name="description" content="d">${base}`), ["after <meta>"]);
+  // A fragment's top-level <base> has no parent to read.
+  assert.deepEqual(check(parseHtml(`<title>T</title>${base}`).doc, { ...ctx, report }), []);
+});
