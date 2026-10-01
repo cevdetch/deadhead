@@ -20,21 +20,18 @@ related: ["attr/browsingtopics-attributionsrc"]
 
 Three `allow` directives delegate Privacy Sandbox measurement to a frame:
 `browsing-topics`, `interest-cohort` and `attribution-reporting`. Google retired
-the Topics API and the Attribution Reporting API, and Chrome 153 deprecates both,
-so each directive grants a feature Chrome is removing.
+the Topics API and the Attribution Reporting API, and Chrome is removing both, so
+each directive grants a feature on its way out.
 
 ## Why avoid
 
-Google ended both APIs on 2025-10-17: the Privacy Sandbox update retires the
-Topics API and the Attribution Reporting API in Chrome and Android and routes
-the phase-out through Chrome and Android processes. The Topics spec repo now
-carries a deprecation banner and sits archived since 2025-11-12. Chromestatus
-tracks the Topics removal with deprecation milestones at desktop and Android
-153 (deprecate in 144, remove in 153) and the Attribution removal with the same
-153 milestones on both platforms. Chrome 153 reached Stable on 2026-09-08 with
-the Attribution removal in its release notes. No other engine ships either API:
-Mozilla holds a negative position on Topics, and neither entry shows a Safari
-signal.
+Google ended both APIs on 2025-10-17, retiring Topics and Attribution Reporting in Chrome
+and Android. The Topics spec repo carries a deprecation banner and sits archived since
+2025-11-12. Chrome is removing Topics through a field trial: it reached 1% of Stable on M153
+by 2026-09-24, and its owner asked to go to 10% and then 100%. The Chrome 153 notes call
+Attribution Reporting "planned for deprecation and removal", and both ChromeStatus entries
+read "Proposed". No other engine ships either API: Mozilla holds a negative position on
+Topics, and neither entry shows a Safari signal.
 
 A directive naming them delegates a feature with no future: the frame gains no
 lasting capability, and the markup outlives the API behind it.
@@ -66,12 +63,12 @@ Deleting the tag would drop the frame itself.
 
 ## Resources
 
-- [Privacy Sandbox: Update on Plans for Privacy Sandbox Technologies (2025-10-17)](https://privacysandbox.com/news/update-on-plans-for-privacy-sandbox-technologies/): Google retires the Topics API and the Attribution Reporting API in Chrome and Android; phase-out follows Chrome and Android processes.
+- [Privacy Sandbox: Update on Plans for Privacy Sandbox Technologies (2025-10-17)](https://privacysandbox.com/news/update-on-plans-for-privacy-sandbox-technologies/): Google retires Topics and Attribution Reporting in Chrome and Android, through their usual processes.
 - [patcg-individual-drafts/topics (archived 2025-11-12)](https://github.com/patcg-individual-drafts/topics): banner states the Topics API is deprecated and planned for removal from Chrome; the repo no longer updates.
-- [ChromeStatus: Deprecate and remove Topics API](https://chromestatus.com/feature/5135370673061888): removal note reads deprecate in M144 and remove in M153, with deprecation milestones at desktop and Android 153.
-- [ChromeStatus: Deprecate and remove Attribution Reporting API](https://chromestatus.com/feature/6320639375966208): deprecation milestones at desktop and Android 153.
-- [Chrome 153 release notes](https://developer.chrome.com/release-notes/153): Stable release date September 8th, 2026, with a Deprecate and remove Attribution Reporting API section.
+- [ChromeStatus: Deprecate and remove Topics API](https://chromestatus.com/feature/5135370673061888): status "Proposed", milestone 153 on desktop and Android.
+- [ChromeStatus: Deprecate and remove Attribution Reporting API](https://chromestatus.com/feature/6320639375966208): status "Proposed", milestone 153 on desktop and Android.
+- [Chrome 153 release notes](https://developer.chrome.com/release-notes/153): Attribution Reporting "is planned for deprecation and removal".
 - [MDN: `<iframe>`: `allow`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe): `allow` specifies a Permissions Policy for the frame, built from named directives.
-- [blink-dev: Intent to Deprecate and Remove Topics API](https://groups.google.com/a/chromium.org/g/blink-dev/c/_R85yctz4Rs): the vendor intent thread for the Topics removal.
+- [blink-dev: Intent to Deprecate and Remove Topics API](https://groups.google.com/a/chromium.org/g/blink-dev/c/_R85yctz4Rs): the removal field trial, at 1% of Stable on M153+ by 2026-09-24.
 - [blink-dev: Intent to Deprecate and Remove Attribution Reporting API](https://groups.google.com/a/chromium.org/d/msgid/blink-dev/beb44d6a-aae5-4664-994a-38fb93bb4580n%40chromium.org): the vendor intent thread for the Attribution removal.
 - [Mozilla Standards Positions #622](https://github.com/mozilla/standards-positions/issues/622): Mozilla holds a negative position on the Topics API.
