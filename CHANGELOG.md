@@ -5,7 +5,7 @@ Adding or renaming a rule is a minor release; prose-only and fix-only changes
 are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
 is marked as breaking.
 
-## 0.1.0
+## 0.1.0 - 2026-10-01
 
 First release. ESM only, Node 24.8 or newer; the ESLint plugin needs ESLint 10.
 

@@ -1,73 +1,26 @@
 # Releasing
 
 Both packages, `deadhead` and `eslint-plugin-deadhead`, are released together at
-one version. Registry commands use pnpm, which keeps its own login (`pnpm login`,
-checked with `pnpm whoami`); pnpm 12 has `publish`, `stage`, `view` and
-`deprecate`. No npm token is ever created for this project.
+one version. A signed tag starts the Release workflow: it tests the packed
+tarballs and **stages** them on npm through trusted publishing (OIDC, with
+provenance). Nothing goes live until the maintainer approves each staged package
+with 2FA. No npm token is ever created for this project.
 
-- **0.1.0** is published by hand from the tarballs the smoke test installed: npm
-  lets a package use trusted publishing only once it exists.
-- **Every later release** starts from a signed tag. The Release workflow tests the
-  packed tarballs and **stages** them on npm through trusted publishing (OIDC,
-  with provenance). Nothing goes live until the maintainer approves each staged
-  package with 2FA.
+0.1.0 was published by hand on 2026-10-01, because npm lets a package use trusted
+publishing only once it exists. Both packages have had a trusted publisher since:
+GitHub Actions, `cevdetta/deadhead`, `release.yml`, environment `npm`, stage only.
+
+**Which CLI.** Every registry write that needs 2FA (approve, publish, unpublish,
+deprecate) goes through npm: it confirms 2FA in the browser, which a security key
+or passkey requires, while `pnpm` can only pass a 6-digit `--otp` code. Log in for
+the task and out afterwards (`npm login`, `npm logout`). Read-only commands
+(`view`, `stage list`) work with either.
 
 The changelog is written with [git-cliff](https://git-cliff.org), run by hand
 (`cliff.toml`; not a dependency). It reads the squash-merged pull request titles,
 which the PR title workflow holds to Conventional Commits.
 
-## 0.1.0
-
-On an up-to-date `main` with a clean working tree (the release PR merged):
-
-1. Check the login and that both names are free:
-
-   ```sh
-   pnpm whoami                          # your npm user
-   pnpm view deadhead                   # must fail with 404
-   pnpm view eslint-plugin-deadhead     # must fail with 404
-   ```
-
-2. Build, check and pack. The smoke test installs the tarballs it writes to
-   `tarballs/` into an empty project and uses them; those files are what you
-   publish.
-
-   ```sh
-   pnpm install
-   pnpm check:packages
-   node scripts/smoke-packages.ts --out tarballs
-   ```
-
-3. Publish both tarballs (pnpm asks for 2FA on each):
-
-   ```sh
-   pnpm publish tarballs/deadhead-0.1.0.tgz --access public
-   pnpm publish tarballs/eslint-plugin-deadhead-0.1.0.tgz --access public
-   ```
-
-4. Set up trusted publishing for every later release, on npmjs.com, for each
-   package:
-   - **Settings → Trusted publishing → GitHub Actions**: repository
-     `cevdetta/deadhead`, workflow `release.yml`, environment `npm`, publishing
-     mode **stage** (direct publishing off).
-   - **Settings → Publishing access**: "Require two-factor authentication and
-     disallow tokens".
-
-5. Tag and push. The Release workflow runs the full chain, sees 0.1.0 already on
-   npm and skips staging, then creates the GitHub Release from the changelog.
-
-   ```sh
-   git tag -s v0.1.0 -m v0.1.0
-   git push origin v0.1.0
-   ```
-
-6. Check: both packages on npmjs.com, and in an empty directory
-   `npx deadhead@0.1.0 --version` prints `0.1.0`.
-
-From 0.1.0 on, rule ids are permanent: a rename goes through
-`scripts/rename-rule.ts`, leaves a redirect, and its PR title carries `!`.
-
-## Every later release
+## Every release
 
 1. On a branch, set the new version in both `packages/cli/package.json` and
    `packages/eslint-plugin/package.json` (a test fails when they differ), then
@@ -93,16 +46,60 @@ From 0.1.0 on, rule ids are permanent: a rename goes through
 4. Approve, once per package, with 2FA:
 
    ```sh
-   pnpm stage list
-   pnpm stage view <stage-id>      # check name, version, file list
-   pnpm stage approve <stage-id>
+   npm login
+   npm stage list
+   npm stage view <stage-id>      # check name, version, file list
+   npm stage approve <stage-id>
+   npm logout
    ```
 
-   `pnpm stage reject <stage-id>` drops a staged package instead.
-5. Check both packages on npmjs.com (provenance shown, `latest` moved) and run
-   `npx deadhead@X.Y.Z --version` in an empty directory.
+   `npm stage reject <stage-id>` drops a staged package instead.
+5. Check from the registry, not the website: `npm view deadhead dist-tags
+   --prefer-online` shows the new `latest`, and `npx deadhead@X.Y.Z --version`
+   works in an empty directory. npmjs.com caches package pages and can lag
+   behind for a while.
 
-The workflow runs in the GitHub environment `npm`, which the trusted publisher
-checks. GitHub creates it on the first run; create it under Settings →
-Environments only to add protection rules. Cloudflare Pages builds `main`, so the
-rule pages match each release.
+The workflow runs in the GitHub environment `npm`, which the trusted publishers
+check. Cloudflare Pages builds `main`, so the rule pages match each release.
+
+## Publishing a new package by hand
+
+Trusted publishing needs the package to exist, so a new package name (as both
+were for 0.1.0) gets its first version by hand. What 0.1.0 taught:
+
+1. Build, check and pack on a clean `main`; the smoke test installs the tarballs
+   it writes, and those are what you publish:
+
+   ```sh
+   pnpm install
+   pnpm check:packages
+   node scripts/smoke-packages.ts --out tarballs
+   ```
+
+2. Log in with npm and check it: `npm login`, then `npm whoami`. A stale token
+   left in `~/.npmrc` makes the publish fail with a 404 on `PUT`: the registry
+   answers an unauthenticated write as if the package did not exist.
+3. Publish with a `./` path: npm 12 reads `tarballs/x.tgz` as GitHub shorthand
+   (`EALLOWGIT`).
+
+   ```sh
+   npm publish ./tarballs/<name>-<version>.tgz --access public
+   ```
+
+   npm prints a URL; confirm with 2FA there. A `403 You cannot publish over the
+   previously published versions` right after confirming means the publish went
+   through and npm retried: check `npm view <name> versions --prefer-online`
+   before trying again, and compare `npm view <name>@<version> dist.shasum` with
+   `sha1sum tarballs/<name>-<version>.tgz`.
+4. On npmjs.com, add the trusted publisher (GitHub Actions, `cevdetta/deadhead`,
+   `release.yml`, environment `npm`) with "allow npm publish" and "allow npm
+   dist-tag" both off, and set Publishing access to "Require two-factor
+   authentication and disallow tokens". Setting this up before the first publish
+   makes npm create a `0.0.0-stage` placeholder version; remove it within 72
+   hours with `npm unpublish <name>@0.0.0-stage`, or deprecate it after that.
+5. `npm logout`, then tag as in "Every release" step 2. The Release workflow
+   skips staging for a version already on npm and still creates the GitHub
+   Release.
+
+From 0.1.0 on, rule ids are permanent: a rename goes through
+`scripts/rename-rule.ts`, leaves a redirect, and its PR title carries `!`.
