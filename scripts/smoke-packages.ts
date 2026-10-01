@@ -13,6 +13,8 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
+import { packEntries } from "./npm-pack.ts";
+
 const { values } = parseArgs({ options: { out: { type: "string" } } });
 const root = process.cwd();
 const out = resolve(values.out ?? (await mkdtemp(join(tmpdir(), "dh-tarballs-"))));
@@ -28,7 +30,8 @@ const ok = (cmd: string, args: string[], cwd = dir): string => {
 
 // Pack exactly what npm would publish.
 const tarballs = ["packages/cli", "packages/eslint-plugin"].map((pkg) => {
-  const [packed] = JSON.parse(ok("npm", ["pack", "--json", "--pack-destination", out], resolve(root, pkg))) as [{ filename: string }];
+  const [packed] = packEntries(ok("npm", ["pack", "--json", "--pack-destination", out], resolve(root, pkg)));
+  assert.ok(packed, `${pkg}: npm pack listed no package`);
   return join(out, packed.filename);
 });
 

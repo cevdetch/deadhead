@@ -3,15 +3,16 @@
 import { execFileSync } from "node:child_process";
 import { styleText } from "node:util";
 
+import { packEntries } from "./npm-pack.ts";
+
 const PACKAGES = ["packages/cli", "packages/eslint-plugin"];
 const ALLOWED = /^(package\.json|README\.md|dist\/.+)$/;
 
 let failed = false;
 for (const dir of PACKAGES) {
   execFileSync("pnpm", ["exec", "publint", "--strict", dir], { stdio: "inherit" });
-  const [pack] = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: dir, encoding: "utf8" })) as [
-    { files: { path: string }[] },
-  ];
+  const [pack] = packEntries(execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: dir, encoding: "utf8" }));
+  if (pack === undefined) throw new Error(`${dir}: npm pack listed no package`);
   const paths = pack.files.map((f) => f.path);
   const stray = paths.filter((p) => !ALLOWED.test(p));
   if (stray.length > 0) {
