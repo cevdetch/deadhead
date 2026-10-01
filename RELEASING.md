@@ -39,7 +39,16 @@ which the PR title workflow holds to Conventional Commits.
 
    (`pnpm dlx git-cliff@2.14.2` takes the same arguments.) Read the section,
    edit it if needed, open the release PR (`chore: release X.Y.Z`), merge it.
-2. From an up-to-date `main`:
+2. Dry-run the Release workflow on `main` and wait for it to pass: it runs the
+   whole job up to `npm stage publish --dry-run`, uploads nothing and creates no
+   release:
+
+   ```sh
+   gh workflow run release.yml --ref main
+   gh run watch $(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+   ```
+
+   Then, from an up-to-date `main`:
 
    ```sh
    git switch main && git pull --ff-only

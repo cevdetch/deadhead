@@ -3,10 +3,15 @@ name: Release
 # A pushed v* tag (signed, pushed by the maintainer from main) builds, tests
 # and stages both packages. Nothing reaches npm until the maintainer approves
 # each staged package with 2FA: `npm stage list`, then `npm stage approve`.
+#
+# Run by hand (workflow_dispatch) on main, it is a dry run of the same job:
+# everything up to `npm stage publish --dry-run`, with no tag check, no upload
+# and no GitHub Release. Run it before tagging.
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -20,7 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # The trusted publisher on npmjs.com names this workflow and environment.
-    environment: npm
+    # The trusted publisher on npmjs.com is bound to `npm`; a dry run uses
+    # another environment, so it could not upload even by mistake.
+    environment: ${{ github.event_name == 'push' && 'npm' || 'release-dry-run' }}
     permissions:
       contents: write # gh release create
       id-token: write # npm trusted publishing (OIDC); provenance follows from it
@@ -34,6 +41,7 @@ jobs:
           require-lockfile: true
 
       - name: Tag matches both manifests
+        if: github.event_name == 'push'
         env:
           TAG: ${{ github.ref_name }}
         run: |
@@ -61,6 +69,8 @@ jobs:
       # A version already on npm (0.1.0, published by hand before trusted
       # publishing could exist) is left alone; the release notes still follow.
       - name: Stage both packages
+        env:
+          DRY_RUN: ${{ github.event_name != 'push' && '--dry-run' || '' }}
         run: |
           npm_pinned() { npx --yes npm@12.2.0 "$@"; }
           npm_pinned --version
@@ -71,10 +81,12 @@ jobs:
               echo "$name@$version is already on npm; not staging it"
               continue
             fi
-            npm_pinned stage publish "tarballs/$name-$version.tgz" --access public
+            # `./`: npm 12 reads a bare `tarballs/x.tgz` as GitHub shorthand.
+            npm_pinned stage publish "./tarballs/$name-$version.tgz" --access public $DRY_RUN
           done
 
       - name: GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
