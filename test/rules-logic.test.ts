@@ -341,3 +341,18 @@ test("tdm-reservation-value: 0 and 1 pass, trimmed; anything else, or no value, 
   }
   assert.equal(on(""), true);
 });
+
+test("speculationrules-syntax: bad JSON, a non-object top level and src report; an object passes", async () => {
+  const { check } = await import("../packages/rules/logic/script/speculationrules-syntax.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const details = (body: string, attrs = ""): unknown[] =>
+    check(parseHtml(`<!doctype html><html><head><script type="speculationrules"${attrs}>${body}</script></head></html>`).doc, { ...ctx, report });
+  assert.deepEqual(details('{"prefetch": [{"urls": ["/next"]}]}'), []);
+  assert.deepEqual(details("{}"), []);
+  for (const body of ["[]", "null", '"rules"', "1", "true"]) {
+    assert.deepEqual(details(body), ["top-level value is not a JSON object"], body);
+  }
+  assert.equal(details('{"prefetch": [],}').length, 1);
+  assert.equal(details("   ").length, 1);
+  assert.deepEqual(details("", ' src="/rules.json"'), ["src is not supported"]);
+});
