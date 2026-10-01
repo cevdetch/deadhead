@@ -96,6 +96,24 @@ for (const file of files) {
 /** Findings from an adapter, in the shape the comparison cares about. */
 const of = (file: string, adapter: string): Finding[] => results.get(file)?.[adapter] ?? [];
 
+/**
+ * Findings at one position carry no order of their own: each adapter's
+ * collection order decides it, and that differs when an element rule and a
+ * document rule report the same element. Sorting ties by rule id makes the
+ * comparison about which findings exist where, which is what must agree.
+ */
+const tiesByRule = (findings: Finding[]): Finding[] =>
+  [...findings].sort(
+    (a, b) =>
+      (a.range?.[0] ?? 0) - (b.range?.[0] ?? 0) ||
+      (a.loc?.line ?? 0) - (b.loc?.line ?? 0) ||
+      (a.loc?.col ?? 0) - (b.loc?.col ?? 0) ||
+      a.ruleId.localeCompare(b.ruleId),
+  );
+
+/** A source-less adapter ties every finding, so its list compares as a multiset. */
+const asMultiset = (findings: Comparable[]): string[] => findings.map((f) => JSON.stringify(f)).sort();
+
 test("the suite actually covers every fixture", () => {
   assert.ok(files.length > 0, "no fixtures found");
   assert.equal(results.size, files.length);
@@ -108,20 +126,22 @@ test("adapters that can see the source agree exactly", () => {
   assert.ok(rest.length > 0, "need a second source-backed adapter to compare against");
 
   for (const file of results.keys()) {
-    const expected: Comparable[] = of(file, reference).map(comparable);
+    const expected: Comparable[] = tiesByRule(of(file, reference)).map(comparable);
     for (const name of rest) {
-      assert.deepEqual(of(file, name).map(comparable), expected, `${name} vs ${reference}: ${file}`);
+      assert.deepEqual(tiesByRule(of(file, name)).map(comparable), expected, `${name} vs ${reference}: ${file}`);
     }
   }
 });
 
 test("a source-less adapter agrees about everything it can evaluate", () => {
   for (const file of results.keys()) {
-    const expected: Comparable[] = of(file, "parse5")
-      .filter((f) => !SOURCE_DEPENDENT.has(f.ruleId))
-      .map(comparable);
+    const expected = asMultiset(
+      of(file, "parse5")
+        .filter((f) => !SOURCE_DEPENDENT.has(f.ruleId))
+        .map(comparable),
+    );
     for (const adapter of ADAPTERS.filter((a) => !a.hasSource)) {
-      assert.deepEqual(of(file, adapter.name).map(comparable), expected, `${adapter.name}: ${file}`);
+      assert.deepEqual(asMultiset(of(file, adapter.name).map(comparable)), expected, `${adapter.name}: ${file}`);
     }
   }
 });
@@ -129,8 +149,22 @@ test("a source-less adapter agrees about everything it can evaluate", () => {
 test("source-backed adapters agree on positions too, not just findings", () => {
   for (const file of results.keys()) {
     const positions = (name: string) =>
-      of(file, name).map((f) => `${f.ruleId}@${f.loc?.line}:${f.loc?.col}:${f.range?.[0]}`);
+      tiesByRule(of(file, name)).map((f) => `${f.ruleId}@${f.loc?.line}:${f.loc?.col}:${f.range?.[0]}`);
     assert.deepEqual(positions("html-eslint"), positions("parse5"), file);
+  }
+});
+
+test("two rules on one element agree in every adapter, whatever order each collects them in", () => {
+  // head/base-position (a document rule) and head/base-multiple both report
+  // the second <base>; the DOM adapter, with no offsets, ties every finding.
+  const source = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>t</title><base href="/a/"><base href="/b/"></head><body></body></html>';
+  const findings = Object.fromEntries(ADAPTERS.map((a) => [a.name, run(rules, a.parse(source))]));
+  const parse5 = findings["parse5"] ?? [];
+  assert.ok(parse5.filter((f) => f.ruleId === "head/base-position" || f.ruleId === "head/base-multiple").length >= 3);
+  for (const adapter of ADAPTERS) {
+    const own = findings[adapter.name] ?? [];
+    if (adapter.hasSource) assert.deepEqual(tiesByRule(own).map(comparable), tiesByRule(parse5).map(comparable), adapter.name);
+    else assert.deepEqual(asMultiset(own.map(comparable)), asMultiset(parse5.filter((f) => !SOURCE_DEPENDENT.has(f.ruleId)).map(comparable)), adapter.name);
   }
 });
 

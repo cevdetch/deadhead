@@ -58,10 +58,12 @@ test("ESLint reports exactly what the CLI reports, at the same positions", async
 
   for (const { file, findings } of results) {
     const source = await readFile(file, "utf8");
-    const expected = findings.map((f) => `${f.ruleId}@${f.loc?.line}:${f.loc?.col}`);
-    const actual = lint(source).map(
-      (m) => `${(m.ruleId ?? "").replace(/^deadhead\//, "")}@${m.line}:${m.column}`,
-    );
+    // ESLint merges each rule's messages by position; findings tied at one
+    // position carry no order, so ties compare by rule id.
+    const ordered = (rows: [string, number, number][]): string[] =>
+      rows.sort((a, b) => a[1] - b[1] || a[2] - b[2] || a[0].localeCompare(b[0])).map(([id, line, col]) => `${id}@${line}:${col}`);
+    const expected = ordered(findings.map((f) => [f.ruleId, f.loc?.line ?? 0, f.loc?.col ?? 0]));
+    const actual = ordered(lint(source).map((m) => [(m.ruleId ?? "").replace(/^deadhead\//, ""), m.line, m.column]));
     assert.deepEqual(actual, expected, file);
   }
 });
