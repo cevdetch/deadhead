@@ -329,3 +329,15 @@ test("og-required-properties: og:image alone completes a card; the rest falls ba
   assert.deepEqual(details('<meta name="og:title" content="Post">'), []);
   assert.deepEqual(details('<meta property="og:title" content="Post">', false), []);
 });
+
+test("tdm-reservation-value: 0 and 1 pass, trimmed; anything else, or no value, trips", async () => {
+  const { match } = await import("../packages/rules/logic/meta/tdm-reservation-value.ts");
+  const on = (attrs: string): boolean => match(portOf(`<meta name="tdm-reservation" ${attrs}>`, "meta"), ctx);
+  assert.equal(on('content="1"'), false);
+  assert.equal(on('content="0"'), false);
+  assert.equal(on('content=" 1 "'), false);
+  for (const value of ["yes", "true", "reserved", "01", "", "1, 0"]) {
+    assert.equal(on(`content="${value}"`), true, value);
+  }
+  assert.equal(on(""), true);
+});
