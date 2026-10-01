@@ -250,6 +250,19 @@ test("apple-mobile-web-app-status-bar-style: fixable only for default or a missi
   assert.equal(await on(' content=""'), false);
 });
 
+test("apple-mobile-web-app-capable: fixable beside a manifest link and no startup image", async () => {
+  const { fixable } = await import("../packages/rules/logic/meta/apple-mobile-web-app-capable.ts");
+  const tag = '<meta name="apple-mobile-web-app-capable" content="yes">';
+  const on = (head: string): boolean =>
+    fixable(portOf(`<!doctype html><html><head>${head}</head></html>`, 'meta[name="apple-mobile-web-app-capable"]'));
+  assert.equal(on(`${tag}<link rel="manifest" href="/app.webmanifest">`), true);
+  assert.equal(on(`<link rel="Manifest" href="/app.webmanifest">${tag}`), true);
+  assert.equal(on(tag), false, "no manifest: iOS 16.4 to 18 would save a bookmark");
+  assert.equal(on(`${tag}<link rel="manifest" href="/m.json"><link rel="apple-touch-startup-image" href="/s.png">`), false, "splash screens");
+  // A fragment's top-level tag has no siblings to read.
+  assert.equal(fixable(portOf(`${tag}<link rel="manifest" href="/m.json">`, "meta")), false);
+});
+
 test("http-equiv-unregistered-pragmas leaves every value another rule owns to that rule", async () => {
   const { match } = await import("../packages/rules/logic/meta/http-equiv-unregistered-pragmas.ts");
   for (const value of ["robots", "x-robots-tag", "cache-control", "x-ua-compatible", "permissions-policy", "feature-policy", "set-cookie", "x-dns-prefetch-control", "description", "pics-label", "content-script-type"]) {

@@ -19,6 +19,13 @@ import { loadRules } from "../packages/rules/load.ts";
 const KNOWN_PARTIAL: ReadonlySet<string> = new Set(["attr/script-event-for"]);
 
 /**
+ * Rules whose `fixable()` reads the element's siblings, so one page is either
+ * all fixable or all vetoed and `invalid.html` cannot hold both. Their vetoed
+ * cases live in `test/rules-logic.test.ts`.
+ */
+const SIBLING_VETO: ReadonlySet<string> = new Set(["meta/apple-mobile-web-app-capable"]);
+
+/**
  * Rules whose removal changes behaviour with no provably safe subset; see the
  * fix-safety review. An entry leaves only with new evidence. Rules where only
  * some cases are unsafe keep their op and veto those findings with
@@ -68,7 +75,7 @@ for (const rule of fixable) {
     const after = lint(source);
     if (vetoes) {
       assert.notEqual(source, original, "the fix changed nothing");
-      assert.ok(after.length > 0, "invalid.html needs a case fixable() vetoes");
+      if (!SIBLING_VETO.has(id)) assert.ok(after.length > 0, "invalid.html needs a case fixable() vetoes");
       assert.deepEqual(after.filter((f) => f.fix !== null).map((f) => f.node.snippet), []);
     } else if (KNOWN_PARTIAL.has(id)) {
       assert.notEqual(source, original, "the fix changed nothing");

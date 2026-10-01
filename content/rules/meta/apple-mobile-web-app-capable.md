@@ -10,6 +10,7 @@ detectability: "yes"
 kind: "element"
 scope: "head"
 selector: 'meta[name="apple-mobile-web-app-capable" i]'
+match: "logic"
 fix: { op: "remove-element" }
 replacement: "Delete it and declare \"display\": \"standalone\" in a web app manifest linked with <link rel=\"manifest\">."
 tags: ["apple", "web-app"]
@@ -66,8 +67,11 @@ replaces both.
 Fully detectable. `<meta name>` holds a single value, so the rule matches with `=`
 and the `i` flag.
 
-The fix removes the element, and unlike most removals here it changes what iOS does, as
-described above. Add the manifest and its `display` member before applying it.
+The fix removes the element when the head also links a manifest and no
+`apple-touch-startup-image`: then iOS takes the launch mode from the manifest and loses no
+splash screen. Elsewhere the finding carries no fix. The logic in
+`packages/rules/logic/meta/apple-mobile-web-app-capable.ts` reads the siblings; it cannot read
+the manifest file, so give it `display` set to `standalone`.
 
 ## Resources
 
