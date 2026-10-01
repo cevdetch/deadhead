@@ -416,3 +416,12 @@ test("http-equiv-origin-trial: reports a tag whose every Chromium token has expi
   assert.deepEqual(details("TOKEN_GOES_HERE"), []);
   assert.deepEqual(details(""), []);
 });
+
+test("modulepreload-as-value: non-module destinations trip; script-like, json, style, text and unknown values pass", async () => {
+  const { match } = await import("../packages/rules/logic/link/modulepreload-as-value.ts");
+  const on = (as: string): boolean => match(portOf(`<link rel="modulepreload" href="/m.mjs" as="${as}">`, "link"), ctx);
+  for (const as of ["font", "IMAGE", "fetch", "document", "style-x", "foo", "script", "worker", "audioworklet", "json", "style", "text"]) {
+    const trips = ["font", "IMAGE", "fetch", "document"].includes(as);
+    assert.equal(on(as), trips, as);
+  }
+});

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Module and font preloads that both land</title>
+    <link rel="modulepreload" href="/app.mjs">
+    <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  </head>
+  <body>
+    <p>The module below runs from the preloaded copy, and the font preload matches its request.</p>
+    <script type="module" src="/app.mjs"></script>
+  </body>
+</html>
