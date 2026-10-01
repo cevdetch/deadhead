@@ -253,10 +253,10 @@ become drift.
 
 ## Status
 
-0.1.0 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
-[`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead), with 190
+0.2.0 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
+[`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead), with 203
 rules; see [CHANGELOG.md](CHANGELOG.md). All three runtimes work and are checked against
-each other, and rule ids are permanent from this release on. One markdown file per rule;
+each other, and rule ids are permanent since 0.1.0. One markdown file per rule;
 see the site for the list. It grows one researched rule at a time, and that is the
 bottleneck by design.
 
