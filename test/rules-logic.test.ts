@@ -438,3 +438,16 @@ test("modulepreload-as-value: non-module destinations trip; script-like, json, s
     assert.equal(on(as), trips, as);
   }
 });
+
+test("metadata-position: a link moved out of the head, or written after an element that closes it, reports", async () => {
+  const { check } = await import("../packages/rules/logic/head/metadata-position.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const details = (html: string): unknown[] => check(parseHtml(html).doc, { ...ctx, report });
+  const canonical = '<link rel="canonical" href="https://example.com/">';
+  assert.deepEqual(details(`<!doctype html><html><head><title>t</title><img src="p.gif" alt="">${canonical}</head><body></body></html>`), ["after <img>"]);
+  assert.deepEqual(details(`<!doctype html><html><head><title>t</title><noscript></noscript>${canonical}</head><body></body></html>`), []);
+  assert.deepEqual(details(`<!doctype html><html><head><title>t</title></head><body>${canonical}</body></html>`), ["outside <head>"]);
+  assert.deepEqual(details(`<!doctype html><html><head><title>t</title></head><body><p>x</p>${canonical}</body></html>`), ["after <p>"]);
+  // A fragment has no head for its links to sit in.
+  assert.deepEqual(details(`<title>t</title><img src="p.gif" alt="">${canonical}`), []);
+});
