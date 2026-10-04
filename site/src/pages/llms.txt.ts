@@ -3,6 +3,7 @@
 // under "Optional", which the proposal marks as skippable context.
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import { getPosts } from "../lib/posts.ts";
 import { namespaceBlurbs } from "../vocabulary.ts";
 
 export const GET: APIRoute = async ({ site }) => {
@@ -22,6 +23,12 @@ export const GET: APIRoute = async ({ site }) => {
     `- [Full text of every rule](${at("/llms-full.txt")}): all rules in one markdown file`,
     "",
   ];
+  const posts = await getPosts();
+  if (posts.length > 0) {
+    lines.push("## Blog", "");
+    for (const post of posts) lines.push(`- [${post.data.title}](${at(`/blog/${post.id}`)}): ${post.data.description}`);
+    lines.push("");
+  }
   for (const namespace of namespaces) {
     lines.push(`## ${namespace}/ rules`, "");
     const blurb = namespaceBlurbs[namespace];

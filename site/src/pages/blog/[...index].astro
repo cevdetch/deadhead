@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getPosts } from "../../lib/posts.ts";
+
+// A rest route so that, with no post to list, there is no /blog at all.
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.length === 0 ? [] : [{ params: { index: undefined }, props: { posts } }];
+}
+
+const { posts } = Astro.props;
+const day = (date: Date) => date.toISOString().slice(0, 10);
+---
+
+<Layout title="Blog" description="Measurements of what the web ships in its head, with the data behind every number and a rule page behind every finding.">
+  <link slot="head" rel="alternate" type="application/atom+xml" title="deadhead blog" href="/blog/feed.xml" />
+  <h1>Blog</h1>
+  <ul>
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.id}`}>{post.data.title}</a>, <time datetime={day(post.data.pubDate)}>{day(post.data.pubDate)}</time>
+        <p>{post.data.description}</p>
+      </li>
+    ))}
+  </ul>
+  <p><a href="/blog/feed.xml">Atom feed</a></p>
+</Layout>

@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import { generateOG, type OgInput } from "../../lib/og.ts";
 import { groupRules } from "../../lib/group.ts";
 import { ogSlugForPath } from "../../lib/og-path.ts";
+import { getPosts } from "../../lib/posts.ts";
 import { impactLabels, severityLabels, tagLabels } from "../../vocabulary.ts";
 
 interface OgPage extends OgInput {
@@ -13,6 +14,7 @@ export async function getStaticPaths(): Promise<
   { params: { path: string }; props: OgPage }[]
 > {
   const rules = await getCollection("rules");
+  const posts = await getPosts();
   const byTag = groupRules(rules, (rule) => rule.data.tags);
   const byImpact = groupRules(rules, (rule) => rule.data.impacts);
   // Pages are declared by URL path; the image slug derives from it through
@@ -55,6 +57,8 @@ export async function getStaticPaths(): Promise<
       urlPath: `/impacts/${impact}`,
       input: { eyebrow: "impact", title: `${impactLabels[impact]}: ${list.length} rules` } as OgInput,
     })),
+    ...posts.map((post) => ({ urlPath: `/blog/${post.id}`, input: { eyebrow: "blog", title: post.data.title } as OgInput })),
+    ...(posts.length === 0 ? [] : [{ urlPath: "/blog", input: { eyebrow: "measurements, with the data", title: "Blog" } }]),
     { urlPath: "/topics", input: { eyebrow: "grouped by feature area", title: "Topics" } },
     { urlPath: "/impacts", input: { eyebrow: "grouped by what it costs", title: "Impacts" } },
   ];

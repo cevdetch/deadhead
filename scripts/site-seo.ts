@@ -110,6 +110,24 @@ for (const { path } of pages.filter((p) => p.path.startsWith("rules/"))) {
   if (cited < 2) problems.push(`${path}: TechArticle cites ${cited} sources, want 2 or more`);
 }
 
+// Blog posts are BlogPostings with the same article fields and an author.
+for (const { path } of pages.filter((p) => /^blog\/[^/]+\.html$/.test(p.path))) {
+  const post = nodesByPage.get(path)?.find((n) => n["@type"] === "BlogPosting");
+  if (post === undefined) {
+    problems.push(`${path}: no JSON-LD BlogPosting node`);
+    continue;
+  }
+  for (const field of ARTICLE_FIELDS) {
+    if (post[field] === undefined) problems.push(`${path}: BlogPosting lacks ${field}`);
+  }
+  for (const field of ["datePublished", "dateModified"] as const) {
+    const value = post[field];
+    if (value !== undefined && !(typeof value === "string" && /^\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:\d{2})$/.test(value))) {
+      problems.push(`${path}: BlogPosting ${field} is not a datetime with a time zone: ${String(value)}`);
+    }
+  }
+}
+
 // llms.txt per https://llmstxt.org: an H1, a blockquote summary, and a link
 // to the markdown copy of every rule page; each copy exists; llms-full.txt
 // exists (decision S8).

@@ -1,0 +1,48 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { replaceFigures } from "../../lib/figures.ts";
+import { getPosts } from "../../lib/posts.ts";
+import { loadResults } from "../../lib/results.ts";
+import { AUTHOR } from "../../lib/seo.ts";
+
+export async function getStaticPaths() {
+  return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { data } = post;
+// Figures are filled in here, at page build, from the current results file.
+const html = replaceFigures(post.rendered?.html ?? "", loadResults(data.results));
+const url = new URL(`/blog/${post.id}`, Astro.site).href;
+const modified = data.updatedDate ?? data.pubDate;
+const day = (date: Date) => date.toISOString().slice(0, 10);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: data.title,
+  description: data.description,
+  url,
+  datePublished: data.pubDate.toISOString(),
+  dateModified: modified.toISOString(),
+  author: { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url },
+  isBasedOn: new URL(`/data/${data.results}`, Astro.site).href,
+};
+---
+
+<Layout title={data.title} description={data.description} ogType="article" publishedTime={data.pubDate} modifiedTime={modified} jsonLd={jsonLd}>
+  <link slot="head" rel="alternate" type="application/atom+xml" title="deadhead blog" href="/blog/feed.xml" />
+  <style slot="head" is:inline>
+    article table{border-collapse:collapse;display:block;overflow-x:auto}
+    article th,article td{padding:.25rem .6rem;border-bottom:1px solid;text-align:left;vertical-align:top}
+    article figure{margin:1.5rem 0}
+    article figcaption,article summary{font-size:.9em}
+  </style>
+  <article>
+    <nav aria-label="Breadcrumb"><a href="/blog">Blog</a></nav>
+    <h1>{data.title}</h1>
+    <p class="lede">{data.description}</p>
+    <p><small>By <a href={AUTHOR.url}>{AUTHOR.name}</a>, <time datetime={day(data.pubDate)}>{day(data.pubDate)}</time>{data.updatedDate && <>, updated <time datetime={day(data.updatedDate)}>{day(data.updatedDate)}</time></>}. Data: <a href={`/data/${data.results}`}>{data.results}</a>.</small></p>
+    <Fragment set:html={html} />
+  </article>
+</Layout>

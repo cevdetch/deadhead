@@ -65,4 +65,23 @@ const rules = defineCollection({
     .strict(),
 });
 
-export const collections = { rules };
+/**
+ * Blog posts, `content/blog/*.md`, read in place like the rules. Figures come
+ * from the `results` file through `lib/remark-figures.ts`, never from prose.
+ * Title and description limits are the ones `scripts/site-budget.ts` checks.
+ */
+const posts = defineCollection({
+  loader: glob({ pattern: "*.md", base: "../content/blog" }),
+  schema: z
+    .object({
+      title: z.string().min(1).max(60),
+      description: z.string().min(50).max(160),
+      pubDate: z.coerce.date(),
+      updatedDate: z.coerce.date().optional(),
+      draft: z.boolean().default(false),
+      results: z.string().regex(/^[\w.-]+\.json$/),
+    })
+    .strict(),
+});
+
+export const collections = { rules, posts };

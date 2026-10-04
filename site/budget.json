@@ -2,5 +2,7 @@
   "homeGzip": 6000,
   "rulesIndexGzip": 13000,
   "rulePageAvgGzip": 3000,
-  "cssRaw": 4000
+  "cssRaw": 4000,
+  "blogIndexGzip": 2000,
+  "blogPostMaxGzip": 9000
 }

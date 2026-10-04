@@ -106,6 +106,12 @@ const measured: Record<string, number> = {
   rulePageAvgGzip: ruleSizes.length === 0 ? 0 : Math.round(ruleSizes.reduce((a, b) => a + b, 0) / ruleSizes.length),
   cssRaw,
 };
+// The blog exists only once a post is built: measure it then, and only then.
+const postFiles = (await readdir(join(dist, "blog")).catch(() => [] as string[])).filter((f) => f.endsWith(".html"));
+if (postFiles.length > 0) {
+  measured["blogIndexGzip"] = await gz("blog.html");
+  measured["blogPostMaxGzip"] = Math.max(...(await Promise.all(postFiles.map((f) => gz(join("blog", f))))));
+}
 
 let over = false;
 for (const [key, value] of Object.entries(measured)) {
