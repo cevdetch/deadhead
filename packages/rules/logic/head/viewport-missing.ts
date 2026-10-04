@@ -22,6 +22,9 @@ export const check: CheckFn = (doc, ctx) => {
   // A fragment's viewport lives in the layout around it.
   if (!doc.isPage()) return [];
   if (doc.querySelector('meta[name="viewport" i]') !== null) return [];
+  // A desktop page that names its separate mobile URL serves phones another page.
+  // https://developers.google.com/search/docs/crawling-indexing/mobile/mobile-sites-mobile-first-indexing
+  if (doc.querySelector('link[rel~="alternate" i][media]') !== null) return [];
   const head = doc.querySelector("head");
   if (head === null || head.children().length === 0) return [];
   return [ctx.report(head)];

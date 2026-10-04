@@ -44,7 +44,7 @@ Use `script` for data blocks:
 
 Complete detection with a logic guard. `style[type]` is a pre-filter: the verdict depends on whether lowercased text equals `text/css`, a single-value match the selector subset cannot narrow. The decision lives in `packages/rules/logic/attr/style-type.ts`.
 
-Anything the logic does not claim stays untouched, and two exclusions are load-bearing: a type with parameters, such as `text/css; charset=utf-8`, is not a match, so the browser reads that element as a data block and never applies it. Removing the attribute would start application of CSS that never applied. The same holds for a typo like `text/cs`. Both are real bugs; neither is safe to autofix, so this rule leaves them for a human look.
+Anything the logic does not claim stays untouched, and two exclusions are load-bearing: a type with parameters, such as `text/css; charset=utf-8`, is not a match, so the browser reads that element as a data block and never applies it. Removing the attribute would start application of CSS that never applied. The same holds for a typo like `text/cs`. Both are real bugs; neither is safe to autofix, so this rule leaves them for a human look. A `style` inside inline SVG reports too: SVG 2 still defines `type` there, and its default is CSS, so removal is as inert.
 
 ## Resources
 

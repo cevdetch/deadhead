@@ -1,7 +1,7 @@
 ---
 ruleId: "document/doctype"
 title: "Missing or non-standard doctype"
-description: "The page lacks <!doctype html>. A missing or legacy doctype triggers quirks mode, where CSS layout follows old rules."
+description: "The page lacks <!doctype html>. A missing one triggers quirks mode; a legacy one, quirks or limited quirks by its identifiers."
 pubDate: "2026-09-14"
 status: "avoid"
 severity: "harmful"

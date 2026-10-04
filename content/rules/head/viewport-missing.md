@@ -61,7 +61,9 @@ qualifies. An HTML email body qualifies too. Say so where it happens:
 Fully detectable, as a document rule, because the finding is about an element that isn't
 there. The finding lands on `<head>`. A viewport `<meta>` anywhere in the document counts, since
 browsers apply one even when it's misplaced in `<body>`. Presence is all this checks: a
-viewport without `width=device-width` is a different problem.
+viewport without `width=device-width` is a different problem. A desktop page that names its
+separate mobile URL with `<link rel="alternate" media="…">`, Google's annotation for that setup,
+stays quiet: phones get the other page.
 
 The rule reports nothing on a fragment, a file with no doctype and no `<html>` tag such as
 a partial or a component template: the viewport belongs to the page around it. On a page it
@@ -73,6 +75,7 @@ There is no autofix. The remedy adds an element, and every fix here only removes
 
 ## Resources
 
+- [Google Search Central: mobile-first indexing best practices](https://developers.google.com/search/docs/crawling-indexing/mobile/mobile-sites-mobile-first-indexing): a desktop page on separate URLs links its mobile version with `rel="alternate" media="only screen and (max-width: 640px)"`.
 - [MDN: `<meta name="viewport">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/viewport): the ~980px virtual viewport, shrink-to-fit, and how it breaks media queries.
 - [web.dev: Responsive web design basics: set the viewport](https://web.dev/articles/responsive-web-design-basics#viewport): desktop-width rendering without the tag; what `width=device-width` and `initial-scale=1` each do.
 - [Chrome for Developers: Lighthouse: viewport meta tag](https://developer.chrome.com/docs/lighthouse/pwa/viewport): pages without the tag are "difficult to read"; the audit's failure conditions.

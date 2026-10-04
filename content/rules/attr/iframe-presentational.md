@@ -23,6 +23,8 @@ Nine presentational attributes on `iframe` are obsolete. `<iframe src="map.html"
 
 They are obsolete. The HTML Standard lists all nine `iframe` spellings among the attributes that "are obsolete (though the elements are still part of the language), and must not be used by authors", with the instruction: "Use CSS instead." Section 16.3 still backs five of them with reflected IDL (`align`, `scrolling`, `frameBorder`, `marginHeight`, `marginWidth`), which is live machinery: the attributes keep working as presentational hints in the weakest place in the author cascade, where any stylesheet rule for the same property wins.
 
+Three act on the framed page, not the frame. `marginheight` and `marginwidth` become the margins of its body, by the rendering section's table for "the body element's container frame element", and `scrolling="no"` hides its scrollbars. CSS on the `iframe` reproduces neither; the framed page's own CSS does.
+
 So deleting one repaints the frame wherever no stylesheet rule covers the property. Each attribute either does nothing, because CSS overrides it, or sets a value the stylesheet never states. Either way, part of the page design lives in markup, where nobody editing the CSS will look for it. MDN files six of the nine under deprecated attributes with a warning against use; the four it omits, `allowtransparency`, `framespacing`, `hspace` and `vspace`, are engine-specific leftovers.
 
 ## Use instead

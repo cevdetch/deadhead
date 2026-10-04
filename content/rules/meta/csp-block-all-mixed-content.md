@@ -30,11 +30,13 @@ The loss is silent. A policy that lists the retired directive alone leans on dea
 
 ## Use instead
 
-List the live directive in the same meta tag:
+List the live directive, in the header:
 
-```html
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+```http
+Content-Security-Policy: upgrade-insecure-requests
 ```
+
+A meta tag carries it too, at a cost: any meta CSP stops Chromium's preload scanner (`meta/http-equiv-content-security-policy`).
 
 MDN documents the same shape with a meta example: insecure requests are rewritten before they hit the network, first-party as well as third-party. Where the resource is missing over HTTPS the request fails with no HTTP fallback, which preserves the security of the page.
 

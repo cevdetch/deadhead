@@ -39,14 +39,14 @@ way to tell from the markup which one a device will use.
 
 ## Use instead
 
-One declaration, one 180×180 PNG:
+The web app manifest's icons. Safari and iOS use them when the page declares no
+`apple-touch-icon`:
 
-```html
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+```json
+{ "icons": [{ "src": "/icon-180.png", "sizes": "180x180", "type": "image/png" }] }
 ```
 
-Icons for an installable web app belong in the web app manifest as well; this link is
-for iOS's home screen.
+Where an `apple-touch-icon` stays, one declaration and one 180×180 PNG is enough.
 
 ## Detectability
 
@@ -66,6 +66,7 @@ the fix to a page that declares more than one icon.
 
 ## Resources
 
+- [WebKit: Safari 15.4](https://webkit.org/blog/12445/new-webkit-features-in-safari-15-4/): "Safari and iOS use manifest-declared icons when there is no apple-touch-icon declared".
 - [Apple Developer: Configuring Web Applications (Safari Web Content Guide, archived)](https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html): "Safari on iOS 7 doesn't add effects to icons"; the precomposed suffix only mattered to older versions.
 - [Chrome for Developers: Lighthouse: Does not provide a valid apple-touch-icon](https://developer.chrome.com/docs/lighthouse/pwa/apple-touch-icon): "A rel="apple-touch-icon-precomposed" link passes the audit, but it has been obsolete since iOS 7."
 - [WebKit: `Source/WebCore/html/LinkIconCollector.cpp`](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/html/LinkIconCollector.cpp): touch icons ordered largest first; "A Precomposed icon should come first if both icons have the same size."
