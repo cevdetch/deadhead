@@ -6,8 +6,8 @@
     "n": 10000
   },
   "deadhead": {
-    "version": "0.2.0",
-    "commit": "a2f9853"
+    "version": "0.2.1",
+    "commit": "120411e"
   },
   "snapshot": {
     "first": "2026-10-04T15:28:44.175Z",
@@ -33,11 +33,11 @@
   "rules": {
     "attr/a-coords-shape": {
       "raw": {
-        "sites": 3,
-        "rate": 0.0007,
+        "sites": 2,
+        "rate": 0.0004,
         "ci": [
-          0.0002,
-          0.0019
+          0.0001,
+          0.0016
         ],
         "top1k": {
           "linted": 370,
@@ -46,13 +46,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 3,
-          "rate": 0.0007
+          "sites": 2,
+          "rate": 0.0005
         }
       },
       "rendered": {
-        "sites": 3,
-        "rate": 0.0006
+        "sites": 2,
+        "rate": 0.0004,
+        "injected": {
+          "sites": 1,
+          "share": 0.5
+        }
       }
     },
     "attr/area-hreflang-type-nohref": {
@@ -76,7 +80,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/body-presentational": {
@@ -100,7 +108,11 @@
       },
       "rendered": {
         "sites": 19,
-        "rate": 0.0035
+        "rate": 0.0035,
+        "injected": {
+          "sites": 1,
+          "share": 0.0588
+        }
       }
     },
     "attr/browsingtopics-attributionsrc": {
@@ -124,7 +136,11 @@
       },
       "rendered": {
         "sites": 5,
-        "rate": 0.0009
+        "rate": 0.0009,
+        "injected": {
+          "sites": 1,
+          "share": 0.2
+        }
       }
     },
     "attr/charset-obsolete": {
@@ -148,7 +164,11 @@
       },
       "rendered": {
         "sites": 1615,
-        "rate": 0.3007
+        "rate": 0.3007,
+        "injected": {
+          "sites": 852,
+          "share": 0.645
+        }
       }
     },
     "attr/contextmenu-onshow": {
@@ -172,7 +192,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/data-binding": {
@@ -196,7 +220,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 1,
+          "share": 1
+        }
       }
     },
     "attr/data-vocabulary": {
@@ -220,7 +248,11 @@
       },
       "rendered": {
         "sites": 3,
-        "rate": 0.0006
+        "rate": 0.0006,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/dropzone": {
@@ -244,31 +276,39 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/fetchpriority-value": {
       "raw": {
-        "sites": 15,
-        "rate": 0.0033,
+        "sites": 6,
+        "rate": 0.0013,
         "ci": [
-          0.002,
-          0.0054
+          0.0006,
+          0.0029
         ],
         "top1k": {
           "linted": 370,
-          "sites": 1,
-          "rate": 0.0027
+          "sites": 0,
+          "rate": 0
         },
         "rest": {
           "linted": 4200,
-          "sites": 14,
-          "rate": 0.0033
+          "sites": 6,
+          "rate": 0.0014
         }
       },
       "rendered": {
-        "sites": 17,
-        "rate": 0.0032
+        "sites": 7,
+        "rate": 0.0013,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/form-accept": {
@@ -292,7 +332,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/head-profile": {
@@ -316,7 +360,11 @@
       },
       "rendered": {
         "sites": 12,
-        "rate": 0.0022
+        "rate": 0.0022,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/html-manifest": {
@@ -340,7 +388,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/html-version": {
@@ -364,7 +416,11 @@
       },
       "rendered": {
         "sites": 6,
-        "rate": 0.0011
+        "rate": 0.0011,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/iframe-allow-privacy-sandbox": {
@@ -388,7 +444,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 1,
+          "share": 1
+        }
       }
     },
     "attr/iframe-allowpaymentrequest": {
@@ -412,7 +472,11 @@
       },
       "rendered": {
         "sites": 2,
-        "rate": 0.0004
+        "rate": 0.0004,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/iframe-presentational": {
@@ -436,7 +500,11 @@
       },
       "rendered": {
         "sites": 1129,
-        "rate": 0.2102
+        "rate": 0.2102,
+        "injected": {
+          "sites": 558,
+          "share": 0.6026
+        }
       }
     },
     "attr/img-fetchpriority-loading": {
@@ -460,7 +528,11 @@
       },
       "rendered": {
         "sites": 53,
-        "rate": 0.0099
+        "rate": 0.0099,
+        "injected": {
+          "sites": 12,
+          "share": 0.2727
+        }
       }
     },
     "attr/importance": {
@@ -484,7 +556,11 @@
       },
       "rendered": {
         "sites": 98,
-        "rate": 0.0182
+        "rate": 0.0182,
+        "injected": {
+          "sites": 55,
+          "share": 0.6627
+        }
       }
     },
     "attr/input-ismap-usemap": {
@@ -508,7 +584,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/input-number-maxlength-size": {
@@ -532,7 +612,11 @@
       },
       "rendered": {
         "sites": 15,
-        "rate": 0.0028
+        "rate": 0.0028,
+        "injected": {
+          "sites": 2,
+          "share": 0.1667
+        }
       }
     },
     "attr/input-presentational": {
@@ -556,7 +640,11 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/integrity-without-crossorigin": {
@@ -580,7 +668,11 @@
       },
       "rendered": {
         "sites": 9,
-        "rate": 0.0017
+        "rate": 0.0017,
+        "injected": {
+          "sites": 1,
+          "share": 0.125
+        }
       }
     },
     "attr/link-target": {
@@ -604,16 +696,20 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/list-presentational": {
       "raw": {
-        "sites": 5,
-        "rate": 0.0011,
+        "sites": 4,
+        "rate": 0.0009,
         "ci": [
-          0.0005,
-          0.0026
+          0.0003,
+          0.0022
         ],
         "top1k": {
           "linted": 370,
@@ -622,13 +718,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 5,
-          "rate": 0.0012
+          "sites": 4,
+          "rate": 0.001
         }
       },
       "rendered": {
-        "sites": 9,
-        "rate": 0.0017
+        "sites": 8,
+        "rate": 0.0015,
+        "injected": {
+          "sites": 1,
+          "share": 0.2
+        }
       }
     },
     "attr/longdesc-lowsrc": {
@@ -652,7 +752,11 @@
       },
       "rendered": {
         "sites": 6,
-        "rate": 0.0011
+        "rate": 0.0011,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/media-presentational": {
@@ -676,7 +780,11 @@
       },
       "rendered": {
         "sites": 229,
-        "rate": 0.0426
+        "rate": 0.0426,
+        "injected": {
+          "sites": 41,
+          "share": 0.2135
+        }
       }
     },
     "attr/menu-type-label": {
@@ -700,7 +808,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/meta-scheme": {
@@ -724,7 +836,11 @@
       },
       "rendered": {
         "sites": 12,
-        "rate": 0.0022
+        "rate": 0.0022,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/methods": {
@@ -748,7 +864,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/microdata-without-itemscope": {
@@ -772,7 +892,11 @@
       },
       "rendered": {
         "sites": 29,
-        "rate": 0.0054
+        "rate": 0.0054,
+        "injected": {
+          "sites": 5,
+          "share": 0.1923
+        }
       }
     },
     "attr/name-obsolete": {
@@ -796,7 +920,11 @@
       },
       "rendered": {
         "sites": 234,
-        "rate": 0.0436
+        "rate": 0.0436,
+        "injected": {
+          "sites": 19,
+          "share": 0.0964
+        }
       }
     },
     "attr/object-plugin": {
@@ -820,7 +948,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/object-usemap": {
@@ -844,7 +976,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/rev-urn": {
@@ -868,40 +1004,48 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 1,
+          "share": 1
+        }
       }
     },
     "attr/script-async": {
       "raw": {
-        "sites": 202,
-        "rate": 0.0442,
+        "sites": 187,
+        "rate": 0.0409,
         "ci": [
-          0.0386,
-          0.0506
+          0.0356,
+          0.0471
         ],
         "top1k": {
           "linted": 370,
-          "sites": 12,
-          "rate": 0.0324
+          "sites": 11,
+          "rate": 0.0297
         },
         "rest": {
           "linted": 4200,
-          "sites": 190,
-          "rate": 0.0452
+          "sites": 176,
+          "rate": 0.0419
         }
       },
       "rendered": {
-        "sites": 274,
-        "rate": 0.051
+        "sites": 252,
+        "rate": 0.0469,
+        "injected": {
+          "sites": 47,
+          "share": 0.2098
+        }
       }
     },
     "attr/script-defer": {
       "raw": {
-        "sites": 600,
-        "rate": 0.1313,
+        "sites": 579,
+        "rate": 0.1267,
         "ci": [
-          0.1218,
-          0.1414
+          0.1174,
+          0.1367
         ],
         "top1k": {
           "linted": 370,
@@ -910,13 +1054,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 547,
-          "rate": 0.1302
+          "sites": 526,
+          "rate": 0.1252
         }
       },
       "rendered": {
-        "sites": 1119,
-        "rate": 0.2083
+        "sites": 1106,
+        "rate": 0.2059,
+        "injected": {
+          "sites": 350,
+          "share": 0.3906
+        }
       }
     },
     "attr/script-event-for": {
@@ -940,7 +1088,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/script-language": {
@@ -964,7 +1116,11 @@
       },
       "rendered": {
         "sites": 169,
-        "rate": 0.0315
+        "rate": 0.0315,
+        "injected": {
+          "sites": 20,
+          "share": 0.1408
+        }
       }
     },
     "attr/script-nomodule": {
@@ -988,7 +1144,11 @@
       },
       "rendered": {
         "sites": 910,
-        "rate": 0.1694
+        "rate": 0.1694,
+        "injected": {
+          "sites": 76,
+          "share": 0.0991
+        }
       }
     },
     "attr/script-src": {
@@ -1012,7 +1172,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/script-type-javascript": {
@@ -1036,7 +1200,11 @@
       },
       "rendered": {
         "sites": 4087,
-        "rate": 0.7609
+        "rate": 0.7609,
+        "injected": {
+          "sites": 705,
+          "share": 0.2085
+        }
       }
     },
     "attr/style-type": {
@@ -1060,7 +1228,11 @@
       },
       "rendered": {
         "sites": 2287,
-        "rate": 0.4258
+        "rate": 0.4258,
+        "injected": {
+          "sites": 1089,
+          "share": 0.5874
+        }
       }
     },
     "attr/svg-1-1-attributes": {
@@ -1084,7 +1256,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/svg-baseprofile": {
@@ -1108,7 +1284,11 @@
       },
       "rendered": {
         "sites": 23,
-        "rate": 0.0043
+        "rate": 0.0043,
+        "injected": {
+          "sites": 8,
+          "share": 0.5
+        }
       }
     },
     "attr/svg-enable-background": {
@@ -1132,7 +1312,11 @@
       },
       "rendered": {
         "sites": 164,
-        "rate": 0.0305
+        "rate": 0.0305,
+        "injected": {
+          "sites": 31,
+          "share": 0.2168
+        }
       }
     },
     "attr/svg-version": {
@@ -1156,7 +1340,11 @@
       },
       "rendered": {
         "sites": 831,
-        "rate": 0.1547
+        "rate": 0.1547,
+        "injected": {
+          "sites": 151,
+          "share": 0.2211
+        }
       }
     },
     "attr/svg-xlink": {
@@ -1180,7 +1368,11 @@
       },
       "rendered": {
         "sites": 829,
-        "rate": 0.1543
+        "rate": 0.1543,
+        "injected": {
+          "sites": 104,
+          "share": 0.1525
+        }
       }
     },
     "attr/svg-xml-space": {
@@ -1204,7 +1396,11 @@
       },
       "rendered": {
         "sites": 495,
-        "rate": 0.0922
+        "rate": 0.0922,
+        "injected": {
+          "sites": 84,
+          "share": 0.209
+        }
       }
     },
     "attr/table-datapagesize": {
@@ -1228,7 +1424,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/table-part-presentational": {
@@ -1252,7 +1452,11 @@
       },
       "rendered": {
         "sites": 126,
-        "rate": 0.0235
+        "rate": 0.0235,
+        "injected": {
+          "sites": 19,
+          "share": 0.1827
+        }
       }
     },
     "attr/table-presentational": {
@@ -1276,7 +1480,11 @@
       },
       "rendered": {
         "sites": 181,
-        "rate": 0.0337
+        "rate": 0.0337,
+        "injected": {
+          "sites": 50,
+          "share": 0.3205
+        }
       }
     },
     "attr/table-summary": {
@@ -1300,7 +1508,11 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 1,
+          "share": 0.5
+        }
       }
     },
     "attr/td-abbr-axis-scope": {
@@ -1324,7 +1536,11 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "attr/text-presentational": {
@@ -1348,7 +1564,11 @@
       },
       "rendered": {
         "sites": 146,
-        "rate": 0.0272
+        "rate": 0.0272,
+        "injected": {
+          "sites": 11,
+          "share": 0.0957
+        }
       }
     },
     "attr/xmlns-prefix": {
@@ -1372,7 +1592,11 @@
       },
       "rendered": {
         "sites": 161,
-        "rate": 0.03
+        "rate": 0.03,
+        "injected": {
+          "sites": 17,
+          "share": 0.1278
+        }
       }
     },
     "document/doctype": {
@@ -1396,7 +1620,11 @@
       },
       "rendered": {
         "sites": 163,
-        "rate": 0.0303
+        "rate": 0.0303,
+        "injected": {
+          "sites": 14,
+          "share": 0.1061
+        }
       }
     },
     "document/html-lang": {
@@ -1420,31 +1648,39 @@
       },
       "rendered": {
         "sites": 351,
-        "rate": 0.0654
+        "rate": 0.0654,
+        "injected": {
+          "sites": 6,
+          "share": 0.0225
+        }
       }
     },
     "document/main-multiple": {
       "raw": {
-        "sites": 63,
-        "rate": 0.0138,
+        "sites": 49,
+        "rate": 0.0107,
         "ci": [
-          0.0108,
-          0.0176
+          0.0081,
+          0.0141
         ],
         "top1k": {
           "linted": 370,
-          "sites": 7,
-          "rate": 0.0189
+          "sites": 5,
+          "rate": 0.0135
         },
         "rest": {
           "linted": 4200,
-          "sites": 56,
-          "rate": 0.0133
+          "sites": 44,
+          "rate": 0.0105
         }
       },
       "rendered": {
-        "sites": 82,
-        "rate": 0.0153
+        "sites": 76,
+        "rate": 0.0142,
+        "injected": {
+          "sites": 11,
+          "share": 0.2
+        }
       }
     },
     "element/acronym": {
@@ -1468,7 +1704,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/altglyph": {
@@ -1492,7 +1732,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/applet": {
@@ -1516,7 +1760,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/basefont": {
@@ -1540,7 +1788,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/bgsound": {
@@ -1564,7 +1816,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/big": {
@@ -1588,7 +1844,11 @@
       },
       "rendered": {
         "sites": 6,
-        "rate": 0.0011
+        "rate": 0.0011,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/blink": {
@@ -1612,7 +1872,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/center": {
@@ -1636,7 +1900,11 @@
       },
       "rendered": {
         "sites": 157,
-        "rate": 0.0292
+        "rate": 0.0292,
+        "injected": {
+          "sites": 7,
+          "share": 0.0507
+        }
       }
     },
     "element/content": {
@@ -1660,7 +1928,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/cursor": {
@@ -1684,7 +1956,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/dir": {
@@ -1708,7 +1984,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/fencedframe": {
@@ -1732,7 +2012,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/font": {
@@ -1756,7 +2040,11 @@
       },
       "rendered": {
         "sites": 85,
-        "rate": 0.0158
+        "rate": 0.0158,
+        "injected": {
+          "sites": 7,
+          "share": 0.1
+        }
       }
     },
     "element/font-face": {
@@ -1780,7 +2068,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/frameset": {
@@ -1804,7 +2096,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/isindex": {
@@ -1828,7 +2124,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/keygen": {
@@ -1852,7 +2152,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/listing": {
@@ -1876,7 +2180,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/marquee": {
@@ -1900,7 +2208,11 @@
       },
       "rendered": {
         "sites": 16,
-        "rate": 0.003
+        "rate": 0.003,
+        "injected": {
+          "sites": 2,
+          "share": 0.1538
+        }
       }
     },
     "element/menuitem": {
@@ -1924,7 +2236,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/multicol": {
@@ -1948,7 +2264,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/nextid": {
@@ -1972,7 +2292,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/nobr": {
@@ -1996,7 +2320,11 @@
       },
       "rendered": {
         "sites": 24,
-        "rate": 0.0045
+        "rate": 0.0045,
+        "injected": {
+          "sites": 2,
+          "share": 0.1111
+        }
       }
     },
     "element/noembed": {
@@ -2020,7 +2348,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/object-embed-plugin": {
@@ -2044,7 +2376,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 1,
+          "share": 1
+        }
       }
     },
     "element/param": {
@@ -2068,7 +2404,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 1,
+          "share": 1
+        }
       }
     },
     "element/plaintext": {
@@ -2092,7 +2432,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/rb": {
@@ -2116,7 +2460,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/rtc": {
@@ -2140,7 +2488,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/shadow": {
@@ -2164,7 +2516,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/solidcolor": {
@@ -2188,7 +2544,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/spacer": {
@@ -2212,7 +2572,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/strike": {
@@ -2236,7 +2600,11 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 1,
+          "share": 0.3333
+        }
       }
     },
     "element/tref": {
@@ -2260,7 +2628,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/tt": {
@@ -2284,7 +2656,11 @@
       },
       "rendered": {
         "sites": 3,
-        "rate": 0.0006
+        "rate": 0.0006,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "element/xmp": {
@@ -2308,7 +2684,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "head/base-multiple": {
@@ -2332,31 +2712,39 @@
       },
       "rendered": {
         "sites": 3,
-        "rate": 0.0006
+        "rate": 0.0006,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "head/base-position": {
       "raw": {
-        "sites": 128,
-        "rate": 0.028,
+        "sites": 98,
+        "rate": 0.0214,
         "ci": [
-          0.0236,
-          0.0332
+          0.0176,
+          0.0261
         ],
         "top1k": {
           "linted": 370,
-          "sites": 9,
-          "rate": 0.0243
+          "sites": 6,
+          "rate": 0.0162
         },
         "rest": {
           "linted": 4200,
-          "sites": 119,
-          "rate": 0.0283
+          "sites": 92,
+          "rate": 0.0219
         }
       },
       "rendered": {
-        "sites": 179,
-        "rate": 0.0333
+        "sites": 151,
+        "rate": 0.0281,
+        "injected": {
+          "sites": 7,
+          "share": 0.0707
+        }
       }
     },
     "head/canonical-multiple": {
@@ -2380,7 +2768,11 @@
       },
       "rendered": {
         "sites": 45,
-        "rate": 0.0084
+        "rate": 0.0084,
+        "injected": {
+          "sites": 11,
+          "share": 0.2973
+        }
       }
     },
     "head/charset-multiple": {
@@ -2404,7 +2796,11 @@
       },
       "rendered": {
         "sites": 173,
-        "rate": 0.0322
+        "rate": 0.0322,
+        "injected": {
+          "sites": 32,
+          "share": 0.2222
+        }
       }
     },
     "head/charset-position": {
@@ -2428,7 +2824,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "head/description-multiple": {
@@ -2452,7 +2852,11 @@
       },
       "rendered": {
         "sites": 70,
-        "rate": 0.013
+        "rate": 0.013,
+        "injected": {
+          "sites": 18,
+          "share": 0.3158
+        }
       }
     },
     "head/manifest-multiple": {
@@ -2476,16 +2880,20 @@
       },
       "rendered": {
         "sites": 34,
-        "rate": 0.0063
+        "rate": 0.0063,
+        "injected": {
+          "sites": 5,
+          "share": 0.1852
+        }
       }
     },
     "head/metadata-position": {
       "raw": {
-        "sites": 23,
-        "rate": 0.005,
+        "sites": 22,
+        "rate": 0.0048,
         "ci": [
-          0.0034,
-          0.0075
+          0.0032,
+          0.0073
         ],
         "top1k": {
           "linted": 370,
@@ -2494,13 +2902,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 23,
-          "rate": 0.0055
+          "sites": 22,
+          "rate": 0.0052
         }
       },
       "rendered": {
-        "sites": 70,
-        "rate": 0.013
+        "sites": 69,
+        "rate": 0.0128,
+        "injected": {
+          "sites": 40,
+          "share": 0.6667
+        }
       }
     },
     "head/title": {
@@ -2524,31 +2936,39 @@
       },
       "rendered": {
         "sites": 76,
-        "rate": 0.0142
+        "rate": 0.0142,
+        "injected": {
+          "sites": 5,
+          "share": 0.0943
+        }
       }
     },
     "head/viewport-missing": {
       "raw": {
-        "sites": 209,
-        "rate": 0.0457,
+        "sites": 174,
+        "rate": 0.0381,
         "ci": [
-          0.04,
-          0.0522
+          0.0329,
+          0.044
         ],
         "top1k": {
           "linted": 370,
-          "sites": 21,
-          "rate": 0.0568
+          "sites": 16,
+          "rate": 0.0432
         },
         "rest": {
           "linted": 4200,
-          "sites": 188,
-          "rate": 0.0448
+          "sites": 158,
+          "rate": 0.0376
         }
       },
       "rendered": {
-        "sites": 235,
-        "rate": 0.0438
+        "sites": 203,
+        "rate": 0.0378,
+        "injected": {
+          "sites": 2,
+          "share": 0.0133
+        }
       }
     },
     "link/anchor-keywords": {
@@ -2572,7 +2992,11 @@
       },
       "rendered": {
         "sites": 14,
-        "rate": 0.0026
+        "rate": 0.0026,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/apple-touch-icon-precomposed": {
@@ -2596,7 +3020,11 @@
       },
       "rendered": {
         "sites": 154,
-        "rate": 0.0287
+        "rate": 0.0287,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/canonical-http": {
@@ -2620,7 +3048,11 @@
       },
       "rendered": {
         "sites": 26,
-        "rate": 0.0048
+        "rate": 0.0048,
+        "injected": {
+          "sites": 1,
+          "share": 0.0455
+        }
       }
     },
     "link/canonical-qualifiers": {
@@ -2644,31 +3076,39 @@
       },
       "rendered": {
         "sites": 5,
-        "rate": 0.0009
+        "rate": 0.0009,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/canonical-relative": {
       "raw": {
-        "sites": 39,
-        "rate": 0.0085,
+        "sites": 35,
+        "rate": 0.0077,
         "ci": [
-          0.0062,
-          0.0116
+          0.0055,
+          0.0106
         ],
         "top1k": {
           "linted": 370,
-          "sites": 3,
-          "rate": 0.0081
+          "sites": 2,
+          "rate": 0.0054
         },
         "rest": {
           "linted": 4200,
-          "sites": 36,
-          "rate": 0.0086
+          "sites": 33,
+          "rate": 0.0079
         }
       },
       "rendered": {
-        "sites": 39,
-        "rate": 0.0073
+        "sites": 36,
+        "rate": 0.0067,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/copyright": {
@@ -2692,7 +3132,11 @@
       },
       "rendered": {
         "sites": 9,
-        "rate": 0.0017
+        "rate": 0.0017,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/document-info-keywords": {
@@ -2716,7 +3160,11 @@
       },
       "rendered": {
         "sites": 263,
-        "rate": 0.049
+        "rate": 0.049,
+        "injected": {
+          "sites": 1,
+          "share": 0.0041
+        }
       }
     },
     "link/href-missing": {
@@ -2740,31 +3188,39 @@
       },
       "rendered": {
         "sites": 52,
-        "rate": 0.0097
+        "rate": 0.0097,
+        "injected": {
+          "sites": 6,
+          "share": 0.1277
+        }
       }
     },
     "link/hreflang-relative": {
       "raw": {
-        "sites": 26,
-        "rate": 0.0057,
+        "sites": 24,
+        "rate": 0.0053,
         "ci": [
-          0.0039,
-          0.0083
+          0.0035,
+          0.0078
         ],
         "top1k": {
           "linted": 370,
-          "sites": 3,
-          "rate": 0.0081
+          "sites": 2,
+          "rate": 0.0054
         },
         "rest": {
           "linted": 4200,
-          "sites": 23,
-          "rate": 0.0055
+          "sites": 22,
+          "rate": 0.0052
         }
       },
       "rendered": {
-        "sites": 33,
-        "rate": 0.0061
+        "sites": 31,
+        "rate": 0.0058,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/hreflang-value": {
@@ -2788,7 +3244,11 @@
       },
       "rendered": {
         "sites": 132,
-        "rate": 0.0246
+        "rate": 0.0246,
+        "injected": {
+          "sites": 6,
+          "share": 0.06
+        }
       }
     },
     "link/image-src": {
@@ -2812,7 +3272,11 @@
       },
       "rendered": {
         "sites": 170,
-        "rate": 0.0317
+        "rate": 0.0317,
+        "injected": {
+          "sites": 1,
+          "share": 0.0068
+        }
       }
     },
     "link/import": {
@@ -2836,7 +3300,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/mask-icon": {
@@ -2860,7 +3328,11 @@
       },
       "rendered": {
         "sites": 628,
-        "rate": 0.1169
+        "rate": 0.1169,
+        "injected": {
+          "sites": 2,
+          "share": 0.004
+        }
       }
     },
     "link/microsummary": {
@@ -2884,7 +3356,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/modulepreload-as-value": {
@@ -2908,7 +3384,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/navigation-keywords": {
@@ -2932,31 +3412,39 @@
       },
       "rendered": {
         "sites": 34,
-        "rate": 0.0063
+        "rate": 0.0063,
+        "injected": {
+          "sites": 2,
+          "share": 0.0667
+        }
       }
     },
     "link/preload-as-missing": {
       "raw": {
-        "sites": 20,
-        "rate": 0.0044,
+        "sites": 15,
+        "rate": 0.0033,
         "ci": [
-          0.0028,
-          0.0068
+          0.002,
+          0.0054
         ],
         "top1k": {
           "linted": 370,
-          "sites": 1,
-          "rate": 0.0027
+          "sites": 0,
+          "rate": 0
         },
         "rest": {
           "linted": 4200,
-          "sites": 19,
-          "rate": 0.0045
+          "sites": 15,
+          "rate": 0.0036
         }
       },
       "rendered": {
-        "sites": 21,
-        "rate": 0.0039
+        "sites": 17,
+        "rate": 0.0032,
+        "injected": {
+          "sites": 2,
+          "share": 0.125
+        }
       }
     },
     "link/preload-fetch-crossorigin-missing": {
@@ -2980,31 +3468,39 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 1,
+          "share": 0.3333
+        }
       }
     },
     "link/preload-font-crossorigin-missing": {
       "raw": {
-        "sites": 17,
-        "rate": 0.0037,
+        "sites": 14,
+        "rate": 0.0031,
         "ci": [
-          0.0023,
-          0.0059
+          0.0018,
+          0.0051
         ],
         "top1k": {
           "linted": 370,
-          "sites": 2,
-          "rate": 0.0054
+          "sites": 1,
+          "rate": 0.0027
         },
         "rest": {
           "linted": 4200,
-          "sites": 15,
-          "rate": 0.0036
+          "sites": 13,
+          "rate": 0.0031
         }
       },
       "rendered": {
-        "sites": 18,
-        "rate": 0.0034
+        "sites": 16,
+        "rate": 0.003,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/preload-module": {
@@ -3028,7 +3524,11 @@
       },
       "rendered": {
         "sites": 23,
-        "rate": 0.0043
+        "rate": 0.0043,
+        "injected": {
+          "sites": 5,
+          "share": 0.25
+        }
       }
     },
     "link/prerender": {
@@ -3052,7 +3552,11 @@
       },
       "rendered": {
         "sites": 3,
-        "rate": 0.0006
+        "rate": 0.0006,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/shortcut-icon": {
@@ -3076,7 +3580,11 @@
       },
       "rendered": {
         "sites": 2104,
-        "rate": 0.3917
+        "rate": 0.3917,
+        "injected": {
+          "sites": 10,
+          "share": 0.0057
+        }
       }
     },
     "link/sidebar": {
@@ -3100,7 +3608,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/sitemap": {
@@ -3124,7 +3636,11 @@
       },
       "rendered": {
         "sites": 64,
-        "rate": 0.0119
+        "rate": 0.0119,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/subresource": {
@@ -3148,7 +3664,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "link/vendor-keywords": {
@@ -3172,7 +3692,11 @@
       },
       "rendered": {
         "sites": 465,
-        "rate": 0.0866
+        "rate": 0.0866,
+        "injected": {
+          "sites": 1,
+          "share": 0.0025
+        }
       }
     },
     "link/wlwmanifest": {
@@ -3196,7 +3720,11 @@
       },
       "rendered": {
         "sites": 20,
-        "rate": 0.0037
+        "rate": 0.0037,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/abstract": {
@@ -3220,7 +3748,11 @@
       },
       "rendered": {
         "sites": 30,
-        "rate": 0.0056
+        "rate": 0.0056,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/apple-mobile-web-app-capable": {
@@ -3244,31 +3776,39 @@
       },
       "rendered": {
         "sites": 392,
-        "rate": 0.073
+        "rate": 0.073,
+        "injected": {
+          "sites": 2,
+          "share": 0.0067
+        }
       }
     },
     "meta/apple-mobile-web-app-status-bar-style": {
       "raw": {
-        "sites": 296,
-        "rate": 0.0648,
+        "sites": 115,
+        "rate": 0.0252,
         "ci": [
-          0.058,
-          0.0723
+          0.021,
+          0.0301
         ],
         "top1k": {
           "linted": 370,
-          "sites": 24,
-          "rate": 0.0649
+          "sites": 9,
+          "rate": 0.0243
         },
         "rest": {
           "linted": 4200,
-          "sites": 272,
-          "rate": 0.0648
+          "sites": 106,
+          "rate": 0.0252
         }
       },
       "rendered": {
-        "sites": 361,
-        "rate": 0.0672
+        "sites": 143,
+        "rate": 0.0266,
+        "injected": {
+          "sites": 2,
+          "share": 0.0185
+        }
       }
     },
     "meta/apple-mobile-web-app-title": {
@@ -3292,7 +3832,11 @@
       },
       "rendered": {
         "sites": 531,
-        "rate": 0.0989
+        "rate": 0.0989,
+        "injected": {
+          "sites": 1,
+          "share": 0.0024
+        }
       }
     },
     "meta/apple-touch-fullscreen": {
@@ -3316,7 +3860,11 @@
       },
       "rendered": {
         "sites": 48,
-        "rate": 0.0089
+        "rate": 0.0089,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/application-name": {
@@ -3340,7 +3888,11 @@
       },
       "rendered": {
         "sites": 460,
-        "rate": 0.0856
+        "rate": 0.0856,
+        "injected": {
+          "sites": 1,
+          "share": 0.0028
+        }
       }
     },
     "meta/application-title": {
@@ -3364,7 +3916,11 @@
       },
       "rendered": {
         "sites": 4,
-        "rate": 0.0007
+        "rate": 0.0007,
+        "injected": {
+          "sites": 2,
+          "share": 1
+        }
       }
     },
     "meta/autolink-names": {
@@ -3388,16 +3944,20 @@
       },
       "rendered": {
         "sites": 32,
-        "rate": 0.006
+        "rate": 0.006,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/charset-value": {
       "raw": {
-        "sites": 27,
-        "rate": 0.0059,
+        "sites": 25,
+        "rate": 0.0055,
         "ci": [
-          0.0041,
-          0.0086
+          0.0037,
+          0.0081
         ],
         "top1k": {
           "linted": 370,
@@ -3406,13 +3966,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 25,
-          "rate": 0.006
+          "sites": 23,
+          "rate": 0.0055
         }
       },
       "rendered": {
-        "sites": 28,
-        "rate": 0.0052
+        "sites": 26,
+        "rate": 0.0048,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/color-scheme-value": {
@@ -3436,7 +4000,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/coverage": {
@@ -3460,7 +4028,11 @@
       },
       "rendered": {
         "sites": 2,
-        "rate": 0.0004
+        "rate": 0.0004,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-block-all-mixed-content": {
@@ -3484,7 +4056,11 @@
       },
       "rendered": {
         "sites": 16,
-        "rate": 0.003
+        "rate": 0.003,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-navigate-to": {
@@ -3508,7 +4084,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-plugin-types": {
@@ -3532,7 +4112,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-prefetch-src": {
@@ -3556,7 +4140,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-referrer": {
@@ -3580,7 +4168,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-reflected-xss": {
@@ -3604,7 +4196,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/csp-report-uri": {
@@ -3628,7 +4224,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/distribution": {
@@ -3652,7 +4252,11 @@
       },
       "rendered": {
         "sites": 72,
-        "rate": 0.0134
+        "rate": 0.0134,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/dublin-core-without-schema": {
@@ -3676,7 +4280,11 @@
       },
       "rendered": {
         "sites": 92,
-        "rate": 0.0171
+        "rate": 0.0171,
+        "injected": {
+          "sites": 3,
+          "share": 0.0375
+        }
       }
     },
     "meta/fragment": {
@@ -3700,7 +4308,11 @@
       },
       "rendered": {
         "sites": 12,
-        "rate": 0.0022
+        "rate": 0.0022,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/google-value": {
@@ -3724,7 +4336,11 @@
       },
       "rendered": {
         "sites": 52,
-        "rate": 0.0097
+        "rate": 0.0097,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/handheld-friendly": {
@@ -3748,7 +4364,11 @@
       },
       "rendered": {
         "sites": 320,
-        "rate": 0.0596
+        "rate": 0.0596,
+        "injected": {
+          "sites": 1,
+          "share": 0.0036
+        }
       }
     },
     "meta/http-equiv-cache-pragmas": {
@@ -3772,7 +4392,11 @@
       },
       "rendered": {
         "sites": 199,
-        "rate": 0.0371
+        "rate": 0.0371,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-client-hints": {
@@ -3796,7 +4420,11 @@
       },
       "rendered": {
         "sites": 71,
-        "rate": 0.0132
+        "rate": 0.0132,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-content-language": {
@@ -3820,7 +4448,11 @@
       },
       "rendered": {
         "sites": 241,
-        "rate": 0.0449
+        "rate": 0.0449,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-content-script-style-type": {
@@ -3844,7 +4476,11 @@
       },
       "rendered": {
         "sites": 38,
-        "rate": 0.0071
+        "rate": 0.0071,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-content-security-policy": {
@@ -3868,7 +4504,11 @@
       },
       "rendered": {
         "sites": 99,
-        "rate": 0.0184
+        "rate": 0.0184,
+        "injected": {
+          "sites": 2,
+          "share": 0.0256
+        }
       }
     },
     "meta/http-equiv-content-type": {
@@ -3892,7 +4532,11 @@
       },
       "rendered": {
         "sites": 969,
-        "rate": 0.1804
+        "rate": 0.1804,
+        "injected": {
+          "sites": 1,
+          "share": 0.0013
+        }
       }
     },
     "meta/http-equiv-default-style": {
@@ -3916,7 +4560,11 @@
       },
       "rendered": {
         "sites": 2,
-        "rate": 0.0004
+        "rate": 0.0004,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-description": {
@@ -3940,7 +4588,11 @@
       },
       "rendered": {
         "sites": 5,
-        "rate": 0.0009
+        "rate": 0.0009,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-header-only-pragmas": {
@@ -3964,7 +4616,11 @@
       },
       "rendered": {
         "sites": 13,
-        "rate": 0.0024
+        "rate": 0.0024,
+        "injected": {
+          "sites": 1,
+          "share": 0.0909
+        }
       }
     },
     "meta/http-equiv-ie-pragmas": {
@@ -3988,7 +4644,11 @@
       },
       "rendered": {
         "sites": 24,
-        "rate": 0.0045
+        "rate": 0.0045,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-metadata-names": {
@@ -4012,7 +4672,11 @@
       },
       "rendered": {
         "sites": 13,
-        "rate": 0.0024
+        "rate": 0.0024,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-origin-trial": {
@@ -4036,7 +4700,11 @@
       },
       "rendered": {
         "sites": 300,
-        "rate": 0.0559
+        "rate": 0.0559,
+        "injected": {
+          "sites": 223,
+          "share": 0.9292
+        }
       }
     },
     "meta/http-equiv-pics-p3p": {
@@ -4060,7 +4728,11 @@
       },
       "rendered": {
         "sites": 6,
-        "rate": 0.0011
+        "rate": 0.0011,
+        "injected": {
+          "sites": 1,
+          "share": 0.25
+        }
       }
     },
     "meta/http-equiv-refresh": {
@@ -4084,7 +4756,11 @@
       },
       "rendered": {
         "sites": 78,
-        "rate": 0.0145
+        "rate": 0.0145,
+        "injected": {
+          "sites": 2,
+          "share": 0.0286
+        }
       }
     },
     "meta/http-equiv-robots": {
@@ -4108,7 +4784,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-set-cookie": {
@@ -4132,16 +4812,20 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-unregistered-pragmas": {
       "raw": {
-        "sites": 50,
-        "rate": 0.0109,
+        "sites": 49,
+        "rate": 0.0107,
         "ci": [
-          0.0083,
-          0.0144
+          0.0081,
+          0.0141
         ],
         "top1k": {
           "linted": 370,
@@ -4150,13 +4834,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 46,
-          "rate": 0.011
+          "sites": 45,
+          "rate": 0.0107
         }
       },
       "rendered": {
-        "sites": 62,
-        "rate": 0.0115
+        "sites": 61,
+        "rate": 0.0114,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-x-dns-prefetch-control": {
@@ -4180,7 +4868,11 @@
       },
       "rendered": {
         "sites": 144,
-        "rate": 0.0268
+        "rate": 0.0268,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-x-security-pragmas": {
@@ -4204,7 +4896,11 @@
       },
       "rendered": {
         "sites": 1,
-        "rate": 0.0002
+        "rate": 0.0002,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/http-equiv-x-ua-compatible": {
@@ -4228,7 +4924,11 @@
       },
       "rendered": {
         "sites": 1762,
-        "rate": 0.3281
+        "rate": 0.3281,
+        "injected": {
+          "sites": 5,
+          "share": 0.0035
+        }
       }
     },
     "meta/keywords": {
@@ -4252,7 +4952,11 @@
       },
       "rendered": {
         "sites": 1684,
-        "rate": 0.3135
+        "rate": 0.3135,
+        "injected": {
+          "sites": 9,
+          "share": 0.0064
+        }
       }
     },
     "meta/mobile-optimized": {
@@ -4276,7 +4980,11 @@
       },
       "rendered": {
         "sites": 255,
-        "rate": 0.0475
+        "rate": 0.0475,
+        "injected": {
+          "sites": 1,
+          "share": 0.0046
+        }
       }
     },
     "meta/mobile-web-app-capable": {
@@ -4300,7 +5008,11 @@
       },
       "rendered": {
         "sites": 348,
-        "rate": 0.0648
+        "rate": 0.0648,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/msapplication-names": {
@@ -4324,7 +5036,11 @@
       },
       "rendered": {
         "sites": 1453,
-        "rate": 0.2705
+        "rate": 0.2705,
+        "injected": {
+          "sites": 4,
+          "share": 0.0034
+        }
       }
     },
     "meta/news-keywords": {
@@ -4348,7 +5064,11 @@
       },
       "rendered": {
         "sites": 71,
-        "rate": 0.0132
+        "rate": 0.0132,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/og-contact-properties": {
@@ -4372,7 +5092,11 @@
       },
       "rendered": {
         "sites": 71,
-        "rate": 0.0132
+        "rate": 0.0132,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/og-fb-pages": {
@@ -4396,31 +5120,39 @@
       },
       "rendered": {
         "sites": 381,
-        "rate": 0.0709
+        "rate": 0.0709,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/og-name-attribute": {
       "raw": {
-        "sites": 224,
-        "rate": 0.049,
+        "sites": 185,
+        "rate": 0.0405,
         "ci": [
-          0.0431,
-          0.0557
+          0.0351,
+          0.0466
         ],
         "top1k": {
           "linted": 370,
-          "sites": 21,
-          "rate": 0.0568
+          "sites": 20,
+          "rate": 0.0541
         },
         "rest": {
           "linted": 4200,
-          "sites": 203,
-          "rate": 0.0483
+          "sites": 165,
+          "rate": 0.0393
         }
       },
       "rendered": {
-        "sites": 264,
-        "rate": 0.0492
+        "sites": 219,
+        "rate": 0.0408,
+        "injected": {
+          "sites": 6,
+          "share": 0.0339
+        }
       }
     },
     "meta/og-relative-url": {
@@ -4444,7 +5176,11 @@
       },
       "rendered": {
         "sites": 257,
-        "rate": 0.0478
+        "rate": 0.0478,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/og-required-properties": {
@@ -4468,7 +5204,11 @@
       },
       "rendered": {
         "sites": 685,
-        "rate": 0.1275
+        "rate": 0.1275,
+        "injected": {
+          "sites": 21,
+          "share": 0.0366
+        }
       }
     },
     "meta/page-info-names": {
@@ -4492,16 +5232,20 @@
       },
       "rendered": {
         "sites": 442,
-        "rate": 0.0823
+        "rate": 0.0823,
+        "injected": {
+          "sites": 1,
+          "share": 0.0026
+        }
       }
     },
     "meta/referrer-value": {
       "raw": {
-        "sites": 4,
-        "rate": 0.0009,
+        "sites": 0,
+        "rate": 0,
         "ci": [
-          0.0003,
-          0.0022
+          0,
+          0.0008
         ],
         "top1k": {
           "linted": 370,
@@ -4510,13 +5254,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 4,
-          "rate": 0.001
+          "sites": 0,
+          "rate": 0
         }
       },
       "rendered": {
-        "sites": 10,
-        "rate": 0.0019
+        "sites": 0,
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/revisit-after": {
@@ -4540,7 +5288,11 @@
       },
       "rendered": {
         "sites": 73,
-        "rate": 0.0136
+        "rate": 0.0136,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/robots-value": {
@@ -4564,7 +5316,11 @@
       },
       "rendered": {
         "sites": 142,
-        "rate": 0.0264
+        "rate": 0.0264,
+        "injected": {
+          "sites": 2,
+          "share": 0.0182
+        }
       }
     },
     "meta/supported-color-schemes": {
@@ -4588,7 +5344,11 @@
       },
       "rendered": {
         "sites": 6,
-        "rate": 0.0011
+        "rate": 0.0011,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/tdm-reservation-value": {
@@ -4612,7 +5372,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/theme-color-value": {
@@ -4636,31 +5400,39 @@
       },
       "rendered": {
         "sites": 18,
-        "rate": 0.0034
+        "rate": 0.0034,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/title": {
       "raw": {
-        "sites": 268,
-        "rate": 0.0586,
+        "sites": 264,
+        "rate": 0.0578,
         "ci": [
-          0.0522,
-          0.0658
+          0.0514,
+          0.0649
         ],
         "top1k": {
           "linted": 370,
-          "sites": 22,
-          "rate": 0.0595
+          "sites": 21,
+          "rate": 0.0568
         },
         "rest": {
           "linted": 4200,
-          "sites": 246,
-          "rate": 0.0586
+          "sites": 243,
+          "rate": 0.0579
         }
       },
       "rendered": {
-        "sites": 305,
-        "rate": 0.0568
+        "sites": 301,
+        "rate": 0.056,
+        "injected": {
+          "sites": 1,
+          "share": 0.0039
+        }
       }
     },
     "meta/twitter-card-names": {
@@ -4684,7 +5456,11 @@
       },
       "rendered": {
         "sites": 2308,
-        "rate": 0.4297
+        "rate": 0.4297,
+        "injected": {
+          "sites": 20,
+          "share": 0.0102
+        }
       }
     },
     "meta/verification-names": {
@@ -4708,7 +5484,11 @@
       },
       "rendered": {
         "sites": 84,
-        "rate": 0.0156
+        "rate": 0.0156,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "meta/viewport-user-scalable": {
@@ -4732,31 +5512,39 @@
       },
       "rendered": {
         "sites": 806,
-        "rate": 0.1501
+        "rate": 0.1501,
+        "injected": {
+          "sites": 15,
+          "share": 0.024
+        }
       }
     },
     "meta/viewport-value": {
       "raw": {
-        "sites": 498,
-        "rate": 0.109,
+        "sites": 48,
+        "rate": 0.0105,
         "ci": [
-          0.1003,
-          0.1183
+          0.0079,
+          0.0139
         ],
         "top1k": {
           "linted": 370,
-          "sites": 33,
-          "rate": 0.0892
+          "sites": 3,
+          "rate": 0.0081
         },
         "rest": {
           "linted": 4200,
-          "sites": 465,
-          "rate": 0.1107
+          "sites": 45,
+          "rate": 0.0107
         }
       },
       "rendered": {
-        "sites": 571,
-        "rate": 0.1063
+        "sites": 52,
+        "rate": 0.0097,
+        "injected": {
+          "sites": 2,
+          "share": 0.0455
+        }
       }
     },
     "script/importmap-syntax": {
@@ -4780,7 +5568,11 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
     },
     "script/json-ld-howto-faq-announcement": {
@@ -4804,7 +5596,11 @@
       },
       "rendered": {
         "sites": 198,
-        "rate": 0.0369
+        "rate": 0.0369,
+        "injected": {
+          "sites": 10,
+          "share": 0.0571
+        }
       }
     },
     "script/json-ld-search-action": {
@@ -4828,40 +5624,48 @@
       },
       "rendered": {
         "sites": 1409,
-        "rate": 0.2623
+        "rate": 0.2623,
+        "injected": {
+          "sites": 31,
+          "share": 0.0266
+        }
       }
     },
     "script/json-ld-syntax": {
       "raw": {
-        "sites": 28,
-        "rate": 0.0061,
+        "sites": 22,
+        "rate": 0.0048,
         "ci": [
-          0.0042,
-          0.0088
+          0.0032,
+          0.0073
         ],
         "top1k": {
           "linted": 370,
-          "sites": 2,
-          "rate": 0.0054
+          "sites": 1,
+          "rate": 0.0027
         },
         "rest": {
           "linted": 4200,
-          "sites": 26,
-          "rate": 0.0062
+          "sites": 21,
+          "rate": 0.005
         }
       },
       "rendered": {
-        "sites": 36,
-        "rate": 0.0067
+        "sites": 25,
+        "rate": 0.0047,
+        "injected": {
+          "sites": 3,
+          "share": 0.1429
+        }
       }
     },
     "script/json-ld-unescaped-lt": {
       "raw": {
-        "sites": 39,
-        "rate": 0.0085,
+        "sites": 32,
+        "rate": 0.007,
         "ci": [
-          0.0062,
-          0.0116
+          0.005,
+          0.0099
         ],
         "top1k": {
           "linted": 370,
@@ -4870,13 +5674,17 @@
         },
         "rest": {
           "linted": 4200,
-          "sites": 36,
-          "rate": 0.0086
+          "sites": 29,
+          "rate": 0.0069
         }
       },
       "rendered": {
-        "sites": 43,
-        "rate": 0.008
+        "sites": 34,
+        "rate": 0.0063,
+        "injected": {
+          "sites": 2,
+          "share": 0.0645
+        }
       }
     },
     "script/speculationrules-syntax": {
@@ -4900,8 +5708,1536 @@
       },
       "rendered": {
         "sites": 0,
-        "rate": 0
+        "rate": 0,
+        "injected": {
+          "sites": 0,
+          "share": 0
+        }
       }
+    }
+  },
+  "severity": {
+    "harmful": {
+      "sites": 2029,
+      "rate": 0.444,
+      "ci": [
+        0.4296,
+        0.4584
+      ]
+    },
+    "deprecated": {
+      "sites": 2308,
+      "rate": 0.505,
+      "ci": [
+        0.4905,
+        0.5195
+      ]
+    },
+    "unnecessary": {
+      "sites": 4485,
+      "rate": 0.9814,
+      "ci": [
+        0.9771,
+        0.9849
+      ]
+    },
+    "any": {
+      "sites": 4529,
+      "rate": 0.991,
+      "ci": [
+        0.9879,
+        0.9934
+      ]
+    }
+  },
+  "perPage": {
+    "rules": {
+      "median": 6,
+      "mean": 6.33,
+      "p90": 11,
+      "total": 28942
+    },
+    "findings": {
+      "median": 11,
+      "mean": 25.08,
+      "p90": 51,
+      "total": 114595
+    }
+  },
+  "bytes": {
+    "pages": 4570,
+    "page": {
+      "raw": {
+        "median": 208081,
+        "mean": 376622.03,
+        "p90": 885463,
+        "total": 1721162660
+      },
+      "gzip": {
+        "median": 35086,
+        "mean": 61808.95,
+        "p90": 134391,
+        "total": 282466920
+      },
+      "brotli": {
+        "median": 30327,
+        "mean": 48525.94,
+        "p90": 101489,
+        "total": 221763542
+      }
+    },
+    "saved": {
+      "raw": {
+        "median": 436,
+        "mean": 598,
+        "p90": 1119,
+        "total": 2732844
+      },
+      "gzip": {
+        "median": 63,
+        "mean": 93.03,
+        "p90": 175,
+        "total": 425136
+      },
+      "brotli": {
+        "median": 51,
+        "mean": 75.61,
+        "p90": 166,
+        "total": 345530
+      }
+    },
+    "rules": {
+      "attr/a-coords-shape": {
+        "sites": 2,
+        "median": 16,
+        "mean": 2367.5,
+        "p90": 4719,
+        "total": 4735
+      },
+      "attr/charset-obsolete": {
+        "sites": 58,
+        "median": 16,
+        "mean": 92.93,
+        "p90": 128,
+        "total": 5390
+      },
+      "attr/contextmenu-onshow": {
+        "sites": 2,
+        "median": 19,
+        "mean": 47.5,
+        "p90": 76,
+        "total": 95
+      },
+      "attr/head-profile": {
+        "sites": 12,
+        "median": 44,
+        "mean": 42.08,
+        "p90": 45,
+        "total": 505
+      },
+      "attr/html-version": {
+        "sites": 6,
+        "median": 25,
+        "mean": 24.67,
+        "p90": 25,
+        "total": 148
+      },
+      "attr/importance": {
+        "sites": 29,
+        "median": 36,
+        "mean": 334.9,
+        "p90": 1040,
+        "total": 9712
+      },
+      "attr/input-number-maxlength-size": {
+        "sites": 1,
+        "median": 9,
+        "mean": 9,
+        "p90": 9,
+        "total": 9
+      },
+      "attr/menu-type-label": {
+        "sites": 1,
+        "median": 255,
+        "mean": 255,
+        "p90": 255,
+        "total": 255
+      },
+      "attr/meta-scheme": {
+        "sites": 10,
+        "median": 42,
+        "mean": 198,
+        "p90": 122,
+        "total": 1980
+      },
+      "attr/name-obsolete": {
+        "sites": 37,
+        "median": 28,
+        "mean": 93.76,
+        "p90": 127,
+        "total": 3469
+      },
+      "attr/script-async": {
+        "sites": 187,
+        "median": 9,
+        "mean": 11.42,
+        "p90": 18,
+        "total": 2135
+      },
+      "attr/script-defer": {
+        "sites": 579,
+        "median": 6,
+        "mean": 18.79,
+        "p90": 28,
+        "total": 10882
+      },
+      "attr/script-language": {
+        "sites": 130,
+        "median": 22,
+        "mean": 79.11,
+        "p90": 132,
+        "total": 10284
+      },
+      "attr/script-nomodule": {
+        "sites": 747,
+        "median": 102,
+        "mean": 152.33,
+        "p90": 212,
+        "total": 113791
+      },
+      "attr/script-type-javascript": {
+        "sites": 2783,
+        "median": 92,
+        "mean": 187.38,
+        "p90": 443,
+        "total": 521481
+      },
+      "attr/style-type": {
+        "sites": 804,
+        "median": 16,
+        "mean": 53.88,
+        "p90": 96,
+        "total": 43320
+      },
+      "attr/svg-baseprofile": {
+        "sites": 8,
+        "median": 38,
+        "mean": 79.63,
+        "p90": 370,
+        "total": 637
+      },
+      "attr/svg-enable-background": {
+        "sites": 120,
+        "median": 42,
+        "mean": 224.23,
+        "p90": 204,
+        "total": 26908
+      },
+      "attr/svg-version": {
+        "sites": 567,
+        "median": 28,
+        "mean": 99.25,
+        "p90": 200,
+        "total": 56276
+      },
+      "head/manifest-multiple": {
+        "sites": 24,
+        "median": 65,
+        "mean": 69.67,
+        "p90": 98,
+        "total": 1672
+      },
+      "link/anchor-keywords": {
+        "sites": 13,
+        "median": 77,
+        "mean": 70.38,
+        "p90": 129,
+        "total": 915
+      },
+      "link/apple-touch-icon-precomposed": {
+        "sites": 138,
+        "median": 150,
+        "mean": 563.55,
+        "p90": 1166,
+        "total": 77770
+      },
+      "link/document-info-keywords": {
+        "sites": 244,
+        "median": 53,
+        "mean": 53.8,
+        "p90": 56,
+        "total": 13126
+      },
+      "link/href-missing": {
+        "sites": 20,
+        "median": 53,
+        "mean": 76.75,
+        "p90": 151,
+        "total": 1535
+      },
+      "link/image-src": {
+        "sites": 157,
+        "median": 100,
+        "mean": 116.73,
+        "p90": 153,
+        "total": 18327
+      },
+      "link/navigation-keywords": {
+        "sites": 31,
+        "median": 69,
+        "mean": 154.97,
+        "p90": 138,
+        "total": 4804
+      },
+      "link/shortcut-icon": {
+        "sites": 1837,
+        "median": 9,
+        "mean": 9.58,
+        "p90": 9,
+        "total": 17604
+      },
+      "link/sitemap": {
+        "sites": 63,
+        "median": 72,
+        "mean": 78.11,
+        "p90": 110,
+        "total": 4921
+      },
+      "link/vendor-keywords": {
+        "sites": 102,
+        "median": 118,
+        "mean": 1676.57,
+        "p90": 5854,
+        "total": 171010
+      },
+      "link/wlwmanifest": {
+        "sites": 17,
+        "median": 120,
+        "mean": 118.47,
+        "p90": 125,
+        "total": 2014
+      },
+      "meta/abstract": {
+        "sites": 23,
+        "median": 166,
+        "mean": 168.43,
+        "p90": 247,
+        "total": 3874
+      },
+      "meta/apple-mobile-web-app-capable": {
+        "sites": 140,
+        "median": 57,
+        "mean": 59.91,
+        "p90": 65,
+        "total": 8388
+      },
+      "meta/apple-mobile-web-app-status-bar-style": {
+        "sites": 115,
+        "median": 70,
+        "mean": 73.34,
+        "p90": 80,
+        "total": 8434
+      },
+      "meta/apple-mobile-web-app-title": {
+        "sites": 431,
+        "median": 63,
+        "mean": 69.39,
+        "p90": 94,
+        "total": 29905
+      },
+      "meta/apple-touch-fullscreen": {
+        "sites": 40,
+        "median": 52,
+        "mean": 54.35,
+        "p90": 57,
+        "total": 2174
+      },
+      "meta/application-name": {
+        "sites": 367,
+        "median": 53,
+        "mean": 57.24,
+        "p90": 70,
+        "total": 21008
+      },
+      "meta/autolink-names": {
+        "sites": 24,
+        "median": 71,
+        "mean": 68.92,
+        "p90": 74,
+        "total": 1654
+      },
+      "meta/coverage": {
+        "sites": 2,
+        "median": 42,
+        "mean": 45,
+        "p90": 48,
+        "total": 90
+      },
+      "meta/distribution": {
+        "sites": 66,
+        "median": 45,
+        "mean": 46.74,
+        "p90": 50,
+        "total": 3085
+      },
+      "meta/fragment": {
+        "sites": 5,
+        "median": 36,
+        "mean": 37.2,
+        "p90": 41,
+        "total": 186
+      },
+      "meta/google-value": {
+        "sites": 22,
+        "median": 53,
+        "mean": 55.05,
+        "p90": 56,
+        "total": 1211
+      },
+      "meta/handheld-friendly": {
+        "sites": 285,
+        "median": 48,
+        "mean": 48.8,
+        "p90": 49,
+        "total": 13907
+      },
+      "meta/http-equiv-cache-pragmas": {
+        "sites": 152,
+        "median": 96,
+        "mean": 108.76,
+        "p90": 184,
+        "total": 16532
+      },
+      "meta/http-equiv-content-script-style-type": {
+        "sites": 35,
+        "median": 128,
+        "mean": 116.69,
+        "p90": 136,
+        "total": 4084
+      },
+      "meta/http-equiv-header-only-pragmas": {
+        "sites": 10,
+        "median": 64,
+        "mean": 131.6,
+        "p90": 298,
+        "total": 1316
+      },
+      "meta/http-equiv-ie-pragmas": {
+        "sites": 23,
+        "median": 47,
+        "mean": 51,
+        "p90": 53,
+        "total": 1173
+      },
+      "meta/http-equiv-origin-trial": {
+        "sites": 19,
+        "median": 298,
+        "mean": 379.21,
+        "p90": 598,
+        "total": 7205
+      },
+      "meta/http-equiv-pics-p3p": {
+        "sites": 3,
+        "median": 277,
+        "mean": 246,
+        "p90": 305,
+        "total": 738
+      },
+      "meta/http-equiv-x-dns-prefetch-control": {
+        "sites": 115,
+        "median": 56,
+        "mean": 58.12,
+        "p90": 62,
+        "total": 6684
+      },
+      "meta/http-equiv-x-security-pragmas": {
+        "sites": 1,
+        "median": 39,
+        "mean": 39,
+        "p90": 39,
+        "total": 39
+      },
+      "meta/keywords": {
+        "sites": 1449,
+        "median": 142,
+        "mean": 247.78,
+        "p90": 389,
+        "total": 359032
+      },
+      "meta/mobile-optimized": {
+        "sites": 225,
+        "median": 48,
+        "mean": 48.11,
+        "p90": 48,
+        "total": 10824
+      },
+      "meta/mobile-web-app-capable": {
+        "sites": 279,
+        "median": 51,
+        "mean": 56.25,
+        "p90": 69,
+        "total": 15695
+      },
+      "meta/msapplication-names": {
+        "sites": 1254,
+        "median": 132,
+        "mean": 165.4,
+        "p90": 278,
+        "total": 207407
+      },
+      "meta/news-keywords": {
+        "sites": 68,
+        "median": 140,
+        "mean": 180.46,
+        "p90": 434,
+        "total": 12271
+      },
+      "meta/og-contact-properties": {
+        "sites": 63,
+        "median": 56,
+        "mean": 81.21,
+        "p90": 131,
+        "total": 5116
+      },
+      "meta/og-fb-pages": {
+        "sites": 340,
+        "median": 54,
+        "mean": 168.77,
+        "p90": 268,
+        "total": 57382
+      },
+      "meta/page-info-names": {
+        "sites": 400,
+        "median": 61,
+        "mean": 72.15,
+        "p90": 115,
+        "total": 28861
+      },
+      "meta/revisit-after": {
+        "sites": 60,
+        "median": 46,
+        "mean": 47.58,
+        "p90": 51,
+        "total": 2855
+      },
+      "meta/supported-color-schemes": {
+        "sites": 1,
+        "median": 54,
+        "mean": 54,
+        "p90": 54,
+        "total": 54
+      },
+      "meta/title": {
+        "sites": 249,
+        "median": 91,
+        "mean": 93.01,
+        "p90": 125,
+        "total": 23160
+      },
+      "meta/twitter-card-names": {
+        "sites": 2006,
+        "median": 382,
+        "mean": 373.61,
+        "p90": 564,
+        "total": 749464
+      },
+      "meta/verification-names": {
+        "sites": 44,
+        "median": 50,
+        "mean": 56.11,
+        "p90": 68,
+        "total": 2469
+      }
+    },
+    "items": {
+      "a[name]": {
+        "sites": 36,
+        "median": 25,
+        "mean": 95.25,
+        "p90": 127,
+        "total": 3429
+      },
+      "head[profile]": {
+        "sites": 12,
+        "median": 44,
+        "mean": 42.08,
+        "p90": 45,
+        "total": 505
+      },
+      "img[importance]": {
+        "sites": 10,
+        "median": 68,
+        "mean": 814.6,
+        "p90": 1802,
+        "total": 8146
+      },
+      "link[importance]": {
+        "sites": 14,
+        "median": 36,
+        "mean": 69,
+        "p90": 143,
+        "total": 966
+      },
+      "link[rel=apple-touch-icon-precomposed]": {
+        "sites": 138,
+        "median": 149,
+        "mean": 560.19,
+        "p90": 1166,
+        "total": 77306
+      },
+      "link[rel=apple-touch-startup-image]": {
+        "sites": 54,
+        "median": 1705,
+        "mean": 3084.13,
+        "p90": 8690,
+        "total": 166543
+      },
+      "link[rel=chrome-webstore-item]": {
+        "sites": 12,
+        "median": 118,
+        "mean": 123.5,
+        "p90": 141,
+        "total": 1482
+      },
+      "link[rel=image_src]": {
+        "sites": 157,
+        "median": 100,
+        "mean": 120.02,
+        "p90": 163,
+        "total": 18843
+      },
+      "link[rel=index]": {
+        "sites": 14,
+        "median": 60,
+        "mean": 69.93,
+        "p90": 131,
+        "total": 979
+      },
+      "link[rel=manifest]": {
+        "sites": 25,
+        "median": 65,
+        "mean": 67.76,
+        "p90": 98,
+        "total": 1694
+      },
+      "link[rel=profile]": {
+        "sites": 243,
+        "median": 53,
+        "mean": 53.71,
+        "p90": 56,
+        "total": 13052
+      },
+      "link[rel=publisher]": {
+        "sites": 31,
+        "median": 77,
+        "mean": 76.42,
+        "p90": 94,
+        "total": 2369
+      },
+      "link[rel=sitemap]": {
+        "sites": 63,
+        "median": 72,
+        "mean": 78.11,
+        "p90": 110,
+        "total": 4921
+      },
+      "link[rel=start]": {
+        "sites": 12,
+        "median": 51,
+        "mean": 58.67,
+        "p90": 83,
+        "total": 704
+      },
+      "link[rel=wlwmanifest]": {
+        "sites": 17,
+        "median": 120,
+        "mean": 118.47,
+        "p90": 125,
+        "total": 2014
+      },
+      "link[rel~=shortcut]": {
+        "sites": 1837,
+        "median": 9,
+        "mean": 9.58,
+        "p90": 9,
+        "total": 17604
+      },
+      "meta[http-equiv=cache-control]": {
+        "sites": 101,
+        "median": 61,
+        "mean": 76.66,
+        "p90": 115,
+        "total": 7743
+      },
+      "meta[http-equiv=content-script-type]": {
+        "sites": 32,
+        "median": 68,
+        "mean": 68.25,
+        "p90": 72,
+        "total": 2184
+      },
+      "meta[http-equiv=content-style-type]": {
+        "sites": 31,
+        "median": 60,
+        "mean": 61.29,
+        "p90": 64,
+        "total": 1900
+      },
+      "meta[http-equiv=expires]": {
+        "sites": 69,
+        "median": 43,
+        "mean": 48.19,
+        "p90": 70,
+        "total": 3325
+      },
+      "meta[http-equiv=imagetoolbar]": {
+        "sites": 21,
+        "median": 47,
+        "mean": 49.52,
+        "p90": 52,
+        "total": 1040
+      },
+      "meta[http-equiv=last-modified]": {
+        "sites": 18,
+        "median": 75,
+        "mean": 73.22,
+        "p90": 83,
+        "total": 1318
+      },
+      "meta[http-equiv=origin-trial]": {
+        "sites": 19,
+        "median": 298,
+        "mean": 379.21,
+        "p90": 598,
+        "total": 7205
+      },
+      "meta[http-equiv=pragma]": {
+        "sites": 78,
+        "median": 47,
+        "mean": 48.78,
+        "p90": 54,
+        "total": 3805
+      },
+      "meta[http-equiv=x-dns-prefetch-control]": {
+        "sites": 115,
+        "median": 56,
+        "mean": 58.12,
+        "p90": 62,
+        "total": 6684
+      },
+      "meta[name=abstract]": {
+        "sites": 23,
+        "median": 166,
+        "mean": 168.43,
+        "p90": 247,
+        "total": 3874
+      },
+      "meta[name=alexaverifyid]": {
+        "sites": 15,
+        "median": 67,
+        "mean": 67.27,
+        "p90": 68,
+        "total": 1009
+      },
+      "meta[name=apple-mobile-web-app-capable]": {
+        "sites": 140,
+        "median": 57,
+        "mean": 59.91,
+        "p90": 65,
+        "total": 8388
+      },
+      "meta[name=apple-mobile-web-app-status-bar-style]": {
+        "sites": 115,
+        "median": 70,
+        "mean": 73.34,
+        "p90": 80,
+        "total": 8434
+      },
+      "meta[name=apple-mobile-web-app-title]": {
+        "sites": 431,
+        "median": 63,
+        "mean": 69.39,
+        "p90": 94,
+        "total": 29905
+      },
+      "meta[name=apple-touch-fullscreen]": {
+        "sites": 40,
+        "median": 52,
+        "mean": 54.35,
+        "p90": 57,
+        "total": 2174
+      },
+      "meta[name=application-name]": {
+        "sites": 367,
+        "median": 53,
+        "mean": 57.24,
+        "p90": 70,
+        "total": 21008
+      },
+      "meta[name=category]": {
+        "sites": 15,
+        "median": 46,
+        "mean": 47.13,
+        "p90": 56,
+        "total": 707
+      },
+      "meta[name=classification]": {
+        "sites": 17,
+        "median": 66,
+        "mean": 92.12,
+        "p90": 127,
+        "total": 1566
+      },
+      "meta[name=copyright]": {
+        "sites": 196,
+        "median": 66,
+        "mean": 70.41,
+        "p90": 95,
+        "total": 13800
+      },
+      "meta[name=date]": {
+        "sites": 38,
+        "median": 55,
+        "mean": 53.47,
+        "p90": 63,
+        "total": 2032
+      },
+      "meta[name=distribution]": {
+        "sites": 66,
+        "median": 45,
+        "mean": 46.74,
+        "p90": 50,
+        "total": 3085
+      },
+      "meta[name=google]": {
+        "sites": 22,
+        "median": 53,
+        "mean": 55.05,
+        "p90": 56,
+        "total": 1211
+      },
+      "meta[name=handheldfriendly]": {
+        "sites": 285,
+        "median": 48,
+        "mean": 48.8,
+        "p90": 49,
+        "total": 13907
+      },
+      "meta[name=icbm]": {
+        "sites": 25,
+        "median": 52,
+        "mean": 52.72,
+        "p90": 63,
+        "total": 1318
+      },
+      "meta[name=keywords]": {
+        "sites": 1449,
+        "median": 142,
+        "mean": 247.78,
+        "p90": 389,
+        "total": 359032
+      },
+      "meta[name=language]": {
+        "sites": 131,
+        "median": 40,
+        "mean": 40.95,
+        "p90": 46,
+        "total": 5364
+      },
+      "meta[name=mobile-web-app-capable]": {
+        "sites": 279,
+        "median": 51,
+        "mean": 56.25,
+        "p90": 69,
+        "total": 15695
+      },
+      "meta[name=mobileoptimized]": {
+        "sites": 225,
+        "median": 48,
+        "mean": 48.11,
+        "p90": 48,
+        "total": 10824
+      },
+      "meta[name=msapplication-config]": {
+        "sites": 283,
+        "median": 94,
+        "mean": 96.08,
+        "p90": 132,
+        "total": 27191
+      },
+      "meta[name=msapplication-id]": {
+        "sites": 11,
+        "median": 63,
+        "mean": 61.36,
+        "p90": 79,
+        "total": 675
+      },
+      "meta[name=msapplication-navbutton-color]": {
+        "sites": 71,
+        "median": 62,
+        "mean": 64.21,
+        "p90": 69,
+        "total": 4559
+      },
+      "meta[name=msapplication-square150x150logo]": {
+        "sites": 69,
+        "median": 126,
+        "mean": 124.72,
+        "p90": 156,
+        "total": 8606
+      },
+      "meta[name=msapplication-square310x310logo]": {
+        "sites": 63,
+        "median": 125,
+        "mean": 125.16,
+        "p90": 156,
+        "total": 7885
+      },
+      "meta[name=msapplication-square70x70logo]": {
+        "sites": 63,
+        "median": 119,
+        "mean": 120.35,
+        "p90": 152,
+        "total": 7582
+      },
+      "meta[name=msapplication-starturl]": {
+        "sites": 32,
+        "median": 60,
+        "mean": 66.28,
+        "p90": 91,
+        "total": 2121
+      },
+      "meta[name=msapplication-tap-highlight]": {
+        "sites": 46,
+        "median": 57,
+        "mean": 61.04,
+        "p90": 70,
+        "total": 2808
+      },
+      "meta[name=msapplication-task]": {
+        "sites": 12,
+        "median": 504,
+        "mean": 611.67,
+        "p90": 1117,
+        "total": 7340
+      },
+      "meta[name=msapplication-tilecolor]": {
+        "sites": 701,
+        "median": 56,
+        "mean": 59.16,
+        "p90": 64,
+        "total": 41470
+      },
+      "meta[name=msapplication-tileimage]": {
+        "sites": 700,
+        "median": 122,
+        "mean": 122.74,
+        "p90": 149,
+        "total": 85920
+      },
+      "meta[name=msapplication-tooltip]": {
+        "sites": 22,
+        "median": 73,
+        "mean": 88.27,
+        "p90": 132,
+        "total": 1942
+      },
+      "meta[name=msapplication-wide310x150logo]": {
+        "sites": 55,
+        "median": 125,
+        "mean": 125.02,
+        "p90": 154,
+        "total": 6876
+      },
+      "meta[name=news_keywords]": {
+        "sites": 68,
+        "median": 140,
+        "mean": 180.46,
+        "p90": 434,
+        "total": 12271
+      },
+      "meta[name=revisit-after]": {
+        "sites": 60,
+        "median": 46,
+        "mean": 47.58,
+        "p90": 51,
+        "total": 2855
+      },
+      "meta[name=skype_toolbar]": {
+        "sites": 15,
+        "median": 72,
+        "mean": 72.27,
+        "p90": 74,
+        "total": 1084
+      },
+      "meta[name=title]": {
+        "sites": 249,
+        "median": 91,
+        "mean": 93.01,
+        "p90": 125,
+        "total": 23160
+      },
+      "meta[name=twitter:description]": {
+        "sites": 1494,
+        "median": 202,
+        "mean": 216.62,
+        "p90": 307,
+        "total": 323625
+      },
+      "meta[name=twitter:domain]": {
+        "sites": 81,
+        "median": 60,
+        "mean": 60.75,
+        "p90": 71,
+        "total": 4921
+      },
+      "meta[name=twitter:image:alt]": {
+        "sites": 142,
+        "median": 74,
+        "mean": 82.34,
+        "p90": 124,
+        "total": 11692
+      },
+      "meta[name=twitter:image:height]": {
+        "sites": 82,
+        "median": 49,
+        "mean": 50.28,
+        "p90": 51,
+        "total": 4123
+      },
+      "meta[name=twitter:image:src]": {
+        "sites": 81,
+        "median": 110,
+        "mean": 115.65,
+        "p90": 154,
+        "total": 9368
+      },
+      "meta[name=twitter:image:width]": {
+        "sites": 84,
+        "median": 49,
+        "mean": 50.02,
+        "p90": 51,
+        "total": 4202
+      },
+      "meta[name=twitter:image]": {
+        "sites": 1193,
+        "median": 111,
+        "mean": 121.44,
+        "p90": 169,
+        "total": 144877
+      },
+      "meta[name=twitter:title]": {
+        "sites": 1559,
+        "median": 94,
+        "mean": 95.46,
+        "p90": 128,
+        "total": 148817
+      },
+      "meta[name=twitter:url]": {
+        "sites": 300,
+        "median": 63,
+        "mean": 65.3,
+        "p90": 79,
+        "total": 19591
+      },
+      "meta[name=url]": {
+        "sites": 19,
+        "median": 55,
+        "mean": 55.21,
+        "p90": 79,
+        "total": 1049
+      },
+      "meta[name=y_key]": {
+        "sites": 30,
+        "median": 48,
+        "mean": 47.23,
+        "p90": 53,
+        "total": 1417
+      },
+      "meta[property=fb:page_id]": {
+        "sites": 45,
+        "median": 55,
+        "mean": 56.73,
+        "p90": 65,
+        "total": 2553
+      },
+      "meta[property=fb:pages]": {
+        "sites": 340,
+        "median": 54,
+        "mean": 168.77,
+        "p90": 268,
+        "total": 57382
+      },
+      "meta[property=og:locality]": {
+        "sites": 10,
+        "median": 51,
+        "mean": 52.6,
+        "p90": 57,
+        "total": 526
+      },
+      "meta[property=og:region]": {
+        "sites": 10,
+        "median": 51,
+        "mean": 50.7,
+        "p90": 55,
+        "total": 507
+      },
+      "meta[property=twitter:description]": {
+        "sites": 160,
+        "median": 197,
+        "mean": 202.48,
+        "p90": 282,
+        "total": 32396
+      },
+      "meta[property=twitter:domain]": {
+        "sites": 32,
+        "median": 61,
+        "mean": 63.34,
+        "p90": 71,
+        "total": 2027
+      },
+      "meta[property=twitter:image:height]": {
+        "sites": 11,
+        "median": 54,
+        "mean": 54.18,
+        "p90": 58,
+        "total": 596
+      },
+      "meta[property=twitter:image:src]": {
+        "sites": 21,
+        "median": 114,
+        "mean": 119.57,
+        "p90": 145,
+        "total": 2511
+      },
+      "meta[property=twitter:image:width]": {
+        "sites": 12,
+        "median": 54,
+        "mean": 53.92,
+        "p90": 57,
+        "total": 647
+      },
+      "meta[property=twitter:image]": {
+        "sites": 147,
+        "median": 114,
+        "mean": 119.76,
+        "p90": 166,
+        "total": 17604
+      },
+      "meta[property=twitter:title]": {
+        "sites": 171,
+        "median": 92,
+        "mean": 91.16,
+        "p90": 121,
+        "total": 15588
+      },
+      "meta[property=twitter:url]": {
+        "sites": 81,
+        "median": 67,
+        "mean": 72.36,
+        "p90": 88,
+        "total": 5861
+      },
+      "meta[scheme]": {
+        "sites": 10,
+        "median": 42,
+        "mean": 198,
+        "p90": 122,
+        "total": 1980
+      },
+      "script (attr/script-nomodule)": {
+        "sites": 747,
+        "median": 102,
+        "mean": 152.33,
+        "p90": 212,
+        "total": 113791
+      },
+      "script[async]": {
+        "sites": 187,
+        "median": 9,
+        "mean": 11.42,
+        "p90": 18,
+        "total": 2135
+      },
+      "script[charset]": {
+        "sites": 54,
+        "median": 16,
+        "mean": 76.96,
+        "p90": 64,
+        "total": 4156
+      },
+      "script[defer]": {
+        "sites": 579,
+        "median": 6,
+        "mean": 18.79,
+        "p90": 28,
+        "total": 10882
+      },
+      "script[language]": {
+        "sites": 130,
+        "median": 22,
+        "mean": 79.11,
+        "p90": 132,
+        "total": 10284
+      },
+      "script[type]": {
+        "sites": 2783,
+        "median": 92,
+        "mean": 187.38,
+        "p90": 443,
+        "total": 521481
+      },
+      "style[type]": {
+        "sites": 804,
+        "median": 16,
+        "mean": 53.88,
+        "p90": 96,
+        "total": 43320
+      },
+      "svg[enable-background]": {
+        "sites": 115,
+        "median": 40,
+        "mean": 230.17,
+        "p90": 238,
+        "total": 26469
+      },
+      "svg[version]": {
+        "sites": 567,
+        "median": 28,
+        "mean": 99.25,
+        "p90": 200,
+        "total": 56276
+      }
+    }
+  },
+  "platforms": {
+    "aem": {
+      "sites": 133,
+      "perPage": {
+        "rules": 6,
+        "findings": 14
+      },
+      "severity": {
+        "harmful": 0.391,
+        "deprecated": 0.6015,
+        "unnecessary": 0.9925,
+        "any": 0.9925
+      },
+      "savedBrotli": 52,
+      "top": [
+        {
+          "rule": "attr/charset-obsolete",
+          "rate": 0.3008,
+          "lift": 2.71
+        },
+        {
+          "rule": "meta/title",
+          "rate": 0.1353,
+          "lift": 2.34
+        },
+        {
+          "rule": "meta/page-info-names",
+          "rate": 0.1654,
+          "lift": 1.88
+        },
+        {
+          "rule": "meta/og-required-properties",
+          "rate": 0.2105,
+          "lift": 1.68
+        },
+        {
+          "rule": "attr/script-type-javascript",
+          "rate": 0.9474,
+          "lift": 1.56
+        }
+      ]
+    },
+    "astro": {
+      "sites": 53,
+      "perPage": {
+        "rules": 5,
+        "findings": 8
+      },
+      "severity": {
+        "harmful": 0.2642,
+        "deprecated": 0.4151,
+        "unnecessary": 0.9057,
+        "any": 0.9434
+      },
+      "savedBrotli": 29,
+      "top": [
+        {
+          "rule": "meta/title",
+          "rate": 0.1698,
+          "lift": 2.94
+        },
+        {
+          "rule": "head/charset-position",
+          "rate": 0.1321,
+          "lift": 1.83
+        },
+        {
+          "rule": "attr/charset-obsolete",
+          "rate": 0.1887,
+          "lift": 1.7
+        },
+        {
+          "rule": "meta/apple-mobile-web-app-title",
+          "rate": 0.1509,
+          "lift": 1.6
+        },
+        {
+          "rule": "meta/twitter-card-names",
+          "rate": 0.6604,
+          "lift": 1.47
+        }
+      ]
+    },
+    "drupal": {
+      "sites": 190,
+      "perPage": {
+        "rules": 6,
+        "findings": 8
+      },
+      "severity": {
+        "harmful": 0.3,
+        "deprecated": 0.5105,
+        "unnecessary": 1,
+        "any": 1
+      },
+      "savedBrotli": 54,
+      "top": [
+        {
+          "rule": "meta/mobile-optimized",
+          "rate": 0.9368,
+          "lift": 19.04
+        },
+        {
+          "rule": "meta/handheld-friendly",
+          "rate": 0.9368,
+          "lift": 15.01
+        },
+        {
+          "rule": "link/image-src",
+          "rate": 0.2211,
+          "lift": 6.43
+        },
+        {
+          "rule": "attr/iframe-presentational",
+          "rate": 0.1632,
+          "lift": 1.93
+        },
+        {
+          "rule": "meta/og-required-properties",
+          "rate": 0.2105,
+          "lift": 1.68
+        }
+      ]
+    },
+    "gatsby": {
+      "sites": 30,
+      "perPage": {
+        "rules": 6,
+        "findings": 9
+      },
+      "severity": {
+        "harmful": 0.4333,
+        "deprecated": 0.4333,
+        "unnecessary": 1,
+        "any": 1
+      },
+      "savedBrotli": 48,
+      "top": [
+        {
+          "rule": "link/sitemap",
+          "rate": 0.6667,
+          "lift": 48.31
+        },
+        {
+          "rule": "head/charset-multiple",
+          "rate": 0.1,
+          "lift": 3.88
+        },
+        {
+          "rule": "meta/http-equiv-x-ua-compatible",
+          "rate": 0.9667,
+          "lift": 2.94
+        },
+        {
+          "rule": "meta/og-relative-url",
+          "rate": 0.1333,
+          "lift": 2.66
+        },
+        {
+          "rule": "script/json-ld-howto-faq-announcement",
+          "rate": 0.1,
+          "lift": 2.6
+        }
+      ]
+    },
+    "next.js": {
+      "sites": 651,
+      "perPage": {
+        "rules": 5,
+        "findings": 7
+      },
+      "severity": {
+        "harmful": 0.381,
+        "deprecated": 0.2704,
+        "unnecessary": 0.9985,
+        "any": 1
+      },
+      "savedBrotli": 55,
+      "top": [
+        {
+          "rule": "attr/script-nomodule",
+          "rate": 0.9293,
+          "lift": 5.66
+        },
+        {
+          "rule": "meta/twitter-card-names",
+          "rate": 0.6636,
+          "lift": 1.47
+        },
+        {
+          "rule": "meta/application-name",
+          "rate": 0.1091,
+          "lift": 1.35
+        },
+        {
+          "rule": "meta/apple-mobile-web-app-title",
+          "rate": 0.1229,
+          "lift": 1.3
+        },
+        {
+          "rule": "link/mask-icon",
+          "rate": 0.1167,
+          "lift": 1.01
+        }
+      ]
+    },
+    "nuxt": {
+      "sites": 108,
+      "perPage": {
+        "rules": 4,
+        "findings": 7
+      },
+      "severity": {
+        "harmful": 0.5833,
+        "deprecated": 0.3056,
+        "unnecessary": 0.9444,
+        "any": 0.9815
+      },
+      "savedBrotli": 27,
+      "top": [
+        {
+          "rule": "document/html-lang",
+          "rate": 0.2222,
+          "lift": 3.18
+        },
+        {
+          "rule": "meta/viewport-user-scalable",
+          "rate": 0.2778,
+          "lift": 1.92
+        },
+        {
+          "rule": "meta/title",
+          "rate": 0.1019,
+          "lift": 1.76
+        },
+        {
+          "rule": "meta/mobile-web-app-capable",
+          "rate": 0.1019,
+          "lift": 1.67
+        },
+        {
+          "rule": "meta/og-required-properties",
+          "rate": 0.1574,
+          "lift": 1.26
+        }
+      ]
+    },
+    "webflow": {
+      "sites": 58,
+      "perPage": {
+        "rules": 4,
+        "findings": 19
+      },
+      "severity": {
+        "harmful": 0.2931,
+        "deprecated": 0.5,
+        "unnecessary": 1,
+        "any": 1
+      },
+      "savedBrotli": 41,
+      "top": [
+        {
+          "rule": "script/json-ld-howto-faq-announcement",
+          "rate": 0.1379,
+          "lift": 3.58
+        },
+        {
+          "rule": "attr/script-defer",
+          "rate": 0.3966,
+          "lift": 3.13
+        },
+        {
+          "rule": "attr/charset-obsolete",
+          "rate": 0.3448,
+          "lift": 3.11
+        },
+        {
+          "rule": "attr/iframe-presentational",
+          "rate": 0.1897,
+          "lift": 2.24
+        },
+        {
+          "rule": "link/shortcut-icon",
+          "rate": 0.8448,
+          "lift": 2.1
+        }
+      ]
+    },
+    "wordpress": {
+      "sites": 664,
+      "perPage": {
+        "rules": 7,
+        "findings": 13
+      },
+      "severity": {
+        "harmful": 0.3464,
+        "deprecated": 0.7259,
+        "unnecessary": 1,
+        "any": 1
+      },
+      "savedBrotli": 48,
+      "top": [
+        {
+          "rule": "link/document-info-keywords",
+          "rate": 0.3358,
+          "lift": 6.27
+        },
+        {
+          "rule": "link/vendor-keywords",
+          "rate": 0.4759,
+          "lift": 5.16
+        },
+        {
+          "rule": "script/json-ld-search-action",
+          "rate": 0.6476,
+          "lift": 2.5
+        },
+        {
+          "rule": "meta/msapplication-names",
+          "rate": 0.6325,
+          "lift": 2.31
+        },
+        {
+          "rule": "attr/style-type",
+          "rate": 0.4021,
+          "lift": 2.29
+        }
+      ]
     }
   }
 }
