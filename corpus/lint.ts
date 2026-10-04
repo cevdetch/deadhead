@@ -8,7 +8,7 @@ import { compileForRun, lintSource } from "../packages/cli/lint.ts";
 import type { CompiledRules } from "../packages/core/index.ts";
 import type { Finding } from "../packages/core/types.ts";
 import { loadRules } from "../packages/rules/load.ts";
-import { classifyRaw, isBlocked } from "./classify.ts";
+import { classifyRaw, isBlocked, isErrorPage } from "./classify.ts";
 import type { Counts, LintLine, SnapshotRecord } from "./types.ts";
 
 /**
@@ -38,7 +38,10 @@ export function lintRecord(record: SnapshotRecord, compiled: CompiledRules): { l
   const raw = rawOutcome === "linted" ? lintSource(html, `${record.domain}.raw.html`, compiled, {}).findings : [];
 
   let renderedOutcome: LintLine["rendered"]["outcome"] = "not-rendered";
-  if (record.rendered !== null) renderedOutcome = isBlocked(Buffer.byteLength(record.rendered), record.rendered) ? "blocked" : "linted";
+  if (record.rendered !== null) {
+    if (isErrorPage(record.rendered)) renderedOutcome = "failed";
+    else renderedOutcome = isBlocked(Buffer.byteLength(record.rendered), record.rendered) ? "blocked" : "linted";
+  }
   else if (record.renderError !== null) renderedOutcome = "failed";
   const rendered =
     renderedOutcome === "linted" && record.rendered !== null

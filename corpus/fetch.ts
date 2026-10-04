@@ -1,3 +1,4 @@
+import { WALL_STATUS } from "./classify.ts";
 import { disallowsRoot, TOKEN } from "./robots.ts";
 import type { ErrorKind } from "./types.ts";
 
@@ -15,7 +16,7 @@ export function errorKind(error: unknown): ErrorKind {
   if (code === "ENOTFOUND" || code === "EAI_AGAIN" || code === "EAI_NONAME") return "dns";
   if (["ECONNREFUSED", "ECONNRESET", "EHOSTUNREACH", "ENETUNREACH"].includes(code)) return "connect";
   if (code.startsWith("ERR_TLS") || code.startsWith("ERR_SSL") || code.includes("CERT")) return "tls";
-  if (code.startsWith("UND_ERR_") && code.endsWith("TIMEOUT")) return "timeout";
+  if (code === "ETIMEDOUT" || (code.startsWith("UND_ERR_") && code.endsWith("TIMEOUT"))) return "timeout";
   return "other";
 }
 
@@ -59,12 +60,36 @@ export type FetchResult = {
   ms: { robots: number; raw: number };
 };
 
-const message = (error: unknown): string =>
-  error instanceof Error ? `${error.message}${error.cause instanceof Error ? `: ${error.cause.message}` : ""}` : String(error);
+/** A fetch failure as text. Some causes, such as an AggregateError, have no message: their code stands in. */
+export function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause;
+  if (!(cause instanceof Error)) return error.message;
+  const code = (cause as { code?: unknown }).code;
+  return `${error.message}: ${cause.message || (typeof code === "string" ? code : cause.name)}`;
+}
+
+type Attempt = Pick<FetchResult, "finalUrl" | "status" | "contentType" | "bytes" | "truncated" | "error" | "errorMessage" | "body">;
+
+async function attempt(target: string, headers: Record<string, string>, timeoutMs: number): Promise<Attempt> {
+  try {
+    const res = await fetch(target, { headers, redirect: "follow", signal: AbortSignal.timeout(timeoutMs) });
+    const { body, truncated } = await readCapped(res);
+    const contentType = res.headers.get("content-type");
+    return { finalUrl: res.url, status: res.status, contentType, bytes: body.byteLength, truncated, error: null, errorMessage: null, body };
+  } catch (error) {
+    const empty = { finalUrl: null, status: null, contentType: null, bytes: 0, truncated: false, body: null };
+    return { ...empty, error: errorKind(error), errorMessage: describeError(error).slice(0, 300) };
+  }
+}
+
+const NO_SITE = new Set(["dns", "connect", "tls"]);
 
 /**
- * robots.txt, then the home page: the apex first, `www.` once if the apex has
- * no DNS, refuses the connection or fails TLS. The body is kept as bytes.
+ * robots.txt, then the home page: the apex first, then `www.` once unless the
+ * apex answered with a page or a wall (401, 403, 429), where `www.` shows the
+ * same. The record keeps the first OK answer, else any answer, else an error
+ * that shows the host exists, else the apex's error. The body is kept as bytes.
  */
 export async function fetchSite(domain: string, options: FetchOptions = {}): Promise<FetchResult> {
   const url = options.url ?? ((host: string, path: string) => `https://${host}${path}`);
@@ -95,29 +120,20 @@ export async function fetchSite(domain: string, options: FetchOptions = {}): Pro
 
   const rawStart = performance.now();
   const hosts = domain.startsWith("www.") ? [domain] : [domain, `www.${domain}`];
+  const attempts: Attempt[] = [];
   for (const host of hosts) {
     const target = url(host, "/");
     result.tried.push(target);
-    try {
-      const res = await fetch(target, { headers, redirect: "follow", signal: AbortSignal.timeout(options.timeoutMs ?? 15_000) });
-      const { body, truncated } = await readCapped(res);
-      Object.assign(result, {
-        finalUrl: res.url,
-        status: res.status,
-        contentType: res.headers.get("content-type"),
-        bytes: body.byteLength,
-        truncated,
-        body,
-        error: null,
-        errorMessage: null,
-      });
-      break;
-    } catch (error) {
-      result.error = errorKind(error);
-      result.errorMessage = message(error).slice(0, 300);
-      if (result.error !== "dns" && result.error !== "connect" && result.error !== "tls") break;
-    }
+    const answer = await attempt(target, headers, options.timeoutMs ?? 15_000);
+    attempts.push(answer);
+    if (answer.status !== null && (answer.status < 400 || WALL_STATUS.has(answer.status))) break;
   }
+  const chosen =
+    attempts.find((a) => a.status !== null && a.status < 400) ??
+    attempts.find((a) => a.status !== null) ??
+    attempts.find((a) => a.error !== null && !NO_SITE.has(a.error)) ??
+    attempts[0];
+  if (chosen !== undefined) Object.assign(result, chosen);
   result.ms.raw = Math.round(performance.now() - rawStart);
   return result;
 }

@@ -8,8 +8,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { aggregate } from "../corpus/aggregate.ts";
-import { classifyRaw, duplicateRanks, isBlocked, type RawFacts } from "../corpus/classify.ts";
-import { errorKind, fetchSite, USER_AGENT } from "../corpus/fetch.ts";
+import { classifyRaw, duplicateRanks, isBlocked, isErrorPage, type RawFacts } from "../corpus/classify.ts";
+import { describeError, errorKind, fetchSite, USER_AGENT } from "../corpus/fetch.ts";
 import { lintRecord, RENDER_EXCLUDED } from "../corpus/lint.ts";
 import { fetchOk, parseList } from "../corpus/list.ts";
 import { chromiumArgs, render } from "../corpus/render.ts";
@@ -76,8 +76,35 @@ test("classify: both blocked thresholds", () => {
   assert.equal(isBlocked(9_999, "<html>"), true, "under 10 kB");
   assert.equal(isBlocked(50_000, "<title>Just a moment...</title>"), true, "challenge marker under 60 kB");
   assert.equal(isBlocked(50_000, "<title>Home</title>"), false);
-  assert.equal(isBlocked(80_000, "<title>Just a moment...</title>"), false, "60 kB and up is a page that mentions it");
+  assert.equal(isBlocked(80_000, "<p>Wait just a moment, then try the captcha</p>"), false, "60 kB and up is a page that mentions it");
   assert.equal(classifyRaw(facts({ bytes: 4_000 })), "blocked");
+});
+
+test("classify: a challenge title is a wall at any size", () => {
+  // Branded challenge pages run to hundreds of kB; the title gives them away.
+  assert.equal(isBlocked(755_000, "<html><head><title>Just a moment...</title>"), true);
+  assert.equal(isBlocked(450_000, '<title data-x="1">Access denied | Example</title>'), true);
+  assert.equal(isBlocked(270_000, "<title>\n  Security Verification\n</title>"), true);
+  assert.equal(isBlocked(200_000, "<title>Captcha solutions for developers</title>"), false, "a page about captchas is not a wall");
+});
+
+test("classify: Chromium's own error pages and not-found pages are not home pages", () => {
+  assert.equal(isErrorPage('<html><head><title>example.org</title></head><body class="neterror" style="font-size: 75%">'), true);
+  assert.equal(isErrorPage('<html><head><title>Privacy error</title></head><body id="body" class="ssl"><div>net::ERR_CERT_DATE_INVALID'), true);
+  for (const title of ["Page not found", "404", "404 | Example", "Error 404 - Example", "404 Not Found", "Not Found"]) {
+    assert.equal(isErrorPage(`<title>${title}</title><body>`), true, title);
+  }
+  for (const title of ["404 Media", "Lost and Found | Example", "Example: news"]) assert.equal(isErrorPage(`<title>${title}</title><body>`), false, title);
+  assert.equal(isErrorPage('<title>Home</title><body class="neterror-free">'), false);
+});
+
+test("classify: walls served with an error status are blocked, other errors failed", () => {
+  for (const status of [401, 403, 429]) assert.equal(classifyRaw(facts({ status, bytes: 5_000 })), "blocked", `HTTP ${status}`);
+  assert.equal(classifyRaw(facts({ status: 403, bytes: 400_000 })), "blocked", "a big 403 page is still a wall");
+  assert.equal(classifyRaw(facts({ status: 503, head: "<title>Just a moment...</title><div id=cf-chl>" })), "blocked");
+  assert.equal(classifyRaw(facts({ status: 503 })), "failed");
+  assert.equal(classifyRaw(facts({ status: 404 })), "failed");
+  assert.equal(classifyRaw(facts({ status: 403, contentType: "application/json" })), "failed", "not HTML");
 });
 
 test("classify: a final origin counts once, at the best rank", () => {
@@ -105,6 +132,9 @@ test("fetch: errors sort into the classes classify needs", () => {
   assert.equal(errorKind(withCode("ECONNREFUSED")), "connect");
   assert.equal(errorKind(withCode("ERR_TLS_CERT_ALTNAME_INVALID")), "tls");
   assert.equal(errorKind(withCode("UND_ERR_CONNECT_TIMEOUT")), "timeout");
+  // Happy eyeballs: every address timed out, reported as an AggregateError.
+  const aggregate = Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new AggregateError([], ""), { code: "ETIMEDOUT" }) });
+  assert.equal(errorKind(aggregate), "timeout");
   assert.equal(errorKind(Object.assign(new Error("t"), { name: "TimeoutError" })), "timeout");
   assert.equal(errorKind(new Error("other")), "other");
 });
@@ -228,6 +258,10 @@ test("lint: no counts for a site that was not linted", async () => {
   const failedRender = lintRecord(record(page(""), null, { renderError: "timeout" }), compiled).line;
   assert.equal(failedRender.rendered.outcome, "failed");
   assert.equal(failedRender.rendered.counts, null);
+  const errorPage = `<html><head><title>example.org</title></head><body class="neterror">${"x".repeat(185_000)}</body></html>`;
+  const browserError = lintRecord(record(page(""), errorPage), compiled).line;
+  assert.equal(browserError.rendered.outcome, "failed");
+  assert.equal(browserError.rendered.counts, null);
 });
 
 test("lint: the rendered exclusions match the conformance suite's source-dependent rules", async () => {
@@ -356,4 +390,38 @@ test("list: rate limits are retried, other errors throw", async (t) => {
   assert.equal(calls, 3);
   assert.deepEqual(await res.json(), { created_on: "2026-10-03T22:00:02" });
   await assert.rejects(fetchOk(`http://127.0.0.1:${port}/missing`, { delayMs: 10 }), /404/);
+});
+
+test("fetch: www after an apex error page or a dead apex, never after a wall", async (t) => {
+  const server = createServer((req, res) => {
+    const host = new URL(req.url ?? "/", "http://x").searchParams.get("host") ?? "";
+    if (req.url?.startsWith("/robots.txt")) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    const status = host.startsWith("www.") ? 200 : host.startsWith("wall") ? 403 : 404;
+    res.writeHead(status, { "content-type": "text/html" });
+    res.end(`<title>${status}</title>`);
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => server.close());
+  const { port } = server.address() as AddressInfo;
+  const url = (host: string, path: string) => `http://127.0.0.1:${port}${path}?host=${host}`;
+
+  const notFound = await fetchSite("missing.test", { url });
+  assert.equal(notFound.tried.length, 2);
+  assert.equal(notFound.status, 200);
+
+  const wall = await fetchSite("wall.test", { url });
+  assert.equal(wall.tried.length, 1);
+  assert.equal(wall.status, 403);
+});
+
+test("fetch: an error description carries the code when the cause has no message", () => {
+  const aggregate = Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new AggregateError([], ""), { code: "ETIMEDOUT" }) });
+  assert.equal(describeError(aggregate), "fetch failed: ETIMEDOUT");
+  const refused = Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new Error("connect ECONNREFUSED 127.0.0.1:9"), { code: "ECONNREFUSED" }) });
+  assert.equal(describeError(refused), "fetch failed: connect ECONNREFUSED 127.0.0.1:9");
+  assert.equal(describeError("plain"), "plain");
 });

@@ -69,7 +69,9 @@ if (import.meta.main) {
         bytes: fetched.bytes,
         head,
       });
-      const rendered = outcome === "linted" || outcome === "blocked" ? await render(fetched.finalUrl ?? `https://${domain}/`) : null;
+      // A real browser gets past walls and error pages that turn the raw fetch away;
+      // skipped and no-site domains have nothing to render.
+      const rendered = outcome === "skipped" || outcome === "no-site" ? null : await render(fetched.finalUrl ?? `https://${domain}/`);
       const record: SnapshotRecord = {
         rank,
         domain,

@@ -6,18 +6,25 @@ Private to this repo: never published in a package.
 ## Method
 
 1. **List.** A Tranco top-N list, pinned by its ID (`pnpm corpus:list --id <ID> --n 10000`).
-2. **Snapshot, once.** For each domain: robots.txt, then `https://<domain>/` (and
-   `https://www.<domain>/` if the apex has no DNS, refuses or fails TLS), then headless
-   Chromium on the final URL. Each domain becomes one gzipped record in
-   `corpus/data/snapshot/`. Resumable: stop and rerun at any time.
+2. **Snapshot, once.** For each domain: robots.txt, then `https://<domain>/`, then
+   `https://www.<domain>/` unless the apex answered with a page or a wall (401, 403,
+   429). Then headless Chromium on the final URL, for every domain that is not skipped
+   or no-site: a real browser gets past some walls and error pages that turn the raw
+   fetch away. Each domain becomes one gzipped record in `corpus/data/snapshot/`.
+   Resumable: stop and rerun at any time.
 3. **Lint, offline, any number of times.** Every rule, raw HTML and rendered DOM. Rules that
    read source positions are left out of the rendered pass.
 4. **Aggregate.** Per rule: sites, rate with a Wilson 95% interval, and rates in ranks 1 to
    1,000 and 1,001 to 10,000. Written to `corpus/results/<date>-top<N>.json`.
 
-Each domain ends as one of: linted, blocked (a challenge page), failed (an error status, a
-timeout or not HTML), no-site (no DNS, refused or TLS failure), skipped (robots.txt) or
-duplicate (its final address was already reached from a better-ranked domain).
+Each domain ends as one of: linted, blocked (a challenge or block page, including one
+served with 401, 403 or 429), failed (another error status, a timeout or not HTML),
+no-site (no DNS, refused or TLS failure), skipped (robots.txt) or duplicate (its final
+address was already reached from a better-ranked domain). Raw and rendered are classified
+apart: a site blocked raw can be linted rendered.
+
+No challenge is solved on a human's behalf, and the user agent always names the project.
+Chromium passes a wall only when the wall admits a real browser.
 
 ## Ethics
 
