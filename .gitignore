@@ -31,3 +31,6 @@ coverage/
 
 # Packed release tarballs (scripts/smoke-packages.ts --out tarballs).
 tarballs/
+
+# Corpus snapshot and lint output (corpus/README.md). Never committed.
+corpus/data/
