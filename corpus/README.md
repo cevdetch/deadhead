@@ -26,6 +26,19 @@ apart: a site blocked raw can be linted rendered.
 No challenge is solved on a human's behalf, and the user agent always names the project.
 Chromium passes a wall only when the wall admits a real browser.
 
+## Limits
+
+Measured on the 2026-10-04 run (Tranco Y83KG, top 10,000):
+
+- **Desktop pages.** The user agent is desktop Chrome. A site that serves a separate
+  mobile page is measured on its desktop page, so `head/viewport-missing` counts sites
+  whose mobile page has a viewport.
+- **Mirrors on other addresses.** Duplicates are matched by final address. A site that
+  serves one template on several addresses without redirecting counts once per address:
+  58 extra sites (1.3% of linted), the largest a mirror network of 20 addresses.
+- **Pages that are not home pages.** A hand check of the raw-linted titles found 8 of
+  4,973 that are a geo block, an error page, a soft 404 or an interstitial (0.16%).
+
 ## Ethics
 
 - One robots.txt request, one page request and one Chromium visit per site.
