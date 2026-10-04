@@ -253,7 +253,7 @@ become drift.
 
 ## Status
 
-0.2.0 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
+0.2.1 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
 [`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead), with 203
 rules; see [CHANGELOG.md](CHANGELOG.md). All three runtimes work and are checked against
 each other, and rule ids are permanent since 0.1.0. One markdown file per rule;

@@ -5,6 +5,66 @@ Adding or renaming a rule is a minor release; prose-only and fix-only changes
 are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
 is marked as breaking.
 
+## 0.2.1 - 2026-10-05
+
+Fixes from the first corpus run. Deadhead 0.2.0 linted the home pages of the Tranco top
+10,000, and a review of 20 findings per rule found autofixes that changed what a page does,
+false positives, and doc claims their sources contradict. No new rules; 203 in all.
+
+### Changes that alter fixes
+
+- A `<meta>` carrying more than one of `name`, `property`, `http-equiv`, `itemprop` and
+  `charset` is still reported but never deleted whole: the fix would take a live key with
+  the dead one ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `link/href-missing` keeps a link with an `id` or a `data-*` attribute, a hook a script
+  fills ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `attr/input-number-maxlength-size` fixes only where `maxlength` is absent: scripts read it
+  through `maxLength` ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `link/canonical-qualifiers` has no autofix: stripping the qualifier makes Google use the
+  canonical ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `meta/http-equiv-x-dns-prefetch-control` fixes what it reports: no engine acts on `on` or
+  an empty value ([#492](https://github.com/cevdetta/deadhead/pull/492)).
+- `meta/apple-mobile-web-app-status-bar-style` fixes every value it reports ([#490](https://github.com/cevdetta/deadhead/pull/490)).
+
+### Changes that alter findings
+
+- `meta/viewport-value` accepts WebKit's `shrink-to-fit` and numeric `user-scalable`; on
+  the top 10,000 it falls from 10.9% of sites to 1.1% ([#490](https://github.com/cevdetta/deadhead/pull/490)).
+- `meta/apple-mobile-web-app-status-bar-style` leaves `black` and `black-translucent`
+  alone: since iOS 26 every Home Screen site opens as a web app ([#490](https://github.com/cevdetta/deadhead/pull/490)).
+- `meta/referrer-value` accepts `origin-when-crossorigin`, a legacy keyword in HTML's
+  table ([#490](https://github.com/cevdetta/deadhead/pull/490)).
+- `attr/script-async` and `attr/script-defer` leave an empty script with no `src`, a
+  placeholder HTML prepares again once `src` arrives ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `attr/a-coords-shape` reports `shape` only with an image-map value ([#488](https://github.com/cevdetta/deadhead/pull/488)).
+- `meta/http-equiv-x-dns-prefetch-control` reports `on`, an empty value and a missing
+  `content`; any other value is an opt-out in Firefox ([#492](https://github.com/cevdetta/deadhead/pull/492)).
+- `head/viewport-missing` leaves a desktop page that names its separate mobile URL with
+  `<link rel="alternate" media>` ([#492](https://github.com/cevdetta/deadhead/pull/492)).
+- `script/json-ld-unescaped-lt` reports a literal `</`, not any `<` ([#494](https://github.com/cevdetta/deadhead/pull/494)).
+- Narrowed to what each rule claims ([#490](https://github.com/cevdetta/deadhead/pull/490), [#492](https://github.com/cevdetta/deadhead/pull/492)): `attr/fetchpriority-value`
+  (empty value), `head/base-position` (no `href`), `document/main-multiple` (under a
+  `hidden` ancestor or a closed dialog), `script/json-ld-syntax` (empty block),
+  `link/preload-as-missing` (`preload stylesheet`), `link/preload-font-crossorigin-missing`
+  (stylesheet URLs), `meta/og-name-attribute` (with `property`),
+  `meta/http-equiv-unregistered-pragmas` (`onion-location`, `x-pjax-version`),
+  `attr/list-presentational` (`ol[type]`), `link/canonical-relative` and
+  `link/hreflang-relative` (URLs trimmed as the URL parser trims them; any scheme is
+  absolute), `head/metadata-position` (template contents), `meta/charset-value` (empty
+  value) and `meta/title` (Swiftype's tags).
+
+### ESLint plugin
+
+- Decodes character references in attribute values and text, as the CLI and the
+  bookmarklet do: `type="text&#x2F;javascript"` now reports in ESLint too ([#486](https://github.com/cevdetta/deadhead/pull/486)).
+
+### Rule text
+
+- Corrected against primary sources: `attr/iframe-presentational`, `attr/style-type`,
+  `document/doctype`, `meta/charset-value`, `meta/csp-block-all-mixed-content` and
+  `link/apple-touch-icon-precomposed` ([#492](https://github.com/cevdetta/deadhead/pull/492)); the descriptions of
+  `head/charset-multiple` and `head/base-multiple` ([#494](https://github.com/cevdetta/deadhead/pull/494)).
+
 ## 0.2.0 - 2026-10-01
 
 13 new rules, 203 in all, and 12 revised ones. The first release published from CI

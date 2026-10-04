@@ -1,6 +1,6 @@
 {
   "name": "deadhead",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Lint HTML for deprecated, unnecessary and harmful markup. Every finding links to a researched explanation with sources.",
   "keywords": ["html", "lint", "linter", "head", "meta", "seo", "cli"],
   "homepage": "https://deadhead.cevdet.ch",
