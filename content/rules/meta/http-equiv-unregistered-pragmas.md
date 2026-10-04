@@ -42,7 +42,7 @@ Keep `meta http-equiv` for the registered set alone.
 
 ## Detectability
 
-Each `meta` tag with an unregistered `http-equiv` value trips the rule. The `meta[http-equiv]` selector is a prefilter alone: the verdict lives in `packages/rules/logic/meta/http-equiv-unregistered-pragmas.ts`, which holds the seven-item allowlist and flags the rest. Values fold to ASCII lowercase before the check, so `PRAGMA` trips the rule while `Refresh` stays quiet. The rule reports without autofixing: MDN notes that some browsers honour extra values, so a tag can still do something in one engine.
+Each `meta` tag with an unregistered `http-equiv` value trips the rule. The `meta[http-equiv]` selector is a prefilter alone: the verdict lives in `packages/rules/logic/meta/http-equiv-unregistered-pragmas.ts`, which holds the seven-item allowlist and flags the rest. `onion-location` (read by Tor Browser) and `x-pjax-version` (read by pjax) stay quiet. Values fold to ASCII lowercase before the check, so `PRAGMA` trips the rule while `Refresh` stays quiet. The rule reports without autofixing: MDN notes that some browsers honour extra values, so a tag can still do something in one engine.
 
 ## Resources
 

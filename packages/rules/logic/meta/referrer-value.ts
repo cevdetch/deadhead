@@ -2,10 +2,10 @@ import type { MatchFn } from "../../types.ts";
 import { stripAsciiWhitespace } from "../../lib/text.ts";
 
 /**
- * The eight policies, lowercased, plus the three legacy spellings the
- * roadmap keeps silent (`never`, `always`, `default`). The fetched specs
- * enumerate the eight alone; the legacy trio rests on the maintainer's
- * decision, recorded in the rule doc.
+ * The eight policies, lowercased, plus the four legacy keywords the HTML
+ * Standard's referrer metadata name maps onto policies: `never`, `default`,
+ * `always` and `origin-when-crossorigin`.
+ * https://html.spec.whatwg.org/multipage/semantics.html#meta-referrer
  */
 const VALID: ReadonlySet<string> = new Set([
   "no-referrer",
@@ -19,6 +19,7 @@ const VALID: ReadonlySet<string> = new Set([
   "never",
   "always",
   "default",
+  "origin-when-crossorigin",
 ]);
 
 /**

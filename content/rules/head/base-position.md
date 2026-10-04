@@ -49,7 +49,7 @@ capo.js recommends placing the `<base>` element in the top position."
 The logic in `packages/rules/logic/head/base-position.ts` reports a `<base>` when a head element
 outside the capo.js top group comes before it, and names the first one in the detail. A
 `<title>` or `<meta name="description">` there breaks no URL, and the rule still reports it, as
-capo.js does. A `<base>` at a fragment's top level has no siblings to read and stays quiet.
+capo.js does. A `<base>` at a fragment's top level stays quiet, and so does one without `href`: it resolves no URL.
 There is no autofix: the fix moves an element.
 
 ## Resources

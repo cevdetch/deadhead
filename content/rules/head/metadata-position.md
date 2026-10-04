@@ -49,7 +49,7 @@ The logic in `packages/rules/logic/head/metadata-position.ts` reports a canonica
 link that sits outside `<head>`, the tree parse5 and the DOM build, or after a head child that
 is not head content, the tree `@html-eslint/parser` builds. Both name the element that closed
 the head. Stray text closes the head too; the port sees no text, so that case reports in
-the CLI and the bookmarklet and not in ESLint. Fragments are skipped. There is no autofix.
+the CLI and the bookmarklet and not in ESLint. Fragments and `<template>` contents, which are inert, are skipped. There is no autofix.
 
 ## Resources
 

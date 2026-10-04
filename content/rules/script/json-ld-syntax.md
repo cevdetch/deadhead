@@ -67,7 +67,7 @@ about exactly that sequence.
 Fully detectable. The rule parses every `script[type="application/ld+json"]` with `JSON.parse`, and
 reports a block that fails with the parser's own message as the detail. That message
 comes from the JavaScript engine running the check, so its wording differs between the CLI
-and a bookmarklet in another browser. Empty and whitespace-only blocks are reported too.
+and a bookmarklet in another browser. An empty or whitespace-only block stays quiet: it is a placeholder a script fills.
 
 This checks JSON syntax only. Valid JSON that is wrong as JSON-LD or schema.org, like an
 unknown `@type` or a missing required property, is a different problem. The Rich Results

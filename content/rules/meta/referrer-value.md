@@ -38,7 +38,7 @@ Write a valid token, matched to the leak level:
 
 ## Detectability
 
-Detectable with logic refining the selector. The selector prefilters to `referrer` tags; the module in `packages/rules/logic/meta/referrer-value.ts` trims ASCII whitespace, folds to lowercase, and demands an exact hit on the eleven allowed spellings. Multi-token and empty values trip, since the field holds a single keyword.
+Detectable with logic refining the selector. The selector prefilters to `referrer` tags; the module in `packages/rules/logic/meta/referrer-value.ts` trims ASCII whitespace, folds to lowercase, and demands an exact hit on the eight policies or the four legacy keywords HTML maps onto them (`never`, `default`, `always`, `origin-when-crossorigin`). Multi-token and empty values trip, since the field holds a single keyword.
 
 ## Resources
 

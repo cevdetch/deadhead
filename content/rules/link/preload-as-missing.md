@@ -9,7 +9,7 @@ standardsBasis: "spec"
 detectability: "yes"
 kind: "element"
 scope: "any"
-selector: 'link[rel~="preload" i]:not([as])'
+selector: 'link[rel~="preload" i]:not([as]):not([rel~="stylesheet" i])'
 fix: { op: "none" }
 replacement: "Say what the resource is: <link rel=\"preload\" href=\"/hero.avif\" as=\"image\">. Fonts also need type and crossorigin."
 tags: ["resource-hints"]
@@ -65,6 +65,7 @@ Fully detectable. The rule matches a `preload` token in `rel`, which is a token 
 on a `<link>` with no `as` attribute at all. An `as` that is present but empty or not a
 destination, like `as="stylesheet"`, has the same outcome but isn't caught by this rule.
 
+`rel="preload stylesheet"` stays quiet: the `stylesheet` token loads the file anyway.
 There is no autofix. The fix adds a value, and only the author knows what the resource is.
 
 ## Resources

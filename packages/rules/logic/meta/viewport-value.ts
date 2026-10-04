@@ -3,7 +3,11 @@ import type { MatchFn } from "../../types.ts";
 /** ASCII whitespace, as the HTML Standard defines it. */
 const WHITESPACE = "\\t\\n\\f\\r ";
 
-/** The eight keys MDN plus the CSS Viewport Module define. */
+/**
+ * The eight keys MDN plus the CSS Viewport Module define, and `shrink-to-fit`,
+ * which WebKit parses (`ViewportArguments.cpp`) and applies through
+ * `allowsShrinkToFit` (`ViewportConfiguration.cpp`). Chromium ignores it.
+ */
 const VALID_KEYS = new Set([
   "width",
   "height",
@@ -11,6 +15,7 @@ const VALID_KEYS = new Set([
   "minimum-scale",
   "maximum-scale",
   "user-scalable",
+  "shrink-to-fit",
   "interactive-widget",
   "viewport-fit",
 ]);
@@ -59,6 +64,14 @@ const isValidLength = (value: string, keyword: string): boolean => {
   return number >= 1 && number <= 10000;
 };
 
+/**
+ * A value the engines read as a switch: `yes`, `no`, `device-width`,
+ * `device-height` or a number (Chromium's `ParseViewportValueAsZoom`, WebKit's
+ * `findBooleanValue`). Whether it blocks zoom is `meta/viewport-user-scalable`'s call.
+ */
+const isSwitch = (value: string): boolean =>
+  ["yes", "no", "device-width", "device-height"].includes(value.toLowerCase()) || Number.isNaN(strictNumber(value)) === false;
+
 /** A number from 0.0 to 10.0 with no trailing junk. */
 const isValidScale = (value: string): boolean => {
   const number = strictNumber(value);
@@ -72,8 +85,9 @@ const isValidScale = (value: string): boolean => {
  * rest of the value sets up.
  *
  * `maximum-scale` skips `yes` and `no`: `meta/viewport-user-scalable` owns
- * those zoom-blocking tokens. `user-scalable` reports outside `yes` or `no`,
- * even though the zoom rule also reports unknown values there as disabling.
+ * those zoom-blocking tokens. `user-scalable` and `shrink-to-fit` report a
+ * value that is no switch; the zoom rule also reports unknown values there
+ * as disabling.
  */
 export const match: MatchFn = (element) => {
   const content = element.attr("content");
@@ -111,11 +125,12 @@ export const match: MatchFn = (element) => {
   if (maximumScale === undefined && bare.has("maximum-scale")) return true;
 
   const userScalable = pairs.get("user-scalable");
-  if (userScalable !== undefined) {
-    const keyword = userScalable.toLowerCase();
-    if (keyword !== "yes" && keyword !== "no") return true;
-  }
+  if (userScalable !== undefined && isSwitch(userScalable) === false) return true;
   if (userScalable === undefined && bare.has("user-scalable")) return true;
+
+  const shrinkToFit = pairs.get("shrink-to-fit");
+  if (shrinkToFit !== undefined && isSwitch(shrinkToFit) === false) return true;
+  if (shrinkToFit === undefined && bare.has("shrink-to-fit")) return true;
 
   const interactiveWidget = pairs.get("interactive-widget");
   if (interactiveWidget !== undefined) {

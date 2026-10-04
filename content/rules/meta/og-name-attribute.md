@@ -9,7 +9,7 @@ standardsBasis: "community"
 detectability: "yes"
 kind: "element"
 scope: "head"
-selector: 'meta[name^="og:" i], meta[name^="fb:" i], meta[name^="article:" i], meta[name^="book:" i], meta[name^="music:" i], meta[name^="video:" i], meta[name^="profile:" i]'
+selector: 'meta[name^="og:" i]:not([property]), meta[name^="fb:" i]:not([property]), meta[name^="article:" i]:not([property]), meta[name^="book:" i]:not([property]), meta[name^="music:" i]:not([property]), meta[name^="video:" i]:not([property]), meta[name^="profile:" i]:not([property])'
 fix: { op: "none" }
 replacement: "Move the value to property: <meta property=\"og:title\" content=\"The title\">. Re-test the card in the preview debugger afterwards."
 tags: ["social"]
@@ -40,7 +40,7 @@ The `property` form, matching the protocol:
 
 ## Detectability
 
-Detectable with the selector alone. Each branch pins one vocabulary prefix with `^=`, and the `i` flag folds case. Proper `property` tags never match, and neither do unrelated names.
+Detectable with the selector alone. Each branch pins one vocabulary prefix with `^=`, and the `i` flag folds case. Proper `property` tags never match, nor does a tag that carries `property` next to `name`, and neither do unrelated names.
 
 ## Resources
 

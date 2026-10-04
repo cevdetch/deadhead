@@ -10,6 +10,7 @@ detectability: "yes"
 kind: "element"
 scope: "any"
 selector: 'link[rel~="preload" i][as="font" i]:not([crossorigin])'
+match: "logic"
 fix: { op: "none" }
 replacement: "Add crossorigin to every font preload, same-origin or not: <link rel=\"preload\" href=\"/fonts/inter.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>."
 tags: ["cors", "resource-hints"]
@@ -55,7 +56,8 @@ also needs `Access-Control-Allow-Origin` on its response, preload or not.
 ## Detectability
 
 Fully detectable. The rule matches a `preload` token in `rel`, `as="font"`
-case-insensitively, and no `crossorigin` attribute at all.
+case-insensitively, and no `crossorigin` attribute at all. A stylesheet URL (a `.css` path or
+the Google Fonts CSS API) stays quiet: that preload is mislabelled, and `crossorigin` would not fix it.
 
 `crossorigin="use-credentials"` mismatches too, because it sends credentials the font
 request doesn't, but this rule doesn't catch it. There is no autofix: the fix adds an

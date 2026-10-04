@@ -39,11 +39,17 @@ const TARGETS = 'link[rel~="canonical" i], link[rel~="alternate" i][hreflang]';
  * reports in parse5 and the DOM alone.
  * https://developers.google.com/search/docs/crawling-indexing/valid-page-metadata
  */
+/** Template contents are inert: a link there is in no head and in no body. */
+const insideTemplate = (element: ElementPort): boolean => {
+  for (let node = element.parent(); node !== null; node = node.parent()) if (node.tag === "template") return true;
+  return false;
+};
+
 export const check: CheckFn = (doc, ctx) => {
   if (!doc.isPage()) return [];
   return doc.querySelectorAll(TARGETS).flatMap((link) => {
     const parent = link.parent();
-    if (parent === null) return [];
+    if (parent === null || insideTemplate(link)) return [];
     if (parent.tag === "head") {
       const ender = parent.children().slice(0, link.index()).find((el: ElementPort) => !HEAD_CONTENT.has(el.tag));
       return ender === undefined ? [] : [ctx.report(link, { detail: `after <${ender.tag}>` })];

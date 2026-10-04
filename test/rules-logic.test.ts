@@ -239,15 +239,17 @@ for (const tag of ["cursor", "solidcolor"]) {
   });
 }
 
-test("apple-mobile-web-app-status-bar-style: fixable only for default or a missing content", async () => {
-  const on = (attrs: string) =>
-    fixableOn("meta/apple-mobile-web-app-status-bar-style", `<meta name="apple-mobile-web-app-status-bar-style"${attrs}>`, "meta");
-  assert.equal(await on(""), true);
-  assert.equal(await on(' content="default"'), true);
-  assert.equal(await on(' content=" Default "'), true);
-  assert.equal(await on(' content="black"'), false);
-  assert.equal(await on(' content="black-translucent"'), false);
-  assert.equal(await on(' content=""'), false);
+test("apple-mobile-web-app-status-bar-style: reports what styles nothing, never black or black-translucent", async () => {
+  // Everything it reports styles nothing, so the autofix needs no veto.
+  const { match } = await import("../packages/rules/logic/meta/apple-mobile-web-app-status-bar-style.ts");
+  const on = (attrs: string) => match(portOf(`<meta name="apple-mobile-web-app-status-bar-style"${attrs}>`, "meta"), ctx);
+  assert.equal(on(""), true);
+  assert.equal(on(' content="default"'), true);
+  assert.equal(on(' content=" Default "'), true);
+  assert.equal(on(' content=""'), true);
+  assert.equal(on(' content="#000000"'), true);
+  assert.equal(on(' content="black"'), false);
+  assert.equal(on(' content="Black-Translucent"'), false);
 });
 
 test("apple-mobile-web-app-capable: fixable beside a manifest link and no startup image", async () => {

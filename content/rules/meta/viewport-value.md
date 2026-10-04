@@ -22,7 +22,7 @@ You add `minimal-ui` to your viewport and nothing changes. You mistype `initial-
 
 ## Why avoid
 
-An unknown key never takes effect. Chromium logs `The key "%replacement1" is not recognized and ignored` and moves on. WebKit reports `UnrecognizedViewportArgumentKey` on the same path. The page runs with the default for that key. A typo such as `intial-scale=1` leaves the start zoom at whatever the browser picks. `target-densitydpi` draws a warning and no effect. `minimal-ui` changes nothing in either engine: Chromium carries the comment `Ignore vendor-specific argument`, WebKit carries `Ignore silently for now`. `shrink-to-fit` changes nothing in Chromium.
+An unknown key never takes effect. Chromium logs `The key "%replacement1" is not recognized and ignored` and moves on. WebKit reports `UnrecognizedViewportArgumentKey` on the same path. The page runs with the default for that key. A typo such as `intial-scale=1` leaves the start zoom at whatever the browser picks. `target-densitydpi` draws a warning and no effect. `minimal-ui` changes nothing in either engine: Chromium carries the comment `Ignore vendor-specific argument`, WebKit carries `Ignore silently for now`. `shrink-to-fit` is WebKit's own key: WebKit parses it and applies it to how a page shrinks to fit, and Chromium ignores it.
 
 A malformed value misses the same way. `width=bogus` resolves to `auto`, so the layout viewport falls back to the desktop-width path and media queries for narrow screens never fire. `width=0` falls outside the documented floor of 1. `width=600px` carries trailing junk past the numeric prefix. `initial-scale=bogus` resolves to `auto`, so the start zoom drifts. `viewport-fit=bogus` falls back to `auto`, so a notched phone letterboxes a page meant to run edge to edge. `interactive-widget=bogus` falls back to `resizes-visual`, so a keyboard overlays content meant to shrink.
 
@@ -38,13 +38,13 @@ Use the eight documented keys with values in form:
 <meta name="viewport" content="interactive-widget=resizes-content">
 ```
 
-Drop `minimal-ui`, `target-densitydpi` and `shrink-to-fit`. They change nothing in current engines. Fix typo keys. Keep widths and heights at `device-width` or `device-height` or a whole number from 1 to 10000, scales at a number from 0.0 to 10.0, `user-scalable` at `yes` or `no`, `interactive-widget` at `resizes-visual`, `resizes-content` or `overlays-content`, `viewport-fit` at `auto`, `contain` or `cover`.
+Drop `minimal-ui` and `target-densitydpi`. They change nothing in current engines. Fix typo keys. Keep widths and heights at `device-width` or `device-height` or a whole number from 1 to 10000, scales at a number from 0.0 to 10.0, `user-scalable` and `shrink-to-fit` at `yes`, `no`, `device-width`, `device-height` or a number, `interactive-widget` at `resizes-visual`, `resizes-content` or `overlays-content`, `viewport-fit` at `auto`, `contain` or `cover`.
 
 ## Detectability
 
 Detectable in full. The selector pre-filters viewport meta elements and the logic parses `content` the way browsers parse it. Pairs split on commas, semicolons or whitespace, with whitespace around `=` folded away first. Keys match in any letter case, and a later pair overrides an earlier one.
 
-The logic reports an unknown key, including `minimal-ui`, `target-densitydpi`, `shrink-to-fit` and typos such as `intial-scale`. It reports a value outside form for each known key, including trailing junk such as `width=600px` and negatives. For `maximum-scale` it skips `yes` and `no`: `meta/viewport-user-scalable` owns those zoom-blocking tokens. For `user-scalable` it reports outside `yes` or `no`.
+The logic reports an unknown key, including `minimal-ui`, `target-densitydpi` and typos such as `intial-scale`. It reports a value outside form for each known key, including trailing junk such as `width=600px` and negatives. For `maximum-scale` it skips `yes` and `no`: `meta/viewport-user-scalable` owns those zoom-blocking tokens. For `user-scalable` and `shrink-to-fit` it reports a value that is no switch; numbers are switches, and whether one blocks zoom is `meta/viewport-user-scalable`'s call.
 
 There is no autofix. The fault sits in one pair of `content`, which no fix op edits, and deleting the element throws away the `width=device-width` the layout needs.
 

@@ -67,7 +67,8 @@ Fully detectable, as a document rule, because a selector can't count. Once a doc
 or more `main` elements without the `hidden` attribute, the rule reports each of them. An element
 hidden only by CSS still counts, since the markup has no way to show it's hidden. That is
 the case the Standard's `hidden` requirement covers. `hidden="until-found"` has the attribute,
-so it doesn't count.
+so it doesn't count, and neither does a `main` under a `hidden` ancestor or a closed
+`<dialog>`: neither is in the accessibility tree, so neither is a landmark.
 
 Two related problems aren't covered: a `<div role="main">` alongside a `<main>`, and a
 `<main>` nested inside `<article>`, `<aside>` or `<nav>`.

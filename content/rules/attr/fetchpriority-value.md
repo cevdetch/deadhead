@@ -9,7 +9,7 @@ standardsBasis: "spec"
 detectability: "yes"
 kind: "element"
 scope: "any"
-selector: 'img[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i]), link[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i]), script[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i])'
+selector: 'img[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i]):not([fetchpriority=""]), link[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i]):not([fetchpriority=""]), script[fetchpriority]:not([fetchpriority="high" i]):not([fetchpriority="low" i]):not([fetchpriority="auto" i]):not([fetchpriority=""])'
 fix: { op: "none" }
 replacement: "Write high, low or auto: <img src=\"/hero.jpg\" fetchpriority=\"high\" alt=\"Roses in bloom\">."
 tags: ["resource-hints"]
@@ -38,8 +38,8 @@ browser does with no attribute. The page looks the same either way, so the typo 
 
 Detectable with one selector over `img`, `link` and `script`, the elements that carry the
 attribute. It is an enumerated attribute: the keywords match without regard to ASCII case and
-with no whitespace trimming, which is what `=` with the `i` flag does. An empty value is
-reported. There is no autofix: the intended keyword is the author's.
+with no whitespace trimming, which is what `=` with the `i` flag does. An empty value stays
+quiet: auto is its missing-value default, the same as omitting the attribute. There is no autofix: the intended keyword is the author's.
 
 ## Resources
 

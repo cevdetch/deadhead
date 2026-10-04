@@ -41,9 +41,9 @@ Delete the tag only when its value is `default` or it has no `content`, since ei
 
 ## Detectability
 
-Detectable with one selector. Deadhead reports each `meta` with that name and skips pages without such an element. The match uses `=` with the `i` flag: `name` holds a single value, not a token set. A logic module decides only whether the autofix runs.
+Detectable with logic refining the selector. The match uses `=` with the `i` flag: `name` holds a single value, not a token set. The module reports a missing, `default` or unknown `content`, which styles nothing, and the autofix deletes it.
 
-The autofix deletes the tag when `content` is `default` or missing, since the status bar looks the same without it. Any other value carries no fix: a full-screen Home Screen app on current iOS loses `black`/`black-translucent` status-bar styling if the tag is deleted, since theme-color does not cover that surface. A person has to check the app's display mode before removing the tag.
+`black` and `black-translucent` stay quiet. Since iOS 26 every site added to the Home Screen opens as a web app, so both style a status bar that theme-color does not reach.
 
 ## Resources
 

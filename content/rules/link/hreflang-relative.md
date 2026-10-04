@@ -9,7 +9,8 @@ standardsBasis: "vendor"
 detectability: "yes"
 kind: "element"
 scope: "head"
-selector: 'link[rel~="alternate" i][hreflang][href]:not([href^="http://" i]):not([href^="https://" i])'
+selector: 'link[rel~="alternate" i][hreflang][href]'
+match: "logic"
 fix: { op: "none" }
 replacement: "Write the full URL: <link rel=\"alternate\" hreflang=\"de\" href=\"https://example.com/de/\">."
 tags: ["i18n", "search"]
@@ -37,8 +38,8 @@ allows a relative `href`; the requirement is Google's, and hreflang is Google's 
 
 ## Detectability
 
-Detectable with one selector: an `alternate` token in `rel`, a `hreflang`, and an `href` that
-starts with neither `http://` nor `https://`. A protocol-relative `//example.com/de/` reports,
+Detectable with logic refining the selector: an `alternate` token in `rel`, a `hreflang`, and an
+`href` that, trimmed as the URL parser trims it, starts with no scheme. `android-app://` is absolute. A protocol-relative `//example.com/de/` reports,
 since Google wants the transport method. A link with no `href` belongs to `link/href-missing`.
 There is no autofix: an absolute URL needs the site's origin.
 

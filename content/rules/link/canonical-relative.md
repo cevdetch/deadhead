@@ -9,7 +9,8 @@ standardsBasis: "vendor"
 detectability: "yes"
 kind: "element"
 scope: "head"
-selector: 'link[rel~="canonical" i]:not([href^="http://" i]):not([href^="https://" i])'
+selector: 'link[rel~="canonical" i][href]'
+match: "logic"
 fix: { op: "none" }
 replacement: "Resolve the href against the site's canonical host and emit an absolute https URL: <link rel=\"canonical\" href=\"https://example.com/post\">."
 tags: ["search"]
@@ -39,7 +40,7 @@ The host comes from site configuration, never from the request: a canonical buil
 
 ## Detectability
 
-Detectable with the selector alone. `rel` matches with `~=` because it is a space-separated token set, and each `:not` pins the `href` to an absolute http(s) form; the `i` flag folds case. A tag with no `href` also trips the rule, matching `meta/og-relative-url`; the future `link/href-missing` owns that case.
+Detectable with logic refining the selector. `rel` matches with `~=` because it is a space-separated token set. The module trims the `href` as the URL parser does, so `href=" https://example.com/"` is absolute, and reports anything that does not start with `http://` or `https://`. A tag with no `href` belongs to `link/href-missing`.
 
 ## Resources
 

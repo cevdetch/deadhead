@@ -21,6 +21,14 @@ const ALLOWED: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Unregistered, but read: Tor Browser offers the onion address in
+ * `onion-location`, and pjax compares `x-pjax-version` to force a full reload.
+ * https://community.torproject.org/onion-services/advanced/onion-location/
+ * https://github.com/defunkt/jquery-pjax#layout-reloading
+ */
+const READ_ELSEWHERE: ReadonlySet<string> = new Set(["onion-location", "x-pjax-version"]);
+
+/**
  * The `meta[http-equiv]` selector is only a pre-filter. A tag trips the rule
  * exactly when its value is neither a WHATWG pragma-table keyword nor a
  * value some other rule already owns (`OWNED_HTTP_EQUIV`, `lib/http-equiv.ts`):
@@ -32,5 +40,5 @@ export const match: MatchFn = (element) => {
   const value = element.attr("http-equiv");
   if (value === undefined) return false;
   const normalized = stripAsciiWhitespace(value).toLowerCase();
-  return !ALLOWED.has(normalized) && !OWNED_HTTP_EQUIV.has(normalized);
+  return !ALLOWED.has(normalized) && !OWNED_HTTP_EQUIV.has(normalized) && !READ_ELSEWHERE.has(normalized);
 };
