@@ -1,7 +1,7 @@
 ---
 ruleId: "head/base-multiple"
 title: "more than one base element"
-description: "Every base past the first is ignored, so edits to it change nothing."
+description: "Only the first base href and target count; a second base with another URL misleads every edit to the page's links."
 pubDate: "2026-09-21"
 status: "avoid"
 severity: "harmful"
@@ -13,7 +13,7 @@ match: "logic"
 fix: { op: "none" }
 replacement: "Fold the first href and the first target onto a single base: <base target=\"_top\" href=\"https://example.com/\">. Delete the rest."
 tags: ["one-per-page"]
-impacts: ["maintainability"]
+impacts: ["interop", "maintainability"]
 related: ["document/html-lang"]
 ---
 

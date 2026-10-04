@@ -1,7 +1,7 @@
 ---
 ruleId: "head/charset-multiple"
 title: "more than one meta charset declaration"
-description: "A second charset declaration is dead: the prescan honors the first and ignores the rest."
+description: "Only the first charset declaration decodes the page; a second one that names another encoding misleads every fix."
 pubDate: "2026-09-21"
 status: "avoid"
 severity: "harmful"
@@ -13,7 +13,7 @@ match: "logic"
 fix: { op: "none" }
 replacement: "Keep a single declaration at the top of head: <meta charset=\"utf-8\">. Delete the rest after confirming the survivor matches the bytes on disk."
 tags: ["charset", "one-per-page"]
-impacts: ["maintainability"]
+impacts: ["interop", "maintainability"]
 related: ["head/charset-position", "meta/charset-value"]
 ---
 

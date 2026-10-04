@@ -1,7 +1,7 @@
 ---
 ruleId: "script/json-ld-unescaped-lt"
-title: "<script type=\"application/ld+json\"> with literal <"
-description: "A literal < in a JSON-LD block shows its serializer does not escape; a value holding </script> ends the block and runs as HTML."
+title: "<script type=\"application/ld+json\"> with literal </"
+description: "A literal </ in a JSON-LD block shows its serializer does not escape it; a value holding </script> ends the block and runs as HTML."
 pubDate: "2026-09-23"
 status: "avoid"
 severity: "harmful"
@@ -62,21 +62,18 @@ writes the old output back.
 
 ## Detectability
 
-Partial. The rule reports a JSON-LD block whose text holds a literal `<`, and each
-finding carries `possible: true`. A literal `<` proves the serializer passes `<` through;
-it does not prove an attack, and a hand-written `"description": "5 < 6"` reports the
-same way. A block with no `<` today proves nothing: the same serializer emits `</script>`
+Partial. The rule reports a JSON-LD block whose text holds a literal `</`, and each
+finding carries `possible: true`. A literal `</` proves the serializer passes it through,
+so it would pass `</script` too; it does not prove an attack. A block with no `<` today proves nothing: the same serializer emits `</script>`
 the day a value carries it. The CLI, the bookmarklet and the ESLint plugin all report;
 none skips, since the check reads the element's text and no source offset.
 
-The threshold is wider than the spec. The `script` grammar forbids `<!--` and `<script`
-in specific arrangements, and the rule flags any `<`: the dangerous sequences all start
-with one, and a serializer that passes one `<` passes all of them. `>` and `&` are inert
-in script data, so the rule ignores them.
+A serializer that escapes the slash (`<\/p>`) or the `<` (`\u003c`) emits `</script`
+safely, and a bare `<` such as `"5 < 6"` cannot end the block, so neither reports. On the
+top 10,000 home pages of 2026-10-04, 7 of 45 flagged blocks escaped the slash this way.
 
 A `</script>` already in a value ends the element at parse time, so the rule sees the
-truncated block. That page trips `script/json-ld-syntax` for the broken JSON, and this
-rule when the truncated text still holds a `<`. Other inline data blocks, such as
+truncated block. That page trips `script/json-ld-syntax` for the broken JSON. Other inline data blocks, such as
 `application/json` and hydration state, carry the same risk and are out of scope.
 
 There is no autofix. The fix rewrites `<` to `\u003c`, and every fix op subtracts; the

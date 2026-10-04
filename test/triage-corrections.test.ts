@@ -50,3 +50,11 @@ test("meta/title: Swiftype reads its own class=\"swiftype\" title field", () => 
   assert.equal(lint("meta/title", '<meta class="swiftype" name="title" data-type="string" content="t">').length, 0);
   assert.equal(lint("meta/title", '<meta name="title" content="t">').length, 1);
 });
+
+test("json-ld-unescaped-lt: only an unescaped </ lets a </script value end the block", () => {
+  const ld = (json: string) => lint("script/json-ld-unescaped-lt", `<script type="application/ld+json">${json}</script>`);
+  assert.equal(ld('{"text": "<p>Fish</p>"}').length, 1, "the serializer passes </ through");
+  assert.equal(ld('{"text": "<p>Fish<\\/p>"}').length, 0, "slashes escaped: </script would come out <\\/script");
+  assert.equal(ld('{"text": "5 < 6, <3"}').length, 0, "a bare < cannot end the block");
+  assert.equal(ld('{"text": "\\u003c/p>"}').length, 0);
+});
