@@ -78,6 +78,8 @@ test("classify: both blocked thresholds", () => {
   assert.equal(isBlocked(50_000, "<title>Home</title>"), false);
   assert.equal(isBlocked(80_000, "<p>Wait just a moment, then try the captcha</p>"), false, "60 kB and up is a page that mentions it");
   assert.equal(classifyRaw(facts({ bytes: 4_000 })), "blocked");
+  // A loading interstitial seen on two top-200 sites: spinner GIF, noindex, no title, 13.6 kB.
+  assert.equal(isBlocked(13_602, '<html><head><meta name="robots" content="noindex, noarchive" /><style>.gorizontal-vertikal {}</style>'), true);
 });
 
 test("classify: a challenge title is a wall at any size", () => {

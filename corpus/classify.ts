@@ -2,7 +2,7 @@ import type { ErrorKind, Outcome } from "./types.ts";
 
 /** Markers of challenge and interstitial pages, searched in the first 20 kB. */
 const CHALLENGE =
-  /cf-chl|challenge-platform|just a moment|captcha|_incapsula_|access denied|px-captcha|enable javascript and cookies/i;
+  /cf-chl|challenge-platform|just a moment|captcha|_incapsula_|access denied|px-captcha|enable javascript and cookies|gorizontal-vertikal/i;
 
 /**
  * Titles of challenge and block pages. These pages can run to hundreds of kB
