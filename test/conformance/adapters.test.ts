@@ -375,3 +375,51 @@ test("every adapter tells a page from a fragment the same way", () => {
     assert.equal(dom.parse(html).doc.isPage(), true, `dom: ${html}`);
   }
 });
+
+test("every adapter decodes character references in attribute values and text the same way", () => {
+  // es-html-parser returns both as written; the ESLint adapter must decode them as parse5 and the DOM do.
+  const source =
+    '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Fish &amp; Chips</title>' +
+    '<meta name="description" content="Fish &amp; Chips &sol; daily">' +
+    '<script type="text&#x2F;javascript" src="a.js"></script><script type="text&sol;javascript" src="b.js"></script>' +
+    '<link rel="shortcut&#32;icon" href="/f.ico"></head><body><a href="?a=1&copy=2">x</a></body></html>';
+  const read = (adapter: (typeof ADAPTERS)[number]) => {
+    const { doc } = adapter.parse(source);
+    return {
+      title: doc.querySelector("title")?.text(),
+      description: doc.querySelector('meta[name="description"]')?.attr("content"),
+      types: doc.querySelectorAll("script").map((s) => s.attr("type")),
+      rel: doc.querySelector("link")?.attr("rel"),
+      href: doc.querySelector("a")?.attr("href"),
+    };
+  };
+  const expected = {
+    title: "Fish & Chips",
+    description: "Fish & Chips / daily",
+    types: ["text/javascript", "text/javascript"],
+    rel: "shortcut icon",
+    href: "?a=1&copy=2",
+  };
+  for (const adapter of ADAPTERS) assert.deepEqual(read(adapter), expected, adapter.name);
+
+  const findings = Object.fromEntries(ADAPTERS.map((a) => [a.name, run(rules, a.parse(source))]));
+  const parse5 = findings["parse5"] ?? [];
+  assert.equal(parse5.filter((f) => f.ruleId === "attr/script-type-javascript").length, 2);
+  assert.equal(parse5.filter((f) => f.ruleId === "link/shortcut-icon").length, 1);
+  for (const adapter of ADAPTERS) {
+    const own = findings[adapter.name] ?? [];
+    if (adapter.hasSource) assert.deepEqual(tiesByRule(own).map(comparable), tiesByRule(parse5).map(comparable), adapter.name);
+    else assert.deepEqual(asMultiset(own.map(comparable)), asMultiset(parse5.filter((f) => !SOURCE_DEPENDENT.has(f.ruleId)).map(comparable)), adapter.name);
+  }
+});
+
+test("source-backed adapters leave raw text undecoded, as HTML does", () => {
+  // linkedom is not spec-compliant here, so only the adapters that read the source are compared.
+  const source = "<!doctype html><html><head><title>a &amp; b</title></head><body><textarea>c &amp; d</textarea><xmp>e &amp; f</xmp><iframe>g &amp; h</iframe><noscript>i &amp; j</noscript></body></html>";
+  const texts = (adapter: (typeof ADAPTERS)[number]) => {
+    const { doc } = adapter.parse(source);
+    return ["title", "textarea", "xmp", "iframe", "noscript"].map((tag) => doc.querySelector(tag)?.text());
+  };
+  const expected = ["a & b", "c & d", "e &amp; f", "g &amp; h", "i &amp; j"];
+  for (const adapter of ADAPTERS.filter((a) => a.hasSource)) assert.deepEqual(texts(adapter), expected, adapter.name);
+});

@@ -1,7 +1,7 @@
 /**
  * `@html-eslint/parser` AST → element port.
  *
- * Four things about this AST differ from the other two adapters, and each one
+ * Five things about this AST differ from the other two adapters, and each one
  * would be a silent drift bug if missed. The conformance suite is what turns
  * them from "silently reports nothing" into a failing test.
  *
@@ -15,6 +15,10 @@
  * - A `Doctype` node is raw tokens (`html`, `PUBLIC`, the identifiers), kept in
  *   the author's case and wherever it appeared. The tree builder's rules for
  *   which doctype counts have to be applied here.
+ * - Attribute values and text arrive as written, character references and
+ *   all: `type="text&#x2F;javascript"` reads `text&#x2F;javascript`. parse5
+ *   and the DOM decode them, so this adapter does too (`char-refs.ts`),
+ *   except in raw text, where HTML does not.
  *
  * The AST types are described structurally here rather than imported from
  * `@html-eslint/types`, which is a transitive dependency of the parser and not
@@ -23,6 +27,7 @@
 
 import { makeDoctypePort, makeDocumentQueries, withPortCache } from "../core/port.ts";
 import type { DoctypePort, DocumentPort, ElementPort, Parsed, Range } from "../core/types.ts";
+import { decodeAttribute, decodeText } from "./char-refs.ts";
 
 type Node = {
   type: string;
@@ -47,6 +52,14 @@ const ELEMENT_TAG = (node: Node): string | null => {
 const childrenOf = (node: Node): Node[] => node.children ?? node.body ?? [];
 
 /**
+ * Elements whose contents HTML tokenizes as raw text, with no character
+ * references (parse5 runs with scripting on, so `noscript` is one). `script`
+ * and `style` are here too, though this AST already keeps them apart.
+ */
+const RAW_TEXT = new Set(["script", "style", "xmp", "iframe", "noembed", "noframes", "noscript", "plaintext"]);
+const isRaw = (node: Node): boolean => RAW_TEXT.has(ELEMENT_TAG(node) ?? "");
+
+/**
  * Concatenated text of every descendant, in document order.
  *
  * `<script>` and `<style>` have no `Text` children: their contents hang off
@@ -59,11 +72,12 @@ function textOf(node: Node): string {
   // An explicit stack: markup nested thousands deep is legal HTML, and a
   // recursive walk dies on it. Children are pushed in reverse so they pop in
   // document order.
-  const stack: Node[] = [...childrenOf(node)].reverse();
+  const stack: { node: Node; raw: boolean }[] = childrenOf(node).map((child) => ({ node: child, raw: isRaw(node) })).reverse();
   while (stack.length > 0) {
-    const current = stack.pop()!;
+    const { node: current, raw } = stack.pop()!;
     if (current.type === "Text") {
-      out += typeof current.value === "string" ? current.value : "";
+      const value = typeof current.value === "string" ? current.value : "";
+      out += raw ? value : decodeText(value);
     } else if (typeof current.value === "object") {
       // An object `value` is a nested script/style's content, same as the early
       // return above, or an HTML comment's text. Both are appended here, so a
@@ -71,7 +85,7 @@ function textOf(node: Node): string {
       out += typeof current.value.value === "string" ? current.value.value : "";
     } else {
       const children = childrenOf(current);
-      for (let i = children.length - 1; i >= 0; i--) stack.push(children[i]!);
+      for (let i = children.length - 1; i >= 0; i--) stack.push({ node: children[i]!, raw: isRaw(current) });
     }
   }
   return out;
@@ -90,7 +104,7 @@ function makePorts(
       const name = attr.key.value.toLowerCase();
       // A valueless attribute (`<script defer>`) is the empty string, which is
       // what both `getAttribute` and parse5 report.
-      attrs.set(name, attr.value?.value ?? "");
+      attrs.set(name, decodeAttribute(attr.value?.value ?? ""));
       if (attr.range) attrRanges.set(name, [attr.range[0], attr.range[1]]);
     }
 
