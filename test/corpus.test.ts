@@ -11,11 +11,14 @@ import { aggregate } from "../corpus/aggregate.ts";
 import { classifyRaw, duplicateRanks, isBlocked, isErrorPage, type RawFacts } from "../corpus/classify.ts";
 import { describeError, errorKind, fetchSite, USER_AGENT } from "../corpus/fetch.ts";
 import { lintRecord, RENDER_EXCLUDED } from "../corpus/lint.ts";
+import { fixBytes, itemKey, summary } from "../corpus/metrics.ts";
+import { detectPlatforms } from "../corpus/platforms.ts";
 import { fetchOk, parseList } from "../corpus/list.ts";
 import { chromiumArgs, render } from "../corpus/render.ts";
 import { disallowsRoot, TOKEN } from "../corpus/robots.ts";
 import { eachLimited, recordFile } from "../corpus/snapshot.ts";
 import type { LintLine, SnapshotRecord } from "../corpus/types.ts";
+import type { Finding } from "../packages/core/types.ts";
 import { compileForRun } from "../packages/cli/lint.ts";
 import { loadRules } from "../packages/rules/load.ts";
 import { wilson } from "../corpus/stats.ts";
@@ -273,13 +276,21 @@ test("lint: the rendered exclusions match the conformance suite's source-depende
   assert.deepEqual([...RENDER_EXCLUDED].sort(), (JSON.parse(literal) as string[]).sort());
 });
 
-const lintLine = (rank: number, raw: LintLine["raw"], origin: string | null = `https://site${rank}.test`): LintLine => ({
+const noBytes = { bytes: null, fixBytes: null, items: null };
+const lintLine = (
+  rank: number,
+  raw: Pick<LintLine["raw"], "outcome" | "counts"> & Partial<LintLine["raw"]>,
+  origin: string | null = `https://site${rank}.test`,
+  extra: Partial<LintLine> = {},
+): LintLine => ({
   rank,
   domain: `site${rank}.test`,
   fetchedAt: `2026-10-02T00:00:0${rank % 10}.000Z`,
   finalOrigin: origin,
-  raw,
+  platforms: [],
+  raw: { ...noBytes, ...raw },
   rendered: raw.outcome === "linted" ? { outcome: "linted", counts: raw.counts } : { outcome: "not-rendered", counts: null },
+  ...extra,
 });
 
 test("aggregate: rates, bands, duplicates, zero-hit rules and no domain names", () => {
@@ -426,4 +437,123 @@ test("fetch: an error description carries the code when the cause has no message
   const refused = Object.assign(new TypeError("fetch failed"), { cause: Object.assign(new Error("connect ECONNREFUSED 127.0.0.1:9"), { code: "ECONNREFUSED" }) });
   assert.equal(describeError(refused), "fetch failed: connect ECONNREFUSED 127.0.0.1:9");
   assert.equal(describeError("plain"), "plain");
+});
+
+// ---- Report metrics: bytes, items, platforms, rollups ----
+
+test("metrics: an item names what a fix removes", () => {
+  assert.equal(itemKey('<meta name="Twitter:Title" content="x">', '<meta name="Twitter:Title" content="x">', "remove-element"), "meta[name=twitter:title]");
+  assert.equal(itemKey('<meta property="og:locale" content="en">', '<meta property="og:locale" content="en">', "remove-element"), "meta[property=og:locale]");
+  assert.equal(itemKey('<meta http-equiv="X-UA-Compatible" content="IE=edge">', '<meta http-equiv="X-UA-Compatible" content="IE=edge">', "remove-element"), "meta[http-equiv=x-ua-compatible]");
+  assert.equal(itemKey('<script type="text/javascript" src="a.js">', ' type="text/javascript"', "remove-attribute"), "script[type]");
+  assert.equal(itemKey("<script defer async src=a.js>", " defer", "remove-attribute"), "script[defer]");
+  assert.equal(itemKey('<link rel="shortcut icon" href="/f.ico">', "shortcut ", "remove-tokens"), "link[rel~=shortcut]");
+  // A token fix can rewrite the whole value: what it drops is the removed tokens minus the kept ones.
+  assert.equal(itemKey('<link rel="shortcut icon" href="/f.ico">', "shortcut icon", "remove-tokens", "icon"), "link[rel~=shortcut]");
+  assert.equal(itemKey("<center>", "<center>", "remove-element"), "center");
+});
+
+test("metrics: a bare element names the rule that removes it", () => {
+  const source = '<head><script nomodule src="p.js"></script></head>';
+  const start = source.indexOf("<script");
+  const end = source.indexOf("</head>");
+  const finding = { ruleId: "attr/script-nomodule", range: [start, end], fix: { ruleId: "attr/script-nomodule", range: [start, end], text: "" } } as unknown as Finding;
+  assert.deepEqual(fixBytes(source, [finding], new Map([["attr/script-nomodule", "remove-element"]])).items, { "script (attr/script-nomodule)": end - start });
+});
+
+test("metrics: platforms from documented signatures", () => {
+  assert.deepEqual(detectPlatforms('<meta name="generator" content="WordPress 6.6"><link href="/wp-content/x.css">'), ["wordpress"]);
+  assert.deepEqual(detectPlatforms('<script id="__NEXT_DATA__" type="application/json">{}</script>'), ["next.js"]);
+  assert.deepEqual(detectPlatforms('<link href="https://cdn.shopify.com/s/files/x.css">'), ["shopify"]);
+  assert.deepEqual(detectPlatforms("<html><head><title>Plain</title></head></html>"), []);
+  assert.deepEqual(detectPlatforms('<p>We moved off wp-content years ago</p>'), [], "prose is not a signature");
+});
+
+test("metrics: quantiles and means", () => {
+  assert.deepEqual(summary([5, 1, 3, 2, 4]), { median: 3, mean: 3, p90: 5, total: 15 });
+  assert.deepEqual(summary([]), { median: 0, mean: 0, p90: 0, total: 0 });
+});
+
+test("lint: bytes saved, per rule and item, and platforms", async () => {
+  const rules = await loadRules();
+  const compiled = compileForRun(rules, {});
+  const ops = new Map(rules.map((r) => [r.meta.ruleId, r.meta.fix.op]));
+  // X-UA-Compatible is reported but has fix op "none": it removes no bytes.
+  const html = page('<meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="keywords" content="a, b"><script type="text/javascript" src="/wp-content/a.js"></script>');
+  const { line } = lintRecord(record(html, html), compiled, ops);
+  const keywords = '<meta name="keywords" content="a, b">'.length;
+  assert.equal(line.raw.counts?.["meta/http-equiv-x-ua-compatible"], 1);
+  assert.equal(line.raw.fixBytes?.["meta/http-equiv-x-ua-compatible"], undefined);
+  assert.equal(line.raw.fixBytes?.["meta/keywords"], keywords);
+  assert.equal(line.raw.fixBytes?.["attr/script-type-javascript"], ' type="text/javascript"'.length);
+  assert.equal(line.raw.items?.["meta[name=keywords]"], keywords);
+  assert.equal(line.raw.items?.["script[type]"], ' type="text/javascript"'.length);
+  assert.ok(line.raw.bytes !== null && line.raw.bytes.saved >= keywords + 22, "the full fix removes at least both");
+  assert.ok(line.raw.bytes.savedBrotli > 0 && line.raw.bytes.brotli < line.raw.bytes.page);
+  assert.deepEqual(line.platforms, ["wordpress"]);
+  const skipped = lintRecord(record(null, null, { robots: "disallowed", tried: [], finalUrl: null, status: null }), compiled, ops).line;
+  assert.equal(skipped.raw.bytes, null);
+  assert.equal(skipped.raw.fixBytes, null);
+});
+
+const bytes = (saved: number, savedBrotli: number) => ({ page: 100_000, gzip: 20_000, brotli: 15_000, saved, savedGzip: savedBrotli + 10, savedBrotli });
+
+test("aggregate: severity rollups and findings per page", () => {
+  const lines = [
+    lintLine(1, { outcome: "linted", counts: { "h/rule": 1, "u/rule": 3 } }),
+    lintLine(2, { outcome: "linted", counts: { "u/rule": 1 } }),
+    lintLine(3, { outcome: "linted", counts: {} }),
+    lintLine(4, { outcome: "linted", counts: { "d/rule": 2 } }),
+  ];
+  const severities = { "h/rule": "harmful", "d/rule": "deprecated", "u/rule": "unnecessary" } as const;
+  const result = aggregate(lines, Object.keys(severities), { listId: "T", listCreated: null, n: 1000, version: "0.2.0", commit: "x" }, severities);
+  assert.equal(result.severity.harmful.sites, 1);
+  assert.equal(result.severity.harmful.rate, 0.25);
+  assert.equal(result.severity.unnecessary.sites, 2);
+  assert.equal(result.severity.any.sites, 3);
+  assert.deepEqual(result.perPage.rules, { median: 1, mean: 1, p90: 2, total: 4 });
+  assert.deepEqual(result.perPage.findings, { median: 1, mean: 1.75, p90: 4, total: 7 });
+});
+
+test("aggregate: the share of a rule's rendered sites where only scripts added it", () => {
+  const lines = [
+    lintLine(1, { outcome: "linted", counts: { "a/rule": 1 } }, undefined, { rendered: { outcome: "linted", counts: { "a/rule": 1 } } }),
+    lintLine(2, { outcome: "linted", counts: {} }, undefined, { rendered: { outcome: "linted", counts: { "a/rule": 2 } } }),
+    lintLine(3, { outcome: "linted", counts: {} }, undefined, { rendered: { outcome: "linted", counts: { "a/rule": 1 } } }),
+    lintLine(4, { outcome: "blocked", counts: null }, undefined, { rendered: { outcome: "linted", counts: { "a/rule": 1 } } }),
+  ];
+  const result = aggregate(lines, ["a/rule"], { listId: "T", listCreated: null, n: 1000, version: "0.2.0", commit: "x" });
+  // Sites 1 to 3 are linted both ways; 2 and 3 have it only after scripts. Site 4 has no raw page to compare.
+  assert.deepEqual(result.rules["a/rule"]?.rendered.injected, { sites: 2, share: 0.6667 });
+});
+
+test("aggregate: bytes saved per page, rule and item, rare items left out", () => {
+  const lines = Array.from({ length: 12 }, (_, i) =>
+    lintLine(i + 1, {
+      outcome: "linted",
+      counts: { "a/rule": 1 },
+      bytes: bytes(100 + i, 10 + i),
+      fixBytes: { "a/rule": 50 },
+      items: i === 0 ? { "meta[name=a]": 50, "meta[name=rare-site-specific]": 9 } : { "meta[name=a]": 50 },
+    }),
+  );
+  const result = aggregate(lines, ["a/rule"], { listId: "T", listCreated: null, n: 1000, version: "0.2.0", commit: "x" });
+  assert.equal(result.bytes.pages, 12);
+  assert.equal(result.bytes.saved.raw.median, 105, "nearest rank: the 6th of 12");
+  assert.equal(result.bytes.saved.brotli.total, 10 * 12 + 66);
+  assert.deepEqual(result.bytes.rules["a/rule"], { sites: 12, median: 50, mean: 50, p90: 50, total: 600 });
+  assert.deepEqual(Object.keys(result.bytes.items), ["meta[name=a]"], "an item on fewer than 10 sites stays out");
+  assert.equal(result.bytes.items["meta[name=a]"]?.sites, 12);
+});
+
+test("aggregate: platforms with enough sites, and none below the threshold", () => {
+  const lines = Array.from({ length: 40 }, (_, i) =>
+    lintLine(i + 1, { outcome: "linted", counts: i < 30 ? { "a/rule": 1 } : {}, bytes: bytes(10, 5) }, undefined, { platforms: i < 31 ? ["wordpress"] : ["tiny"] }),
+  );
+  const result = aggregate(lines, ["a/rule"], { listId: "T", listCreated: null, n: 1000, version: "0.2.0", commit: "x" }, { "a/rule": "unnecessary" });
+  assert.deepEqual(Object.keys(result.platforms), ["wordpress"], "9 sites is too few to report");
+  assert.equal(result.platforms["wordpress"]?.sites, 31);
+  assert.equal(result.platforms["wordpress"]?.severity.unnecessary, 0.9677);
+  assert.equal(result.platforms["wordpress"]?.top[0]?.rule, "a/rule");
+  assert.ok(!JSON.stringify(result).includes("site1.test"));
 });

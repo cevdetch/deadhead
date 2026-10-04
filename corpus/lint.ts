@@ -4,11 +4,16 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { gunzipSync } from "node:zlib";
 
+import { parseHtml } from "../packages/cli/adapter.ts";
 import { compileForRun, lintSource } from "../packages/cli/lint.ts";
-import type { CompiledRules } from "../packages/core/index.ts";
+import { runCompiled, type CompiledRules } from "../packages/core/index.ts";
+import { parseSuppressions } from "../packages/core/suppressions.ts";
 import type { Finding } from "../packages/core/types.ts";
+import type { FixOp } from "../packages/core/vocabulary.ts";
 import { loadRules } from "../packages/rules/load.ts";
 import { classifyRaw, isBlocked, isErrorPage } from "./classify.ts";
+import { fixBytes, pageBytes } from "./metrics.ts";
+import { detectPlatforms } from "./platforms.ts";
 import type { Counts, LintLine, SnapshotRecord } from "./types.ts";
 
 /**
@@ -24,8 +29,17 @@ const tally = (findings: Finding[]): Counts => {
   return counts;
 };
 
-/** Lint one snapshot record, raw and rendered. The raw body is read as UTF-8, as the CLI reads files. */
-export function lintRecord(record: SnapshotRecord, compiled: CompiledRules): { line: LintLine; raw: Finding[]; rendered: Finding[] } {
+/**
+ * Lint one snapshot record, raw and rendered. The raw body is read as UTF-8, as
+ * the CLI reads files. The raw analysis runs with fixes on, as `--fix` does, so
+ * each finding carries the edit that removes it; `ops` names each rule's fix op
+ * so a removed attribute and a removed rel token get different item keys.
+ */
+export function lintRecord(
+  record: SnapshotRecord,
+  compiled: CompiledRules,
+  ops: ReadonlyMap<string, FixOp> = new Map(),
+): { line: LintLine; raw: Finding[]; rendered: Finding[] } {
   const html = record.raw === null ? "" : Buffer.from(record.raw, "base64").toString("utf8");
   const rawOutcome = classifyRaw({
     robots: record.robots,
@@ -35,7 +49,10 @@ export function lintRecord(record: SnapshotRecord, compiled: CompiledRules): { l
     bytes: record.bytes,
     head: html.slice(0, 20_000),
   });
-  const raw = rawOutcome === "linted" ? lintSource(html, `${record.domain}.raw.html`, compiled, {}).findings : [];
+  const linted = rawOutcome === "linted";
+  const raw = linted ? runCompiled(compiled, parseHtml(html), { suppressions: parseSuppressions(html), fix: true }) : [];
+  const removed = linted ? fixBytes(html, raw, ops) : null;
+  const bytes = linted ? pageBytes(html, lintSource(html, `${record.domain}.raw.html`, compiled, { fix: true }).output) : null;
 
   let renderedOutcome: LintLine["rendered"]["outcome"] = "not-rendered";
   if (record.rendered !== null) {
@@ -53,7 +70,14 @@ export function lintRecord(record: SnapshotRecord, compiled: CompiledRules): { l
     domain: record.domain,
     fetchedAt: record.fetchedAt,
     finalOrigin: record.finalUrl === null ? null : new URL(record.finalUrl).origin,
-    raw: { outcome: rawOutcome, counts: rawOutcome === "linted" ? tally(raw) : null },
+    platforms: detectPlatforms(record.raw !== null ? html : (record.rendered ?? "")),
+    raw: {
+      outcome: rawOutcome,
+      counts: linted ? tally(raw) : null,
+      bytes,
+      fixBytes: removed?.rules ?? null,
+      items: removed?.items ?? null,
+    },
     rendered: { outcome: renderedOutcome, counts: renderedOutcome === "linted" ? tally(rendered) : null },
   };
   return { line, raw, rendered };
@@ -69,14 +93,16 @@ if (import.meta.main) {
     },
   });
   const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim();
-  const compiled = compileForRun(await loadRules(), {});
+  const rules = await loadRules();
+  const compiled = compileForRun(rules, {});
+  const ops = new Map(rules.map((rule) => [rule.meta.ruleId, rule.meta.fix.op]));
   const files = (await readdir(values.snapshot)).filter((f) => f.endsWith(".json.gz")).sort();
   const lines: string[] = [];
   const samples: string[] = [];
   const wanted = Number(values.samples);
   for (const file of files) {
     const record = JSON.parse(gunzipSync(await readFile(join(values.snapshot, file))).toString("utf8")) as SnapshotRecord;
-    const { line, raw } = lintRecord(record, compiled);
+    const { line, raw } = lintRecord(record, compiled, ops);
     lines.push(JSON.stringify(line));
     if (values.rule !== undefined && samples.length < wanted) {
       for (const finding of raw.filter((f) => f.ruleId === values.rule).slice(0, 1)) {

@@ -15,7 +15,19 @@ Private to this repo: never published in a package.
 3. **Lint, offline, any number of times.** Every rule, raw HTML and rendered DOM. Rules that
    read source positions are left out of the rendered pass.
 4. **Aggregate.** Per rule: sites, rate with a Wilson 95% interval, and rates in ranks 1 to
-   1,000 and 1,001 to 10,000. Written to `corpus/results/<date>-top<N>.json`.
+   1,000 and 1,001 to 10,000. Written to `corpus/results/<date>-top<N>.json`. Alongside:
+   - **Severity:** the share of sites with at least one harmful, deprecated or unnecessary
+     finding, and findings per page.
+   - **Injected by scripts:** for each rule, among sites linted raw and rendered, the share
+     of its rendered sites where only the rendered DOM has it.
+   - **Bytes:** each page raw, gzip (level 6) and brotli (quality 5), and what applying
+     every autofix saves in each. Per rule and per removed item (`meta[name=twitter:title]`,
+     `script[type]`), the raw bytes the fixes remove. A rule with fix op `none` removes
+     nothing here, at any rate. Items on fewer than 10 sites are left out.
+   - **Platforms:** about 18 platforms detected from markup signatures in `platforms.ts`
+     (generator meta, asset paths, framework attributes). For each with at least 30 linted
+     sites: findings per page, severity shares, bytes saved and the rules most
+     over-represented there.
 
 Each domain ends as one of: linted, blocked (a challenge or block page, including one
 served with 401, 403 or 429), failed (another error status, a timeout or not HTML),
