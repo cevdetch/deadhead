@@ -16,7 +16,8 @@ export const MIN_PLATFORM_SITES = 30;
 
 export type Band = { linted: number; sites: number; rate: number };
 export type RuleStat = {
-  raw: { sites: number; rate: number; ci: [number, number]; top1k: Band; rest: Band | null };
+  /** `charsetHeader`: the rule's sites whose response named a charset in Content-Type. */
+  raw: { sites: number; rate: number; ci: [number, number]; top1k: Band; rest: Band | null; charsetHeader: number };
   rendered: { sites: number; rate: number; injected: { sites: number; share: number } };
 };
 export type Rate = { sites: number; rate: number; ci: [number, number] };
@@ -86,7 +87,14 @@ export function aggregate(lines: LintLine[], ruleIds: string[], meta: AggregateM
     const inBoth = both.filter((l) => (l.rendered.counts?.[id] ?? 0) > 0);
     const injected = inBoth.filter((l) => (l.raw.counts?.[id] ?? 0) === 0).length;
     rules[id] = {
-      raw: { sites: all.sites, rate: all.rate, ci: [round(low), round(high)], top1k: band(top, id), rest: meta.n > 1000 ? band(rest, id) : null },
+      raw: {
+        sites: all.sites,
+        rate: all.rate,
+        ci: [round(low), round(high)],
+        top1k: band(top, id),
+        rest: meta.n > 1000 ? band(rest, id) : null,
+        charsetHeader: rawLinted.filter((l) => l.charsetHeader && (l.raw.counts?.[id] ?? 0) > 0).length,
+      },
       rendered: {
         sites: renderedSites,
         rate: renderedLinted.length === 0 ? 0 : round(renderedSites / renderedLinted.length),

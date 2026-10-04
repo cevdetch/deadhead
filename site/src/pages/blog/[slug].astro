@@ -37,6 +37,16 @@ const jsonLd = {
     article th,article td{padding:.25rem .6rem;border-bottom:1px solid;text-align:left;vertical-align:top}
     article figure{margin:1.5rem 0}
     article figcaption,article summary{font-size:.9em}
+    .bars ol{list-style:none;margin:.75rem 0;padding:0}
+    .bars li{display:grid;grid-template-columns:minmax(0,16rem) 1fr 3.5rem;gap:.5rem;align-items:center;margin:.3rem 0}
+    .bars li>a{text-align:right;overflow-wrap:anywhere;font-size:.85em}
+    .bars .bar{position:relative;height:1.1rem}
+    .bars i,.bars b,.bars u{position:absolute;left:0}
+    .bars i{top:0;height:.7rem;width:var(--v);background:currentColor;opacity:.8}
+    .bars b{top:.3rem;height:2px;left:var(--lo);width:calc(var(--hi) - var(--lo));background:currentColor}
+    .bars u{top:.75rem;height:.35rem;width:var(--r);background:currentColor;opacity:.35}
+    .bars .v{font-size:.85em;font-variant-numeric:tabular-nums}
+    @media (max-width:40rem){.bars li{grid-template-columns:1fr 3.5rem}.bars li>a{grid-column:1/-1;text-align:left}}
   </style>
   <article>
     <nav aria-label="Breadcrumb"><a href="/blog">Blog</a></nav>

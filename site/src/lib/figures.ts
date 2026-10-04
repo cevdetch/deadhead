@@ -6,8 +6,8 @@
  * results file, and every figure in every post follows. An unknown figure,
  * rule or path throws, so a typo fails the build.
  *
- * Tables and charts are HTML strings with no CSS of their own: charts draw in
- * `currentColor`, so they follow the page's light or dark text color.
+ * Tables and charts are HTML strings. Charts are lists drawn by the post
+ * page's style block in `currentColor`, so they follow light and dark.
  */
 
 type Band = { linted: number; sites: number; rate: number };
@@ -82,47 +82,38 @@ function platformsTable(results: Results): string {
   const platforms = Object.entries(results.platforms ?? {}).sort(([a, x], [b, y]) => y.sites - x.sites || a.localeCompare(b));
   if (platforms.length === 0) throw new Error("figures: the results file has no platforms");
   const head = ["Platform", "Sites", "Rules per page", "Harmful", "Most over-represented rule"];
+  // The multiplier: the rule's rate on the platform over its rate everywhere.
   const rows = platforms.map(([name, p]) => {
     const top = p.top[0];
-    const lead = top === undefined ? "none" : `${ruleLink(top.rule)}, ${percent(top.rate)}, ${top.lift}× the overall rate`;
+    const lead = top === undefined ? "none" : `${ruleLink(top.rule)} ${top.lift}×`;
     return `<tr><td>${escape(name)}</td><td>${integer(p.sites)}</td><td>${p.perPage.rules}</td><td>${percent(p.severity["harmful"] ?? 0)}</td><td>${lead}</td></tr>`;
   });
   return `<table><tr>${head.map((h) => `<th scope="col">${escape(h)}</th>`).join("")}</tr>${rows.join("")}</table>`;
 }
 
 /**
- * Horizontal bars, one per rule, each with its 95% interval as a whisker.
- * `rendered` adds a lighter bar for the rendered rate under each raw bar.
+ * A bar chart as HTML: an ordered list, one row per rule, with the rule and
+ * its value as real text at the page's size and color, and the bar drawn by
+ * CSS from custom properties (`--v` the bar, `--lo`/`--hi` the 95% interval,
+ * `--r` the rendered rate). Text in an SVG scales down with the drawing on a
+ * phone, and SVG text keeps no page color, so neither is used. Widths are
+ * relative to the chart's largest value; the printed value is the rate.
+ * The post page's style block draws `.bars`.
  */
 function rulesChart(results: Results, n: number, rendered: boolean): string {
   const rules = topRules(results, n);
-  const id = `chart-rules-${n}${rendered ? "-rendered" : ""}`;
-  const label = 300;
-  const plot = 300;
-  const row = rendered ? 34 : 22;
-  const width = label + plot + 70;
-  const height = rules.length * row + 30;
-  const max = Math.min(1, Math.ceil(Math.max(...rules.map(([, s]) => Math.max(s.raw.ci[1], rendered ? s.rendered.rate : 0))) * 10) / 10);
-  const x = (rate: number): number => label + (rate / max) * plot;
-  const parts = rules.map(([rule, s], i) => {
-    const y = 10 + i * row;
-    const bar = `<rect x="${label}" y="${y}" width="${(x(s.raw.rate) - label).toFixed(1)}" height="12" fill="currentColor" fill-opacity="0.8"/>`;
-    const whisker = `<line x1="${x(s.raw.ci[0]).toFixed(1)}" x2="${x(s.raw.ci[1]).toFixed(1)}" y1="${y + 6}" y2="${y + 6}" stroke="currentColor"/>`;
-    const value = `<text x="${(x(s.raw.ci[1]) + 6).toFixed(1)}" y="${y + 10}" font-size="11">${percent(s.raw.rate)}</text>`;
-    const second = rendered
-      ? `<path d="M${label} ${y + 15}h${(x(s.rendered.rate) - label).toFixed(1)}v8h-${(x(s.rendered.rate) - label).toFixed(1)}z" fill="currentColor" fill-opacity="0.35"/>` +
-        `<text x="${(x(s.rendered.rate) + 6).toFixed(1)}" y="${y + 23}" font-size="11">${percent(s.rendered.rate)}</text>`
-      : "";
-    return `<text x="${label - 8}" y="${y + 10}" font-size="11" text-anchor="end" font-family="monospace">${escape(rule)}</text>${bar}${whisker}${value}${second}`;
+  const max = Math.max(...rules.map(([, s]) => Math.max(s.raw.ci[1], rendered ? s.rendered.rate : 0)));
+  const width = (rate: number): string => `${((rate / max) * 100).toFixed(1)}%`;
+  const rows = rules.map(([rule, s]) => {
+    const vars = rendered ? `--v:${width(s.raw.rate)};--r:${width(s.rendered.rate)}` : `--v:${width(s.raw.rate)};--lo:${width(s.raw.ci[0])};--hi:${width(s.raw.ci[1])}`;
+    const bars = rendered ? `<span class="bar" aria-hidden="true"><i></i><u></u></span>` : `<span class="bar" aria-hidden="true"><i></i><b></b></span>`;
+    const value = rendered ? `${percent(s.raw.rate)}<br>${percent(s.rendered.rate)}` : percent(s.raw.rate);
+    return `<li style="${vars}">${ruleLink(rule)}${bars}<span class="v">${value}</span></li>`;
   });
-  const axis = `<text x="${label}" y="${height - 4}" font-size="11">0%</text><text x="${label + plot}" y="${height - 4}" font-size="11" text-anchor="end">${percent(max)}</text>`;
-  const title = rendered
-    ? `The ${n} most frequent rules, raw HTML (dark) against the rendered DOM (light)`
-    : `The ${n} most frequent rules on raw HTML, with 95% intervals`;
-  const svg =
-    `<svg role="img" aria-labelledby="${id}-title" viewBox="0 0 ${width} ${height}"><title id="${id}-title">${escape(title)}</title>` +
-    `${parts.join("")}${axis}</svg>`;
-  return `<figure>${svg}<figcaption>${escape(title)}.</figcaption><details><summary>Data</summary>${rulesTable(results, n)}</details></figure>`;
+  const caption = rendered
+    ? `The ${n} most frequent rules: share of sites on raw HTML (top bar) and on the rendered DOM (lower, lighter bar).`
+    : `The ${n} most frequent rules: share of linted sites, with the 95% interval as a line.`;
+  return `<figure class="bars"><figcaption>${escape(caption)}</figcaption><ol>${rows.join("")}</ol><details><summary>Data</summary>${rulesTable(results, n)}</details></figure>`;
 }
 
 /** The HTML or text for one figure token, without the braces: `rate meta/keywords top1k`. */
@@ -148,6 +139,12 @@ export function figure(results: Results, token: string): string {
       return percent(numberAt(results, args[0] ?? ""));
     case "bytes":
       return bytes(numberAt(results, args[0] ?? ""));
+    case "share": {
+      // One count as a share of another: `share rules.x.raw.charsetHeader rules.x.raw.sites`.
+      const whole = numberAt(results, args[1] ?? "");
+      if (whole === 0) throw new Error(`figures: ${args[1] ?? ""} is zero`);
+      return percent(numberAt(results, args[0] ?? "") / whole);
+    }
     case "table":
       if (args[0] === "rules") return rulesTable(results, Number(args[1] ?? 25));
       if (args[0] === "platforms") return platformsTable(results);

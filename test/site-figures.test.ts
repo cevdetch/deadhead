@@ -34,11 +34,17 @@ test("figures: the platforms table names each platform's most over-represented r
   const [name, platform] = Object.entries(results.platforms!).sort(([, a], [, b]) => b.sites - a.sites)[0]!;
   const top = platform.top[0]!;
   assert.match(html, new RegExp(`<td>${name.replace(".", "\\.")}</td><td>${platform.sites.toLocaleString("en-US")}</td>`));
-  assert.ok(html.includes(`${top.rule}</code></a>, ${pct(top.rate)}, ${top.lift}× the overall rate`));
+  assert.ok(html.includes(`${top.rule}</code></a> ${top.lift}×`));
 });
 
 test("figures: array indexes and severity paths resolve", () => {
   assert.equal(figure(results, "pct severity.harmful.ci.0"), pct((results as unknown as { severity: { harmful: { ci: number[] } } }).severity.harmful.ci[0]!));
+});
+
+test("figures: share divides one count by another", () => {
+  const s = results.rules["meta/keywords"]!;
+  assert.equal(figure(results, "share rules.meta/keywords.raw.top1k.sites rules.meta/keywords.raw.sites"), pct(s.raw.top1k.sites / s.raw.sites));
+  assert.throws(() => figure(results, "share list.n rules.attr/script-src.raw.sites"), /is zero/);
 });
 
 test("figures: a typo fails loudly", () => {
@@ -55,14 +61,21 @@ test("figures: the rules table links every rule and escapes nothing it should no
   assert.match(html, /<th scope="col">Rate \(95% interval\)<\/th>/);
 });
 
-test("figures: the chart is an accessible SVG with its data beside it", () => {
+test("figures: the chart is a list of rules with real text and CSS bars, and its data beside it", () => {
   const html = figure(results, "chart rules 5");
-  assert.match(html, /^<figure>/);
-  assert.match(html, /<svg role="img" aria-labelledby="(chart-[a-z0-9-]+)-title" viewBox="0 0 \d+ \d+">/);
-  assert.match(html, /<title id="chart-[a-z0-9-]+-title">/);
+  assert.match(html, /^<figure class="bars">/);
+  assert.doesNotMatch(html, /<svg/, "text in SVG scales away on phones and kept no color in dark mode");
+  assert.equal((html.match(/<li style="--v:[\d.]+%;--lo:[\d.]+%;--hi:[\d.]+%">/g) ?? []).length, 5, "one row per rule, bar and interval as custom properties");
+  assert.match(html, /<li [^>]*><a href="\/rules\/attr\/script-type-javascript"><code>attr\/script-type-javascript<\/code><\/a><span class="bar" aria-hidden="true">/);
+  assert.ok(html.includes(`<span class="v">${pct(results.rules["attr/script-type-javascript"]!.raw.rate)}</span>`), "the value is text next to the bar");
   assert.match(html, /<details><summary>Data<\/summary><table>/);
-  assert.doesNotMatch(html, /xmlns|xlink|version=/, "inline SVG needs none of them, and deadhead reports two");
-  assert.equal((html.match(/<rect /g) ?? []).length, 5, "one bar per rule");
+});
+
+test("figures: the rendered chart pairs each raw rate with its rendered rate", () => {
+  const html = figure(results, "chart rendered 3");
+  assert.equal((html.match(/<li style="--v:[\d.]+%;--r:[\d.]+%">/g) ?? []).length, 3);
+  const s = results.rules["attr/script-type-javascript"]!;
+  assert.ok(html.includes(`<span class="v">${pct(s.raw.rate)}<br>${pct(s.rendered.rate)}</span>`));
 });
 
 test("replaceFigures: inline tokens become text, a block token alone in a paragraph becomes HTML", () => {

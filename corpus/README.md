@@ -24,6 +24,8 @@ Private to this repo: never published in a package.
      every autofix saves in each. Per rule and per removed item (`meta[name=twitter:title]`,
      `script[type]`), the raw bytes the fixes remove. A rule with fix op `none` removes
      nothing here, at any rate. Items on fewer than 10 sites are left out.
+   - **Charset header:** per rule, how many of its sites name a charset in the
+     `Content-Type` response header, which takes precedence over a `<meta charset>`.
    - **Platforms:** about 18 platforms detected from markup signatures in `platforms.ts`
      (generator meta, asset paths, framework attributes). For each with at least 30 linted
      sites: findings per page, severity shares, bytes saved and the rules most

@@ -287,6 +287,7 @@ const lintLine = (
   domain: `site${rank}.test`,
   fetchedAt: `2026-10-02T00:00:0${rank % 10}.000Z`,
   finalOrigin: origin,
+  charsetHeader: false,
   platforms: [],
   raw: { ...noBytes, ...raw },
   rendered: raw.outcome === "linted" ? { outcome: "linted", counts: raw.counts } : { outcome: "not-rendered", counts: null },
@@ -556,4 +557,23 @@ test("aggregate: platforms with enough sites, and none below the threshold", () 
   assert.equal(result.platforms["wordpress"]?.severity.unnecessary, 0.9677);
   assert.equal(result.platforms["wordpress"]?.top[0]?.rule, "a/rule");
   assert.ok(!JSON.stringify(result).includes("site1.test"));
+});
+
+test("lint: the line records whether the response named a charset in Content-Type", async () => {
+  const compiled = compileForRun(await loadRules(), {});
+  const html = page("");
+  assert.equal(lintRecord(record(html, html, { contentType: "text/html; charset=UTF-8" }), compiled).line.charsetHeader, true);
+  assert.equal(lintRecord(record(html, html, { contentType: "text/html" }), compiled).line.charsetHeader, false);
+  assert.equal(lintRecord(record(html, html, { contentType: null }), compiled).line.charsetHeader, false);
+});
+
+test("aggregate: per rule, how many of its sites name a charset in the HTTP header", () => {
+  const lines = [
+    lintLine(1, { outcome: "linted", counts: { "head/charset-position": 1 } }, undefined, { charsetHeader: true }),
+    lintLine(2, { outcome: "linted", counts: { "head/charset-position": 1 } }, undefined, { charsetHeader: false }),
+    lintLine(3, { outcome: "linted", counts: {} }, undefined, { charsetHeader: true }),
+  ];
+  const result = aggregate(lines, ["head/charset-position"], { listId: "T", listCreated: null, n: 1000, version: "0.2.1", commit: "x" });
+  assert.equal(result.rules["head/charset-position"]?.raw.sites, 2);
+  assert.equal(result.rules["head/charset-position"]?.raw.charsetHeader, 1);
 });

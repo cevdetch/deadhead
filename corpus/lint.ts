@@ -70,6 +70,7 @@ export function lintRecord(
     domain: record.domain,
     fetchedAt: record.fetchedAt,
     finalOrigin: record.finalUrl === null ? null : new URL(record.finalUrl).origin,
+    charsetHeader: /;\s*charset\s*=/i.test(record.contentType ?? ""),
     platforms: detectPlatforms(record.raw !== null ? html : (record.rendered ?? "")),
     raw: {
       outcome: rawOutcome,

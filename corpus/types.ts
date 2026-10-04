@@ -38,6 +38,8 @@ export type LintLine = {
   domain: string;
   fetchedAt: string;
   finalOrigin: string | null;
+  /** Whether the response's Content-Type named a charset, which takes precedence over any meta declaration. */
+  charsetHeader: boolean;
   /** Platforms detected from the page's markup (platforms.ts). */
   platforms: string[];
   raw: {
