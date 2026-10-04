@@ -451,3 +451,38 @@ test("metadata-position: a link moved out of the head, or written after an eleme
   // A fragment has no head for its links to sit in.
   assert.deepEqual(details(`<title>t</title><img src="p.gif" alt="">${canonical}`), []);
 });
+
+// --- Script hooks: placeholders that script fills later ----------------------
+
+test("href-missing: fixable unless an id or a data-* attribute marks a script hook", async () => {
+  const on = (attrs: string) => fixableOn("link/href-missing", `<link ${attrs}>`, "link");
+  assert.equal(await on('rel="stylesheet"'), true);
+  assert.equal(await on('rel="icon" media="print"'), true);
+  assert.equal(await on('id="theme-stylesheet" rel="stylesheet"'), false);
+  assert.equal(await on('rel="stylesheet" data-href="/a.css"'), false);
+  assert.equal(await on('data-n-head="ssr" rel="preload"'), false);
+});
+
+test("input-number-maxlength-size: fixable unless maxlength is present", async () => {
+  // input.maxLength reflects maxlength on every type, so scripts cap number inputs with it.
+  const on = (attrs: string) => fixableOn("attr/input-number-maxlength-size", `<input type="number" ${attrs}>`, "input");
+  assert.equal(await on('size="4"'), true);
+  assert.equal(await on('maxlength="3"'), false);
+  assert.equal(await on('maxlength="3" size="4"'), false);
+});
+
+test("script-async and script-defer: an empty script without src is a placeholder", async () => {
+  // HTML does not mark it started, so when src arrives the attributes are read then.
+  const matches = async (ruleId: string, html: string): Promise<boolean> => {
+    const { match } = (await import(`../packages/rules/logic/${ruleId}.ts`)) as { match: (el: ElementPort, c: RuleContext) => boolean };
+    return match(portOf(html, "script"), ctx);
+  };
+  assert.equal(await matches("attr/script-async", "<script async></script>"), false);
+  assert.equal(await matches("attr/script-async", '<script async data-src="/a.js"></script>'), false);
+  assert.equal(await matches("attr/script-async", "<script async> </script>"), true, "whitespace is text: HTML prepares it");
+  assert.equal(await matches("attr/script-async", "<script async>track()</script>"), true);
+  assert.equal(await matches("attr/script-defer", "<script defer></script>"), false);
+  assert.equal(await matches("attr/script-defer", '<script defer data-src="/jquery.js"></script>'), false);
+  assert.equal(await matches("attr/script-defer", "<script defer>run()</script>"), true);
+  assert.equal(await matches("attr/script-defer", '<script async defer src="/a.js"></script>'), true);
+});

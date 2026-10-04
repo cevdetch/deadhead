@@ -100,6 +100,9 @@ function presentAttrs(selector: string): string[] {
   return names;
 }
 
+/** The attributes that say what a meta is for: each names a different reader. */
+const META_KEYS = ["name", "property", "http-equiv", "itemprop", "charset"] as const;
+
 /**
  * The fix for one finding, or `null` when there is not one.
  *
@@ -115,6 +118,8 @@ function presentAttrs(selector: string): string[] {
  *   `match: "logic"` rule matched on something else).
  * - `remove-attributes` found none of its selector's `[attr]` tests present
  *   on this element (a `match: "logic"` rule matched on something else).
+ * - `remove-element` on a `<meta>` carrying more than one of `META_KEYS`:
+ *   removing it would take a live key along with the dead one.
  */
 export function computeFix(
   meta: RuleMeta,
@@ -127,6 +132,10 @@ export function computeFix(
   if (source === null) return null;
 
   if (meta.fix.op === "remove-element") {
+    // A meta that carries two keys answers to two readers. A rule about one
+    // key would delete the other with it (`name="application-name"` sharing an
+    // element with `property="og:site_name"`), so the finding stays and the fix goes.
+    if (element.tag === "meta" && META_KEYS.filter((key) => element.hasAttr(key)).length > 1) return null;
     const range = element.range();
     if (range === null) return null;
     return { ruleId: meta.ruleId, range: wholeLineIfAlone(source, range), text: "" };

@@ -447,3 +447,14 @@ test("applyFixes is linear: 50k fixes finish fast", async () => {
   assert.equal(output, "<i></i>".repeat(50_000));
   assert.ok(performance.now() - started < 500, "took too long");
 });
+
+test("a meta carrying two keys is never removed whole: the finding stays, the fix goes", () => {
+  // Deleting the element under a rule about one key would delete the other, live key with it.
+  for (const extra of ['property="og:site_name"', 'http-equiv="description"', 'itemprop="name"', 'charset="utf-8"']) {
+    const html = `<html><head><meta name="a" ${extra} content="x"><title>t</title></head><body></body></html>`;
+    const findings = run([removeMeta], parseHtml(html), { fix: true });
+    assert.equal(findings.length, 1, extra);
+    assert.equal(findings[0]?.fix, null, extra);
+  }
+  assert.equal(fixesFor('<html><head><meta name="a" content="x"></head><body></body></html>', [removeMeta]).length, 1, "one key: removed as before");
+});

@@ -10,6 +10,7 @@ detectability: "yes"
 kind: "element"
 scope: "body"
 selector: 'input[type="number" i][maxlength], input[type="number" i][size]'
+match: "logic"
 fix: { op: "remove-attributes" }
 replacement: "Delete the hints and bound the control with min and max: <input type=\"number\" name=\"qty\" min=\"0\" max=\"100\">. Size it with CSS width where the layout needs it."
 tags: ["forms"]
@@ -39,9 +40,12 @@ input[name="qty"] { width: 4em; }
 
 ## Detectability
 
-Complete detection. The rule matches `input[type="number"][maxlength]` or `input[type="number"][size]`: presence of either attribute on a number input is the whole verdict, so no logic module exists. The `i` flag folds ASCII case on the `type` value. The autofix removes every attribute the rule names that is present on the element, and leaves every other attribute as written.
+Complete detection. The rule matches `input[type="number"][maxlength]` or `input[type="number"][size]`: presence of either attribute on a number input is the whole verdict. The `i` flag folds ASCII case on the `type` value.
+
+The autofix runs only where `maxlength` is absent, and then removes `size`. Browsers ignore `maxlength` on a number input, but scripts do not: the `maxLength` IDL attribute reflects the content attribute on every input type, so `this.value.slice(0, this.maxLength)` caps the input that the browser leaves uncapped. Before deleting `maxlength`, look for a script that reads it.
 
 ## Resources
 
 - [WHATWG: Obsolete but conforming features](https://html.spec.whatwg.org/multipage/obsolete.html#obsolete-but-conforming-features): `maxlength` and `size` on Number-state inputs exist for legacy agents alone.
+- [WHATWG HTML: `maxLength` IDL attribute](https://html.spec.whatwg.org/multipage/input.html#dom-input-maxlength): it must reflect the `maxlength` content attribute, with no condition on the input's type.
 - [MDN: `<input type="number">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/number): the supported attributes exclude both, and number inputs do not support sizing attributes such as `size`.

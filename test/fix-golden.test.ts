@@ -33,6 +33,8 @@ const SIBLING_VETO: ReadonlySet<string> = new Set(["meta/apple-mobile-web-app-ca
  */
 const MUST_NOT_FIX: ReadonlySet<string> = new Set([
   "attr/longdesc-lowsrc",
+  // Google skips a qualified canonical; stripping the qualifier makes it count, for whatever URL it names.
+  "link/canonical-qualifiers",
   "link/prerender",
   "meta/http-equiv-x-ua-compatible",
 ]);

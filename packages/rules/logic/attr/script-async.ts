@@ -6,6 +6,12 @@ import { isClassicScript, scriptTypeString } from "../../lib/script.ts";
 const NO_ASYNC_TYPES: ReadonlySet<string> = new Set(["importmap", "speculationrules"]);
 
 /**
+ * An empty script without `src` is a placeholder a loader fills later. HTML's
+ * "prepare the script element" returns before marking it started when there
+ * is "no src attribute, and source text is the empty string", so setting `src`
+ * prepares it again and `async` is read then. Whitespace is source text.
+ * https://html.spec.whatwg.org/multipage/scripting.html#prepare-the-script-element
+ *
  * The selector keeps scripts without `src`. HTML's async branch runs for a
  * classic script with `src` or a module, so an inline classic script, an import
  * map and speculation rules never read the attribute. An inline module does:
@@ -13,4 +19,4 @@ const NO_ASYNC_TYPES: ReadonlySet<string> = new Set(["importmap", "speculationru
  * https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
  */
 export const match: MatchFn = (element) =>
-  isClassicScript(element) || NO_ASYNC_TYPES.has(asciiLowercase(scriptTypeString(element)));
+  element.text() !== "" && (isClassicScript(element) || NO_ASYNC_TYPES.has(asciiLowercase(scriptTypeString(element))));

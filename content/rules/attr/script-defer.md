@@ -59,6 +59,10 @@ reports an inline classic script, a classic script with `src` and `async`, and a
 `module`, `importmap` or `speculationrules`. A classic script with `src` and no `async`
 stays quiet, and so do data blocks, which HTML leaves to "author script or other tools".
 
+An empty classic script with no `src` stays quiet too: it is a placeholder a delay-JS loader
+fills later. HTML's "prepare the script element" returns before marking such a script
+started, so setting `src` prepares it again and `defer` is read then.
+
 The autofix deletes `defer`. Chromium, Firefox and WebKit test `async` before `defer` and
 read `defer` on external classic scripts alone, so every script runs as before.
 The es-module-shims polyfill reads `async` on a module script and never `defer`.

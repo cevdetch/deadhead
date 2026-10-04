@@ -52,6 +52,11 @@ does and reports a classic script, an import map and speculation rules. An inlin
 stays quiet, and so do data blocks, which HTML leaves to "author script or other tools". An
 import map or speculation rules with `src` belongs to `attr/script-src`.
 
+An empty script with no `src` stays quiet too: it is a placeholder a consent manager or a
+delay-JS loader fills later. HTML's "prepare the script element" returns before marking such
+a script started, so setting `src` prepares it again and `async` is read then. Whitespace
+counts as source text, so only a truly empty script is exempt.
+
 The autofix deletes `async`. Firefox computes the flag for external and module scripts
 alone and notes that "inline classic scripts ignore both these attributes"; Chromium and
 WebKit run the reported scripts without consulting it.

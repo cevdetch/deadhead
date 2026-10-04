@@ -10,7 +10,7 @@ detectability: "yes"
 kind: "element"
 scope: "head"
 selector: 'link[rel~="canonical" i][hreflang], link[rel~="canonical" i][lang], link[rel~="canonical" i][media], link[rel~="canonical" i][type]'
-fix: { op: "remove-attributes" }
+fix: { op: "none" }
 replacement: "Strip the qualifier and keep a plain canonical: <link rel=\"canonical\" href=\"https://example.com/post\">. For a genuine alternate version use <link rel=\"alternate\" hreflang=\"fr\" href=\"https://example.com/fr/post\">."
 tags: ["search"]
 impacts: ["seo"]
@@ -38,7 +38,9 @@ Keep the canonical plain, and declare alternates with a separate annotation:
 
 ## Detectability
 
-Detectable with the selector alone. `rel` matches with `~=` because it is a space-separated token set, and the comma lists one branch per qualifier. The autofix removes every attribute the rule names that is present on the element, and leaves every other attribute as written.
+Detectable with the selector alone. `rel` matches with `~=` because it is a space-separated token set, and the comma lists one branch per qualifier.
+
+No autofix. Google skips the tag today; stripping the qualifier makes it count, for whatever URL it names. A qualified canonical often names the variant (a language or print version) rather than the preferred page, and a page can carry several. In the top 10,000 crawl of 2026-10-04, one page would have been left with three conflicting plain canonicals and another with an href ending in `//`. A person picks the canonical.
 
 ## Resources
 

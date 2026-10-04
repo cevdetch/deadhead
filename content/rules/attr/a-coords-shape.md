@@ -9,7 +9,7 @@ standardsBasis: "spec-obsolete"
 detectability: "yes"
 kind: "element"
 scope: "body"
-selector: "a[coords], a[shape]"
+selector: 'a[coords], a[shape][shape="rect" i], a[shape][shape="rectangle" i], a[shape][shape="circle" i], a[shape][shape="circ" i], a[shape][shape="poly" i], a[shape][shape="polygon" i], a[shape][shape="default" i]'
 fix: { op: "remove-attributes" }
 replacement: "Delete the attributes: <a href=\"page.html\">text</a>. For image maps use area elements with shape and coords inside map."
 tags: ["hyperlinks"]
@@ -46,7 +46,7 @@ MDN documents the same shape with runnable map examples: `shape` selects the reg
 
 ## Detectability
 
-Complete detection. The rule matches `a[coords]` or `a[shape]`: presence of either attribute is the whole verdict, so no logic module exists. The autofix removes every attribute the rule names that is present on the element, and leaves every other attribute as written.
+Complete detection of the image-map attributes. The rule matches `a[coords]`, or `a[shape]` with one of the values HTML's image maps recognise: `rect`, `rectangle`, `circle`, `circ`, `poly`, `polygon` and `default`, in any ASCII case. A `shape` with any other value, such as a design system's `shape="button"` that the page's CSS selects, is an author's hook that shares the name, not a leftover image map, and stays quiet. The bare `[shape]` in each value branch is what the autofix reads: it removes every attribute the selector tests with a bare `[attr]` that is present on the element (`coords`, `shape`), and leaves every other attribute as written.
 
 ## Resources
 
