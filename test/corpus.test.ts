@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import { aggregate } from "../corpus/aggregate.ts";
 import { classifyRaw, duplicateRanks, isBlocked, type RawFacts } from "../corpus/classify.ts";
 import { errorKind, fetchSite, USER_AGENT } from "../corpus/fetch.ts";
 import { lintRecord, RENDER_EXCLUDED } from "../corpus/lint.ts";
-import { parseList } from "../corpus/list.ts";
-import { chromiumArgs } from "../corpus/render.ts";
+import { fetchOk, parseList } from "../corpus/list.ts";
+import { chromiumArgs, render } from "../corpus/render.ts";
 import { disallowsRoot, TOKEN } from "../corpus/robots.ts";
 import { eachLimited, recordFile } from "../corpus/snapshot.ts";
 import type { LintLine, SnapshotRecord } from "../corpus/types.ts";
@@ -268,4 +271,89 @@ test("aggregate: rates, bands, duplicates, zero-hit rules and no domain names", 
 test("aggregate: the second band is null for a 1,000-site pilot", () => {
   const result = aggregate([lintLine(1, { outcome: "linted", counts: {} })], ["a/rule"], { listId: "T", listCreated: null, n: 1000, version: "0.2.0", commit: "x" });
   assert.equal(result.rules["a/rule"]?.raw.rest, null);
+});
+
+// A stand-in for Chromium: it leaves a helper writing into the profile, as
+// Chromium's zygote and renderers do. The helper holds stdout open and
+// recreates the profile if it is deleted, so only killing it ends it.
+const FAKE_BROWSER = `#!/bin/sh
+for a in "$@"; do case "$a" in --user-data-dir=*) dir="\${a#--user-data-dir=}";; esac; done
+mkdir -p "$dir/Default"
+( while :; do mkdir -p "$dir/Default" 2>/dev/null; touch "$dir/Default/f$(date +%s%N)" 2>/dev/null; sleep 0.01; done ) &
+echo "$! $dir" > "$FAKE_PIDFILE"
+if [ "$FAKE_MODE" = hang ]; then sleep 30; fi
+echo "<html><head></head><body>ok</body></html>"
+`;
+
+const gone = async (pid: number): Promise<boolean> => {
+  for (let i = 0; i < 50; i++) {
+    try {
+      process.kill(pid, 0);
+    } catch {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return false;
+};
+
+for (const mode of ["exit", "hang"] as const) {
+  test(`render: a browser that ${mode === "exit" ? "exits" : "hangs"} leaves no helper and no profile behind`, async (t) => {
+    const dir = await mkdtemp(join(tmpdir(), "deadhead-fake-"));
+    t.after(() => rm(dir, { recursive: true, force: true }));
+    const binary = join(dir, "chromium");
+    await writeFile(binary, FAKE_BROWSER);
+    await chmod(binary, 0o755);
+    process.env["FAKE_PIDFILE"] = join(dir, "pid");
+    process.env["FAKE_MODE"] = mode;
+    t.after(() => {
+      delete process.env["FAKE_PIDFILE"];
+      delete process.env["FAKE_MODE"];
+    });
+
+    const result = await render("https://example.org/", { binary, timeoutMs: 1_000 });
+    if (mode === "exit") {
+      assert.equal(result.error, null);
+      assert.match(result.dom ?? "", /<body>ok<\/body>/);
+    } else {
+      assert.equal(result.dom, null);
+      assert.match(result.error ?? "", /timed out/);
+    }
+    const [pid = "", profile = ""] = (await readFile(join(dir, "pid"), "utf8")).trim().split(" ");
+    assert.ok(await gone(Number(pid)), "the helper outlived render()");
+    assert.equal(existsSync(profile), false, "the profile outlived render()");
+  });
+}
+
+test("render: a missing binary is a failed render, not a crash", async () => {
+  const result = await render("https://example.org/", { binary: "/nonexistent/chromium", timeoutMs: 1_000 });
+  assert.equal(result.dom, null);
+  assert.match(result.error ?? "", /ENOENT/);
+});
+
+test("list: rate limits are retried, other errors throw", async (t) => {
+  let calls = 0;
+  const server = createServer((req, res) => {
+    if (req.url === "/missing") {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    calls++;
+    if (calls < 3) {
+      res.writeHead(429);
+      res.end();
+      return;
+    }
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ created_on: "2026-10-03T22:00:02" }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => server.close());
+  const { port } = server.address() as AddressInfo;
+
+  const res = await fetchOk(`http://127.0.0.1:${port}/id`, { delayMs: 10 });
+  assert.equal(calls, 3);
+  assert.deepEqual(await res.json(), { created_on: "2026-10-03T22:00:02" });
+  await assert.rejects(fetchOk(`http://127.0.0.1:${port}/missing`, { delayMs: 10 }), /404/);
 });

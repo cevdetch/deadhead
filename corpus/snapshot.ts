@@ -6,7 +6,7 @@ import { gzipSync } from "node:zlib";
 import { classifyRaw } from "./classify.ts";
 import { fetchSite } from "./fetch.ts";
 import { parseList } from "./list.ts";
-import { render } from "./render.ts";
+import { render, stopAll } from "./render.ts";
 import type { SnapshotRecord } from "./types.ts";
 
 /** Run `task` over `items`, at most `n` at a time, taking items in order. */
@@ -44,11 +44,21 @@ if (import.meta.main) {
   const out = values.out;
   await mkdir(out, { recursive: true });
 
+  // Chromium runs in its own process group, out of reach of the terminal's
+  // Ctrl-C, so a stopped run kills the renders itself.
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => {
+      stopAll();
+      process.exit(130);
+    });
+  }
+
   const counts: Record<string, number> = {};
   let done = 0;
   await eachLimited(sites, Number(values.concurrency), async ({ rank, domain }) => {
     const file = recordFile(out, rank, domain);
-    if (!(await exists(file))) {
+    try {
+      if (await exists(file)) return;
       const fetched = await fetchSite(domain);
       const head = fetched.body?.subarray(0, 20_000).toString("utf8") ?? "";
       const outcome = classifyRaw({
@@ -83,9 +93,14 @@ if (import.meta.main) {
       await writeFile(`${file}.tmp`, gzipSync(JSON.stringify(record)));
       await rename(`${file}.tmp`, file);
       counts[outcome] = (counts[outcome] ?? 0) + 1;
+    } catch (error) {
+      // No record is written, so the next run retries this domain.
+      counts["error"] = (counts["error"] ?? 0) + 1;
+      console.error(`#${rank}: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      done++;
+      if (done % 100 === 0) console.log(`${done}/${sites.length} ${JSON.stringify(counts)}`);
     }
-    done++;
-    if (done % 100 === 0) console.log(`${done}/${sites.length} ${JSON.stringify(counts)}`);
   });
   console.log(`done ${done}/${sites.length} ${JSON.stringify(counts)}`);
 }
