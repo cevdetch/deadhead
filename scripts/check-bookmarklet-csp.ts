@@ -27,6 +27,7 @@ server.listen(0, "127.0.0.1", () => {
       "2. Open the page, click the bookmark. Pass: a styled panel listing 3 findings, and no CSP or Trusted Types errors in the console.\n" +
       "Ignore the single refusal for /f.ico: the page links it on purpose, and the refusal comes from the page, not the bookmarklet.\n" +
       "3. Switch the OS or browser to dark mode and click it again. The page declares color-scheme dark light; pass: the panel stays white with a readable close button.\n" +
+      "4. Click full report. Pass: a new tab opens on deadhead.cevdet.ch/try and says the HTML was read from the rendered DOM; this page's CSP refuses the re-read, and the console shows that one connect-src refusal.\n" +
       "Ctrl-C to stop.\n",
   );
 });

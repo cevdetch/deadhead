@@ -22,12 +22,20 @@ const example = `<!doctype html>
   description="Paste HTML or drop a file: deadhead lints it in your browser with the CLI's own rules and shows each finding and the fixed HTML."
 >
   <style slot="head" is:inline>
-    #try-input,#try-output{width:100%;font:inherit;font-family:monospace;font-size:.85em}
-    #try-input{min-height:16rem}
-    .try-row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:.75rem 0}
-    #try-results ol{padding-left:1.25rem}
-    #try-results li{margin:.75rem 0}
-    #try-results code{overflow-wrap:anywhere}
+    #try-input,#try-output{width:100%;padding:.8rem 1rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:inherit;font:var(--small)/1.55 var(--mono);resize:vertical}
+    #try-input{min-height:18rem}
+    .try-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-block-start:.6rem}
+    .try-row small,#try-from{color:var(--muted);margin-inline-start:auto;overflow-wrap:anywhere}
+    #try-form button,#try-file::file-selector-button,#try-fixed summary{font:inherit;font-size:var(--small);padding:.45rem .9rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--text);cursor:pointer}
+    #try-form [type=submit]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+    #try-file{font-size:var(--small);color:var(--muted)}
+    #try-status{padding:.6rem 1rem;border-radius:6px;background:var(--accent-bg)}
+    #try-status:empty{display:none}
+    #try-status span,.rules li>span{font-size:.75rem;border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem;margin-inline-start:.4rem;white-space:nowrap}
+    .rules pre{grid-column:1/-1;margin:0}
+    .rules li>p:first-of-type{color:var(--text)}
+    #try-results p code,#try-status code{white-space:nowrap}
+    #try-fixed summary{display:inline-block}
   </style>
   <h1>Try deadhead</h1>
   <p class="lede">
@@ -39,10 +47,12 @@ const example = `<!doctype html>
     <textarea id="try-input" spellcheck="false">{example}</textarea>
     <div class="try-row">
       <button type="submit">Lint</button>
-      <label>Open a file <input id="try-file" type="file" accept=".html,.htm,text/html" /></label>
+      <input id="try-file" type="file" accept=".html,.htm,text/html" aria-label="Open an HTML file" />
       <button id="try-share" type="button">Copy link</button>
+      <small><kbd>Ctrl</kbd> + <kbd>Enter</kbd> lints</small>
     </div>
   </form>
+  <p id="try-from" hidden></p>
   <p id="try-status" role="status"></p>
   <section id="try-results" aria-live="polite"></section>
   <details id="try-fixed" hidden>

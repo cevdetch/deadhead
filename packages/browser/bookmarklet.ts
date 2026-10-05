@@ -3,17 +3,17 @@
  * draw the results over the page.
  *
  * Exported as `start(payload, logic)` rather than running on import, so the
- * build can append one call with the compressed rule set inlined. That is what keeps the artifact a
- * single IIFE with no `fetch` — nothing to load means there is no request for
- * a Content-Security-Policy to block, which is exactly the kind of page most
- * worth pointing this at.
+ * build can append one call with the compressed rule set inlined. That keeps
+ * the artifact a single IIFE that loads nothing: no request for a
+ * Content-Security-Policy to block, on exactly the pages most worth pointing
+ * this at. The one request is the "full report" button's (`send.ts`), made on
+ * click, and a blocked one falls back to the DOM.
  */
 
 import { type Rule, run } from "../core/index.ts";
 import type { CheckFn, Finding, MatchFn, RuleMeta } from "../core/index.ts";
 import { fromDocument } from "./adapter.ts";
-
-const HOST = "deadhead-panel";
+import { PANEL as HOST, sendToTry } from "./send.ts";
 
 /**
  * Styles for the shadow root. The shadow boundary keeps the page's CSS out
@@ -35,6 +35,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:.5rem;p
  border-bottom:1px solid #e6e6e6;position:sticky;top:0;background:#fff}
 h1{margin:0;font-weight:600;font-size:13px}
 button{font:inherit;color:inherit;cursor:pointer;padding:.1rem .45rem;border:1px solid #d0d0d0;border-radius:4px;background:#fff}
+header div{display:flex;gap:.4rem}
+.note{margin:0;padding:.5rem .8rem;color:#b00020;border-bottom:1px solid #e6e6e6}
 ol{list-style:none;padding:0;margin:0}
 li{padding:.6rem .8rem;border-bottom:1px solid #f0f0f0}
 .sev{display:inline-block;padding:0 .4em;border-radius:3px;color:#fff;font:11px/1.6 ui-monospace,monospace}
@@ -69,10 +71,22 @@ function render(findings: Finding[]): HTMLElement {
   header.append(
     el("h1", findings.length === 0 ? "deadhead: nothing to cut" : `deadhead: ${findings.length} finding${findings.length === 1 ? "" : "s"}`),
   );
+  const report = el("button", "full report");
+  report.title = "Open this page's HTML on the try page: line numbers, advice and the fixed HTML. It travels in the link fragment, which no server receives.";
+  const note = el("p", undefined, "note");
+  note.hidden = true;
+  report.addEventListener("click", async () => {
+    // window.open runs before any await, while the click still counts as a gesture.
+    const problem = await sendToTry(document, location.href, (url, init) => fetch(url, init), window.open("", "_blank"));
+    note.textContent = problem ?? "";
+    note.hidden = problem === null;
+  });
   const close = el("button", "close");
   close.addEventListener("click", () => host.remove());
-  header.append(close);
-  panel.append(header);
+  const actions = el("div");
+  actions.append(report, close);
+  header.append(actions);
+  panel.append(header, note);
 
   if (findings.length === 0) {
     panel.append(el("p", "No harmful, deprecated or unnecessary markup found in this document."));

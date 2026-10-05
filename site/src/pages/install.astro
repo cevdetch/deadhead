@@ -86,8 +86,12 @@ cat page.html | deadhead - --stdin-filename page.html</code></pre>
     <p><a href={href}>deadhead</a></p>
     <p>
       It reads the rendered page, where frameworks have already assembled the head,
-      and draws its findings in a panel. It makes no request and runs no eval, so a
-      strict Content-Security-Policy does not block it. To run it from DevTools
+      and draws its findings in a panel. It loads nothing and runs no eval, so a
+      strict Content-Security-Policy does not block it. Its full report button
+      re-reads the page's HTML as the server sent it and opens it on{" "}
+      <a href="/try">Try</a> for line numbers, advice and the fixed HTML. The HTML
+      travels in the link fragment, which no server receives; where the page's CSP
+      blocks the re-read, the button sends the rendered DOM. To run it from DevTools
       instead, paste <a href="/bookmarklet.js">bookmarklet.js</a> into Sources → Snippets.
     </p>
     <p>

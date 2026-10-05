@@ -3,6 +3,7 @@
  * HTML with the CLI's own path (`packages/cli/source.ts`, parse5 included) and
  * shape the result for display. Nothing here touches the DOM.
  */
+import { pack, unpack } from "../../../packages/browser/handoff.ts";
 import { analyseSource, lintSource } from "../../../packages/cli/source.ts";
 import type { CompiledRules, Finding } from "../../../packages/core/index.ts";
 import type { Severity } from "../../../packages/core/vocabulary.ts";
@@ -64,34 +65,12 @@ export const SHARE_LIMIT = 16_000;
 
 const PREFIX = "#html=";
 
-const toBase64Url = (bytes: Uint8Array): string => {
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-};
-
-const fromBase64Url = (text: string): Uint8Array => {
-  const binary = atob(text.replace(/-/g, "+").replace(/_/g, "/"));
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
-};
-
-// `new Uint8Array(bytes)` copies into a plain ArrayBuffer, the BlobPart the DOM types accept.
-const pipe = async (bytes: Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> =>
-  new Uint8Array(await new Response(new Blob([new Uint8Array(bytes)]).stream().pipeThrough(stream)).arrayBuffer());
-
-/** The pasted HTML as a link fragment: deflate-raw, then base64url. Nothing leaves the browser. */
+/** The pasted HTML as a link fragment (`packages/browser/handoff.ts`). Nothing leaves the browser. */
 export async function encodeShare(html: string): Promise<string> {
-  return PREFIX + toBase64Url(await pipe(new TextEncoder().encode(html), new CompressionStream("deflate-raw")));
+  return PREFIX + (await pack(html));
 }
 
 /** The HTML a fragment carries, or null when it carries none or cannot be read. */
 export async function decodeShare(fragment: string): Promise<string | null> {
-  if (!fragment.startsWith(PREFIX)) return null;
-  const payload = fragment.slice(PREFIX.length);
-  if (!/^[A-Za-z0-9_-]+$/.test(payload)) return null;
-  try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(await pipe(fromBase64Url(payload), new DecompressionStream("deflate-raw")));
-  } catch {
-    return null;
-  }
+  return fragment.startsWith(PREFIX) ? unpack(fragment.slice(PREFIX.length)) : null;
 }

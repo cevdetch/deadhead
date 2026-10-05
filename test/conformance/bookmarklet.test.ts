@@ -21,6 +21,8 @@ import { loadRules } from "../../packages/rules/load.ts";
 import { run } from "../../packages/core/index.ts";
 import type { Finding } from "../../packages/core/types.ts";
 import { bundleBookmarklet } from "../../scripts/build-bookmarklet.ts";
+import { decodeHandoff } from "../../packages/browser/handoff.ts";
+import { SITE_URL } from "../../packages/core/vocabulary.ts";
 
 const rulesJson = JSON.parse(
   await readFile(new URL("../../packages/rules/rules.json", import.meta.url), "utf8"),
@@ -73,9 +75,11 @@ test("the bundle carries every rule, including the ones that need code", async (
 
 test("nothing in the bundle can be blocked by a Content-Security-Policy", () => {
   // The point of inlining everything: a page worth inspecting is often a page
-  // with a strict CSP, and a single network call would make the tool useless
-  // exactly where it is most useful.
-  for (const forbidden of ["fetch(", "XMLHttpRequest", "importScripts", "eval("]) {
+  // with a strict CSP, and a request on load would make the tool useless
+  // exactly where it is most useful. The one request is the full report
+  // button's, on click, and it falls back to the DOM when blocked; the click
+  // test below asserts that loading makes none.
+  for (const forbidden of ["XMLHttpRequest", "importScripts", "eval("]) {
     assert.ok(!bundle.includes(forbidden), `bundle references ${forbidden}`);
   }
   assert.doesNotMatch(bundle, /\bimport\s*\(/, "bundle uses a dynamic import");
@@ -83,7 +87,7 @@ test("nothing in the bundle can be blocked by a Content-Security-Policy", () => 
 });
 
 test("the bundle contains nothing CSP or Trusted Types can block", () => {
-  for (const banned of ["innerHTML", 'createElement("style")', "createElement('style')", "eval(", "new Function", "fetch(", "import("]) {
+  for (const banned of ["innerHTML", 'createElement("style")', "createElement('style')", "eval(", "new Function", "import("]) {
     assert.equal(bundle.includes(banned), false, `bundle contains ${banned}`);
   }
 });
@@ -140,4 +144,31 @@ test("a clean document says so rather than showing an empty list", async () => {
   // different Array prototype and deepStrictEqual compares prototypes.
   assert.equal(findings.length, 0);
   assert.ok(panel);
+});
+
+const until = async (done: () => boolean): Promise<void> => {
+  for (let i = 0; i < 400 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.ok(done(), "timed out");
+};
+
+test("running it makes no request; the full report button reads the page once and opens it on the try page", async () => {
+  const source = "<!doctype html><html lang=en><head><title>t</title></head><body></body></html>";
+  const { window, document } = parseHTML(source);
+  const requests: string[] = [];
+  const fetch = async (url: string): Promise<Response> => (requests.push(url), new Response(source));
+  const tab = { opener: {} as unknown, location: { href: "" }, close(): void {} };
+  (window as unknown as { open: () => unknown }).open = () => tab;
+  const location = { href: "https://example.test/page" };
+  await vm.runInNewContext(bundle, { document, window, location, fetch, CompressionStream, DecompressionStream, Blob, Response, atob, btoa, TextDecoder, TextEncoder });
+  assert.deepEqual(requests, [], "the panel loads nothing");
+  const root = (document.querySelector("deadhead-panel") as unknown as { shadowRoot: ParentNode }).shadowRoot;
+  const button = [...root.querySelectorAll("button")].find((b) => b.textContent === "full report");
+  assert.ok(button, "no full report button");
+  button.dispatchEvent(new window.Event("click"));
+  await until(() => tab.location.href !== "");
+  assert.deepEqual(requests, ["https://example.test/page"]);
+  assert.equal(tab.opener, null);
+  assert.ok(tab.location.href.startsWith(`${SITE_URL}/try#page=`));
+  const handed = await decodeHandoff(tab.location.href.slice(tab.location.href.indexOf("#")));
+  assert.deepEqual(handed, { url: "https://example.test/page", html: source, source: "raw" });
 });
