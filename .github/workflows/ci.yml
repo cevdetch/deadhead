@@ -90,6 +90,15 @@ jobs:
       - run: pnpm build
       - run: pnpm site:check
       - run: pnpm check:site
+      # A draft post builds only with DEADHEAD_DRAFTS=1. When one exists, build
+      # that way too, so a broken draft fails here and not on the day it ships.
+      - name: check:site with draft posts
+        run: |
+          if grep -lqs '^draft: true' content/blog/*.md; then
+            DEADHEAD_DRAFTS=1 pnpm check:site
+          else
+            echo "No draft posts in content/blog."
+          fi
 
   packages:
     needs: test
