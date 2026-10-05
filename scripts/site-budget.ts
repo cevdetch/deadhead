@@ -7,7 +7,7 @@
  */
 
 import { readFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { gzipSync } from "node:zlib";
 
 const dist = process.argv[2] ?? "site/dist";
@@ -106,6 +106,26 @@ const measured: Record<string, number> = {
   rulePageAvgGzip: ruleSizes.length === 0 ? 0 : Math.round(ruleSizes.reduce((a, b) => a + b, 0) / ruleSizes.length),
   cssRaw,
 };
+// The try page bundles the CLI's lint path: measure its HTML and every script
+// it loads, following static and dynamic imports from its module entry.
+const jsClosure = async (entry: string, seen = new Set<string>()): Promise<Set<string>> => {
+  if (seen.has(entry)) return seen;
+  seen.add(entry);
+  const text = await readFile(join(dist, entry), "utf8");
+  for (const match of text.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)["'](\.\/[^"']+\.js)["']/g)) {
+    await jsClosure(join(dirname(entry), match[1] ?? "").split(sep).join("/"), seen);
+  }
+  return seen;
+};
+const tryHtml = await readFile(join(dist, "try.html"), "utf8").catch(() => null);
+if (tryHtml !== null) {
+  measured["tryGzip"] = await gz("try.html");
+  const entries = [...tryHtml.matchAll(/<script[^>]+src="\/(_astro\/[^"]+\.js)"/g)].map((m) => m[1] ?? "");
+  const files = new Set<string>();
+  for (const entry of entries) for (const file of await jsClosure(entry)) files.add(file);
+  measured["tryJsGzip"] = (await Promise.all([...files].map((f) => gz(f)))).reduce((a, b) => a + b, 0);
+}
+
 // The blog exists only once a post is built: measure it then, and only then.
 const postFiles = (await readdir(join(dist, "blog")).catch(() => [] as string[])).filter((f) => f.endsWith(".html"));
 if (postFiles.length > 0) {

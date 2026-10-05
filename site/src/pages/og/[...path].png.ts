@@ -43,6 +43,10 @@ export async function getStaticPaths(): Promise<
       input: { eyebrow: "cli, bookmarklet, eslint", title: "Install" },
     },
     {
+      urlPath: "/try",
+      input: { eyebrow: "in your browser", title: "Lint your HTML" },
+    },
+    {
       urlPath: "/rules",
       input: {
         eyebrow: "grouped by where it lives",

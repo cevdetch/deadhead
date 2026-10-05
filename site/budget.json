@@ -4,5 +4,7 @@
   "rulePageAvgGzip": 3000,
   "cssRaw": 4000,
   "blogIndexGzip": 2000,
-  "blogPostMaxGzip": 9000
+  "blogPostMaxGzip": 9000,
+  "tryGzip": 2000,
+  "tryJsGzip": 51000
 }

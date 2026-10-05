@@ -48,6 +48,13 @@ test("parse5 appears only in packages/cli/adapter.ts", async () => {
   );
 });
 
+test("the CLI's per-source lint path imports no node: built-ins: the try page bundles it for the browser", async () => {
+  const browserSafe = new Set(["packages/cli/source.ts", "packages/cli/adapter.ts"]);
+  const list = (await specifiers("packages/cli")).filter(({ file }) => browserSafe.has(file));
+  assert.ok(list.some(({ file }) => file === "packages/cli/source.ts"), "packages/cli/source.ts exists and imports something");
+  assert.deepEqual(bad(list, (spec) => !spec.startsWith("node:")), []);
+});
+
 test("@html-eslint/parser appears only in packages/eslint-plugin/", async () => {
   const all = await specifiers("packages");
   assert.deepEqual(

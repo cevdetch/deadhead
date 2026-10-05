@@ -20,6 +20,7 @@ export const GET: APIRoute = async ({ site }) => {
     "## Docs",
     "",
     `- [Install and usage](${at("/install")}): the CLI, the bookmarklet and the ESLint plugin`,
+    `- [Try deadhead in the browser](${at("/try")}): paste HTML and see each finding and the fixed HTML`,
     `- [Full text of every rule](${at("/llms-full.txt")}): all rules in one markdown file`,
     "",
   ];

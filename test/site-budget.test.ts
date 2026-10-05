@@ -388,3 +388,30 @@ test("skips a page with no <head>, like a search-console verification file", asy
   assert.equal(result.status, 0, result.stdout);
   assert.doesNotMatch(result.stdout, /✗/, result.stdout);
 });
+
+test("the try page: its HTML, and every script its module entry loads through static and dynamic imports", async () => {
+  const entry = 'import{a}from"./shared.ccc333.js";import("./rules.ddd444.js");console.log(a);';
+  const shared = "export const a = 1;" + "s".repeat(300);
+  const rules = "export const RULES = [];" + "r".repeat(800);
+  const tryPage = doc("Try page", '<script type="module" src="/_astro/try.bbb222.js"></script>' + "t".repeat(500));
+  await withDist(async (dir) => {
+    await writeSyntheticDist(dir, {
+      pages: {
+        "try.html": tryPage,
+        "_astro/try.bbb222.js": entry,
+        "_astro/shared.ccc333.js": shared,
+        "_astro/rules.ddd444.js": rules,
+      },
+    });
+    await mkdir(join(dir, "site"), { recursive: true });
+    const roomy = { homeGzip: 1e6, rulesIndexGzip: 1e6, rulePageAvgGzip: 1e6, cssRaw: 1e6, tryGzip: 1e6, tryJsGzip: 1e6 };
+    await writeFile(join(dir, "site", "budget.json"), JSON.stringify(roomy));
+
+    const result = run(dir);
+
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const value = (key: string) => Number(new RegExp(`^${key}\\s+(\\d+)`, "m").exec(result.stdout)?.[1]);
+    assert.equal(value("tryGzip"), gz(tryPage));
+    assert.equal(value("tryJsGzip"), gz(entry) + gz(shared) + gz(rules), "the entry, its static import and its dynamic import, and no other chunk");
+  });
+});

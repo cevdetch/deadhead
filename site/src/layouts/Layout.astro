@@ -41,6 +41,7 @@ const hasBlog = (await getPosts()).length > 0;
 const nav = [
   { href: "/rules", label: "Rules" },
   { href: "/topics", label: "Topics" },
+  { href: "/try", label: "Try" },
   ...(hasBlog ? [{ href: "/blog", label: "Blog" }] : []),
   { href: "/install", label: "Install" },
   { href: REPO, label: "GitHub" },

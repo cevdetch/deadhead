@@ -1,0 +1,58 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Shown on first visit: a head that trips several rules, so the output explains itself.
+const example = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Example</title>
+    <meta name="keywords" content="html, head, linter">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <script type="text/javascript" src="/app.js"></script>
+  </head>
+  <body></body>
+</html>`;
+---
+
+<Layout
+  title="Lint your HTML in the browser"
+  description="Paste HTML or drop a file: deadhead lints it in your browser with the CLI's own rules and shows each finding and the fixed HTML."
+>
+  <style slot="head" is:inline>
+    #try-input,#try-output{width:100%;font:inherit;font-family:monospace;font-size:.85em}
+    #try-input{min-height:16rem}
+    .try-row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:.75rem 0}
+    #try-results ol{padding-left:1.25rem}
+    #try-results li{margin:.75rem 0}
+    #try-results code{overflow-wrap:anywhere}
+  </style>
+  <h1>Try deadhead</h1>
+  <p class="lede">
+    Paste HTML or drop a file. deadhead lints it here, in your browser, with the same rules and
+    parser as the CLI. Nothing you paste leaves this page.
+  </p>
+  <form id="try-form">
+    <label for="try-input">HTML</label>
+    <textarea id="try-input" spellcheck="false">{example}</textarea>
+    <div class="try-row">
+      <button type="submit">Lint</button>
+      <label>Open a file <input id="try-file" type="file" accept=".html,.htm,text/html" /></label>
+      <button id="try-share" type="button">Copy link</button>
+    </div>
+  </form>
+  <p id="try-status" role="status"></p>
+  <section id="try-results" aria-live="polite"></section>
+  <details id="try-fixed" hidden>
+    <summary>Fixed HTML</summary>
+    <textarea id="try-output" readonly rows="16" spellcheck="false"></textarea>
+    <p><button id="try-copy" type="button">Copy the fixed HTML</button></p>
+  </details>
+  <noscript><p>The linter runs in your browser and needs JavaScript. The CLI does the same offline: see <a href="/install">Install</a>.</p></noscript>
+</Layout>
+
+<script>
+  import "../scripts/try.ts";
+</script>
