@@ -5,6 +5,38 @@ Adding or renaming a rule is a minor release; prose-only and fix-only changes
 are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
 is marked as breaking.
 
+## 0.3.0 - 2026-10-13
+
+The new `deadhead/vite` export adds dev-time checking to Vite 8 projects. Both
+published packages move to 0.3.0 together. The rule set is unchanged: 203 rules,
+with the same findings and autofixes as 0.2.1.
+
+### Vite integration
+
+- Add `deadhead()` from `deadhead/vite` to your Vite config to report findings,
+  advice and rule links in the terminal and DevTools console during development
+  ([#502](https://github.com/cevdetta/deadhead/pull/502)).
+- Checks use the CLI parser and inspect completed HTML responses, including SSR
+  streams served through Vite's middleware stack. Positions refer to the served
+  HTML. Frameworks with a separate HTML server need the CLI or bookmarklet.
+- Read rule settings and URL filters from `deadhead.config.ts` in Vite's root,
+  with plugin options overriding the file. Set `console: false` for terminal
+  reports with unchanged response bytes and headers.
+- The plugin checks UTF-8 HTML up to 2 MiB, preserves streamed writes and
+  backpressure, and skips compressed or partial responses. It respects
+  `Cache-Control: no-transform` and uses Vite's configured CSP nonce for console
+  output. A blocked console script leaves the terminal report available.
+- Vite is an optional peer; CLI users do not install it. The plugin ships
+  JavaScript and TypeScript declarations. Builds keep using
+  `"postbuild": "deadhead dist"` after the framework writes its final output.
+
+### Bookmarklet
+
+- The full report button re-reads the page's HTML in your browser and opens it on
+  `/try`, with positions, advice and fixed HTML. If CSP blocks the re-read, it
+  sends the rendered DOM. The HTML travels in the URL fragment; `/try` clears it
+  after reading it ([#501](https://github.com/cevdetta/deadhead/pull/501)).
+
 ## 0.2.1 - 2026-10-05
 
 Fixes from the first corpus run. Deadhead 0.2.0 linted the home pages of the Tranco top
