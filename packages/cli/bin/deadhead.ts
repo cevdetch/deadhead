@@ -51,7 +51,7 @@ const isThreshold = (value: unknown): value is Threshold =>
   value === "none" || (typeof value === "string" && SEVERITY.some((known) => known === value));
 
 const USAGE = `
-${styleText("bold", "deadhead")} — lint HTML <head> for deprecated, unnecessary and harmful markup
+${styleText("bold", "deadhead")} — lint HTML for deprecated, unnecessary and harmful markup
 
   ${styleText("bold", "Usage:")} deadhead [options] [file|dir|glob]...
 
@@ -60,20 +60,27 @@ ${styleText("bold", "deadhead")} — lint HTML <head> for deprecated, unnecessar
                           harmful, deprecated, unnecessary (default), none
       --fix               rewrite files in place, then report what is left
       --skip-templates    do not lint the contents of <template>
-      --no-head-only      walk <body> even when no active rule is scoped
-                          beyond <head> (head-only mode skips the walk;
-                          findings are unchanged, it only costs the walk)
+      --no-head-only      walk <body> even with only head-scoped rules
   -c, --config <path>     defaults to ./deadhead.config.ts when present
-      --baseline <path>   ignore findings the baseline already accounts for
-      --update-baseline   rewrite the baseline from this run, then exit 0
-  -j, --jobs <n>          lint files in <n> worker threads (large trees only)
+      --baseline <path>   ignore findings already accounted for (files only)
+      --update-baseline   rewrite the baseline from files, then exit 0
+  -j, --jobs <n>          positive worker count (large file trees only)
   -o, --output-file <path> write the report to <path> instead of stdout
   -q, --quiet             report only findings at or above --fail-on
       --list-rules        print every rule, then exit 0
-      --stdin-filename <name> name stdin (-) in the report
+      --stdin-filename <name> name stdin in the report; requires -
   -h, --help              show this
   -v, --version           show the version
 
+  ${styleText("bold", "Examples:")}
+    deadhead index.html             check one HTML file
+    deadhead dist                   check your built site
+    deadhead "src/**/*.html"         expand a quoted glob
+    deadhead --fix dist             remove fixable markup from files
+    cat page.html | deadhead - --stdin-filename page.html
+
+  Exit codes: 0 below --fail-on; 1 findings meet it; 2 invocation or runtime error.
+  Try HTML in your browser: ${SITE_URL}/try
   ${styleText("dim", `Every finding links to ${SITE_URL}/rules/<ruleId>.`)}
 `.trimStart();
 
@@ -158,6 +165,27 @@ try {
     process.exit(0);
   }
 
+  const stdin = positionals.length === 1 && positionals[0] === "-";
+  if (positionals.includes("-") && !stdin) {
+    fail("stdin (-) must be the only input; do not mix it with files or globs");
+  }
+  if (values["stdin-filename"] !== undefined && !stdin) {
+    fail("--stdin-filename requires stdin (-)");
+  }
+  let jobs = defaultJobs();
+  if (values.jobs !== undefined) {
+    const parsed = Number(values.jobs);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      fail(`--jobs must be a positive integer (got ${JSON.stringify(values.jobs)})`);
+    }
+    jobs = parsed;
+  }
+  const baselinePath = values.baseline ??
+    (loaded && config.baseline !== undefined ? fromConfigDir(loaded, config.baseline) : undefined);
+  if (stdin && (values["update-baseline"] || baselinePath !== undefined)) {
+    fail("baseline options require files; they cannot be used with stdin");
+  }
+
   const skipTemplates = values["skip-templates"] ?? config.skipTemplates ?? false;
   const lintOptions = {
     skipTemplates,
@@ -167,7 +195,7 @@ try {
 
   let results: FileResult[];
   let resolved = 0;
-  if (positionals.length === 1 && positionals[0] === "-") {
+  if (stdin) {
     if (values.fix === true) fail("--fix needs files; it cannot rewrite stdin");
     process.stdin.setEncoding("utf8");
     let source = "";
@@ -194,12 +222,6 @@ try {
       );
     }
 
-    let jobs = defaultJobs();
-    if (values.jobs !== undefined) {
-      const parsed = Number(values.jobs);
-      if (!Number.isInteger(parsed) || parsed < 1) fail(`--jobs must be a positive integer (got ${JSON.stringify(values.jobs)})`);
-      jobs = parsed;
-    }
     const run =
       files.length >= 64 && jobs > 1
         ? await lintFilesParallel(files, settings, lintOptions, jobs)
@@ -215,10 +237,6 @@ try {
         `${styleText("dim", "head-only mode: no active rule is scoped beyond <head>, so the <body> walk is skipped (pass --no-head-only to walk it anyway)")}\n`,
       );
     }
-
-    const baselinePath =
-      values.baseline ??
-      (loaded && config.baseline !== undefined ? fromConfigDir(loaded, config.baseline) : undefined);
 
     if (values["update-baseline"]) {
       if (baselinePath === undefined) {

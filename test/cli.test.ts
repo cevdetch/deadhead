@@ -99,6 +99,43 @@ test("exit 2 for usage and I/O errors, never 1", () => {
   assert.match(deadhead("--format=nope", "test/fixtures").stderr, /unknown --format/);
 });
 
+test("unsupported stdin flags and invalid jobs fail with usage exit 2", async (t) => {
+  const source = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>t</title></head><body></body></html>';
+  for (const args of [
+    ["--jobs=bad", "-"],
+    ["--jobs=0", "-"],
+    ["--update-baseline", "--baseline=unused.json", "-"],
+    ["--update-baseline", "-"],
+    ["--baseline=unused.json", "-"],
+    ["-", "test/fixtures/meta/http-equiv-x-ua-compatible/valid.html"],
+    ["--stdin-filename=ignored.html", "test/fixtures/meta/http-equiv-x-ua-compatible/valid.html"],
+  ]) {
+    await t.test(args.join(" "), () => {
+      const result = spawnSync(process.execPath, [BIN, "--format=json", ...args], {
+        cwd: ROOT, encoding: "utf8", input: source, timeout: 10_000,
+      });
+      assert.equal(result.status, 2);
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /jobs|baseline|stdin/);
+    });
+  }
+
+  await t.test("configured baseline with stdin", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "dh-stdin-baseline-"));
+    try {
+      await writeFile(join(dir, "deadhead.config.ts"), 'export default { baseline: "unused.json" };\n');
+      const result = spawnSync(process.execPath, [BIN, "-"], {
+        cwd: dir, encoding: "utf8", input: source, timeout: 10_000,
+      });
+      assert.equal(result.status, 2);
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /baseline.*stdin/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 test("--help and --version exit 0 and write to stdout", async () => {
   const help = deadhead("--help");
   assert.equal(help.status, 0);
