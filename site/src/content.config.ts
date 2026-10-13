@@ -79,7 +79,7 @@ const posts = defineCollection({
       pubDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       draft: z.boolean().default(false),
-      results: z.string().regex(/^[\w.-]+\.json$/),
+      results: z.string().regex(/^[\w.-]+\.json$/).optional(),
     })
     .strict(),
 });

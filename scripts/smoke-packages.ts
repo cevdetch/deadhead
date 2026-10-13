@@ -41,6 +41,11 @@ const at = (name: string) => `${name}@${devDeps[name]}`;
 await writeFile(join(dir, "package.json"), JSON.stringify({ name: "smoke", private: true, type: "module" }));
 ok("npm", ["install", "--no-audit", "--no-fund", ...tarballs, at("eslint"), at("typescript")]);
 
+// The optional Vite peer must not install Vite for CLI users. Even importing
+// the plugin factory works without it: its Vite import is erased with types.
+assert.notEqual(run("node", ["--input-type=module", "-e", 'import("vite")']).status, 0, "CLI install has no Vite");
+ok("node", ["--input-type=module", "-e", 'import deadhead from "deadhead/vite"; if (deadhead().apply !== "serve") throw new Error("plugin");']);
+
 const PAGE =
   '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">' +
   '<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>x</title></head><body></body></html>\n';
@@ -81,6 +86,23 @@ await writeFile(
 const eslint = JSON.parse(run("npx", ["eslint", "--format=json", "page.html"]).stdout) as { messages: { ruleId: string }[] }[];
 assert.ok(eslint[0]?.messages.some((m) => m.ruleId === `deadhead/${RULE}`), "ESLint finding");
 
+// Now install the peer and drive the packed plugin through a real dev server.
+ok("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", at("vite"), at("@types/node")]);
+await writeFile(join(dir, "vite-smoke.mjs"), [
+  'import assert from "node:assert/strict";',
+  'import { createServer } from "vite";',
+  'import deadhead from "deadhead/vite";',
+  'const server = await createServer({ configFile: false, plugins: [deadhead()], server: { host: "127.0.0.1", port: 0, watch: null } });',
+  'try {',
+  '  await server.listen();',
+  '  const html = await (await fetch(`http://127.0.0.1:${server.httpServer.address().port}/page.html`)).text();',
+  '  assert.ok(html.includes("data-deadhead-report"));',
+  `  assert.ok(html.includes("${RULE}"));`,
+  '} finally { await server.close(); }',
+  '',
+].join("\n"));
+ok("node", ["vite-smoke.mjs"]);
+
 // Types, as a consumer compiles them, under both resolutions an ESM package meets.
 await writeFile(
   join(dir, "consumer.ts"),
@@ -88,14 +110,20 @@ await writeFile(
     'import { defineConfig as deadheadConfig, type DeadheadConfig } from "deadhead";',
     'import { defineConfig } from "eslint/config";',
     'import deadhead from "eslint-plugin-deadhead";',
+    'import deadheadVite, { type DeadheadViteOptions } from "deadhead/vite";',
+    'import { defineConfig as viteConfig } from "vite";',
+    'const options: DeadheadViteOptions = { console: false, rules: { "meta/keywords": "off" } };',
+    'export const vite = viteConfig({ plugins: [deadheadVite(options)] });',
     'export const cli: DeadheadConfig = deadheadConfig({ failOn: "harmful", rules: { "meta/keywords": "off" } });',
     "export default defineConfig([deadhead.configs.recommended, deadhead.configs.all]);",
     "// @ts-expect-error: not a severity",
     'deadheadConfig({ failOn: "loud" });',
+    "// @ts-expect-error: not a boolean",
+    'deadheadVite({ console: "yes" });',
     "",
   ].join("\n"),
 );
-const compilerOptions = { strict: true, noEmit: true, skipLibCheck: false, target: "esnext", lib: ["esnext"], types: [] };
+const compilerOptions = { strict: true, noEmit: true, skipLibCheck: false, target: "esnext", lib: ["esnext"], types: ["node"] };
 const tsconfigs = {
   "tsconfig.nodenext.json": { compilerOptions: { ...compilerOptions, module: "nodenext" }, files: ["consumer.ts"] },
   "tsconfig.bundler.json": { compilerOptions: { ...compilerOptions, module: "esnext", moduleResolution: "bundler" }, files: ["consumer.ts"] },
@@ -107,4 +135,4 @@ for (const [name, config] of Object.entries(tsconfigs)) {
 
 // The scratch project goes; the tarballs stay for whoever stages them.
 await rm(dir, { recursive: true, force: true });
-process.stdout.write(`✓ smoke: CLI, workers, config, ESLint 10, types (nodenext, bundler). Tarballs in ${out}\n`);
+process.stdout.write(`✓ smoke: CLI, workers, config, ESLint 10, Vite 8, types (nodenext, bundler). Tarballs in ${out}\n`);

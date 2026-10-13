@@ -26,6 +26,9 @@ test("both published packages are ESM-only, share one version and the Node floor
     assert.deepEqual(pkg.publishConfig, { access: "public" });
   }
   assert.deepEqual(cli.bin, { deadhead: "./dist/deadhead.js" });
+  assert.deepEqual(cli.exports["./vite"], { types: "./dist/vite.d.ts", default: "./dist/vite.js" });
+  assert.deepEqual(cli.peerDependencies, { vite: "^8.0.0" });
+  assert.deepEqual(cli.peerDependenciesMeta, { vite: { optional: true } });
 });
 
 test("each package reports its own manifest's name and version", async () => {
@@ -41,7 +44,7 @@ test("the built packages are plain ESM with generated types and a runnable bin",
   const build = spawnSync(process.execPath, ["scripts/build-packages.ts"], { encoding: "utf8" });
   assert.equal(build.status, 0, build.stderr);
   const read = (file: string) => readFile(new URL(`../packages/${file}`, import.meta.url), "utf8");
-  for (const file of ["cli/dist/deadhead.js", "cli/dist/index.js", "cli/dist/worker.js", "eslint-plugin/dist/index.js"]) {
+  for (const file of ["cli/dist/deadhead.js", "cli/dist/index.js", "cli/dist/worker.js", "cli/dist/vite.js", "eslint-plugin/dist/index.js"]) {
     assert.doesNotMatch(await read(file), /from\s*["'][^"']+\.ts["']/, `${file} imports .ts`);
   }
   assert.match(await read("cli/dist/deadhead.js"), /^#!\/usr\/bin\/env node\n/);
@@ -49,10 +52,14 @@ test("the built packages are plain ESM with generated types and a runnable bin",
   assert.match(cliTypes, /defineConfig/);
   assert.match(cliTypes, /DeadheadConfig/);
   const pluginTypes = await read("eslint-plugin/dist/index.d.ts");
+  const viteTypes = await read("cli/dist/vite.d.ts");
+  assert.match(viteTypes, /DeadheadViteOptions/);
+  assert.match(viteTypes, /from "vite"/);
+  assert.doesNotMatch(await read("cli/dist/vite.js"), /(?:from|import)\s*["']vite["']/);
   assert.match(pluginTypes, /from "eslint"/);
   assert.match(pluginTypes, /export default |as default\b/);
   // Region comments name source files; import specifiers must not.
-  for (const types of [cliTypes, pluginTypes]) {
+  for (const types of [cliTypes, pluginTypes, viteTypes]) {
     assert.doesNotMatch(types, /from\s*["'][^"']*(packages\/|\.ts["'])/, "no repo paths or .ts specifiers in types");
   }
   const run = spawnSync(process.execPath, ["packages/cli/dist/deadhead.js", "--version"], { encoding: "utf8" });

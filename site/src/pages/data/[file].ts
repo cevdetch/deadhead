@@ -8,7 +8,7 @@ import { resultsText } from "../../lib/results.ts";
  * aggregates only, no domain names (corpus/README.md).
  */
 export async function getStaticPaths() {
-  const cited = [...new Set((await getPosts()).map((post) => post.data.results))];
+  const cited = [...new Set((await getPosts()).flatMap((post) => post.data.results === undefined ? [] : [post.data.results]))];
   return cited.map((file) => ({ params: { file }, props: { text: resultsText(file) } }));
 }
 

@@ -126,11 +126,54 @@ export default {
 };
 ```
 
-Once the packages are published, wrapping the object in `defineConfig` from
-`@deadhead/cli` gets you completion and type checking; a plain object works either way.
+Wrapping the object in `defineConfig` from `deadhead` gets you completion and type
+checking; a plain object works either way.
 
 A typo in a rule id is an error rather than a setting that silently does nothing. The
 failure it prevents is a rule you thought you had disabled still being on.
+
+### Vite (next release: 0.3.0)
+
+Use `deadhead/vite` with Vite 8 to check pages as you open them during development:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import deadhead from "deadhead/vite";
+
+export default defineConfig({ plugins: [deadhead()] });
+```
+
+You get findings with advice and rule links in the terminal and in a collapsed
+DevTools console group. The terminal prints again when a page's findings change.
+Positions refer to the **served HTML**, including Vite's transforms, so SSR routes
+served through Vite's middleware stack get the same check. Frameworks that serve
+HTML through a separate server need the CLI or bookmarklet.
+
+The plugin reads `deadhead.config.ts` from Vite's `root`. Options override `include`,
+`ignore` and `skipTemplates`; `rules` overrides merge with the config's rule settings.
+For this plugin, globs match URL paths without the leading `/` or query string.
+If your CLI config includes `dist/**/*.html`, override `include` for dev:
+
+```ts
+deadhead({ include: ["**"], ignore: ["vendor/**"], console: false });
+```
+
+`console: false` keeps reports in the terminal and leaves response bytes and
+headers intact. Restart Vite after changing deadhead's config. `failOn` and
+`baseline` belong to the CLI; the dev plugin reports without fixing files or
+blocking the page.
+
+The plugin checks completed UTF-8 HTML responses up to 2 MiB. It passes streamed
+chunks through as they arrive and reports after the response ends. It skips
+compressed responses, partial responses and `Cache-Control: no-transform`.
+For console output it appends a module script and removes content length and
+digest headers, including ETag. With Node's strict content-length checking it
+keeps the report in the terminal. The script uses Vite's `html.cspNonce` if set;
+on pages whose CSP blocks it, the terminal report still works.
+
+For production and CI, keep `"postbuild": "deadhead dist"`. The plugin runs during
+`vite dev`; the CLI checks the final output after your framework completes its build.
 
 ### Baseline
 

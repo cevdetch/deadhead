@@ -6,8 +6,8 @@ const href = bookmarkletUrl(bundle);
 ---
 
 <Layout
-  title="Install the deadhead CLI, ESLint plugin and bookmarklet"
-  description="Install and run deadhead: the CLI, the bookmarklet, the ESLint plugin, suppression comments and CI configuration."
+  title="Install deadhead: CLI, Vite, ESLint and bookmarklet"
+  description="Install and run deadhead: the CLI, Vite plugin, bookmarklet, ESLint plugin, suppression comments and CI configuration."
 >
     <h1>Install</h1>
     <p class="lede">
@@ -37,6 +37,39 @@ cat page.html | deadhead - --stdin-filename page.html</code></pre>
       <code>--fail-on</code> threshold, <strong>1</strong> threshold met,{" "}
       <strong>2</strong> usage, config or I/O error. A broken invocation never
       looks like a clean run.
+    </p>
+
+    <h2 id="vite">Vite (next release: 0.3.0)</h2>
+    <p>
+      Add <code>deadhead/vite</code> to a Vite 8 project to see findings in the
+      terminal and DevTools console as you open pages during development:
+    </p>
+    <pre><code>// vite.config.ts
+import &lbrace; defineConfig &rbrace; from "vite";
+import deadhead from "deadhead/vite";
+
+export default defineConfig(&lbrace; plugins: [deadhead()] &rbrace;);</code></pre>
+    <p>
+      Positions refer to the served HTML, after Vite's transforms. SSR routes
+      served through Vite's middleware stack get the same check. The terminal
+      prints again when findings change. Set <code>console: false</code> to keep
+      output in the terminal and preserve response bytes and headers.
+    </p>
+    <p>
+      The plugin reads <code>deadhead.config.ts</code> from Vite's root. Options
+      override the file; rule settings merge. Globs match URL paths without a
+      leading slash or query string. If the CLI config includes build files,
+      override that for dev:
+    </p>
+    <pre><code>deadhead(&lbrace; include: ["**"], ignore: ["vendor/**"], console: false &rbrace;);</code></pre>
+    <p>
+      Checks cover completed UTF-8 HTML responses up to 2 MiB. Streamed chunks
+      flow as they arrive, with a report after the response ends. Compressed and
+      partial responses pass through. A CSP that blocks console output leaves
+      the terminal report available; set Vite's <code>html.cspNonce</code> for
+      pages that require a script nonce. Restart Vite after config changes.
+      Keep <code>"postbuild": "deadhead dist"</code> for production and CI, after
+      your framework finishes its build.
     </p>
 
     <h2>Pages and fragments</h2>
