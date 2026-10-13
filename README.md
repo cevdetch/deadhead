@@ -38,33 +38,72 @@ generated from those documents. If a rule cannot be explained, it does not ship.
 
 Node 24.8 or newer. Both packages are ESM only, and the ESLint plugin needs ESLint 10.
 
-## Install
+## Quick start
+
+[Try deadhead in your browser](https://deadhead.cevdet.ch/try): paste HTML to see
+findings, explanations and the fixed HTML without installing anything.
+
+To check a file or a built site from your terminal:
 
 ```bash
-npm install --save-dev deadhead                        # the CLI
-npm install --save-dev eslint eslint-plugin-deadhead   # the ESLint plugin
-```
-
-## Usage
-
-```bash
+npx deadhead index.html
 npx deadhead dist
 ```
+
+Run your project's build first, then replace `dist` with its HTML output directory.
+For Astro and Vite, the default is `dist`. No configuration is required.
+
+Each finding includes its file, line, severity and a link explaining what to change.
+Use `npx deadhead --fix dist` to remove fixable markup; remaining findings need a
+manual change. When checking generated HTML, apply the change to your source
+template so it survives the next build.
+
+To keep deadhead in your project:
+
+```bash
+npm install --save-dev deadhead
+```
+
+Add a script to your existing `package.json`:
+
+```json
+{
+  "scripts": {
+    "lint:html": "deadhead dist"
+  }
+}
+```
+
+Run `npm run lint:html` after building, locally or in CI. For checks while you
+develop, use the [Vite and Astro setup](#vite); for an open page, use the
+[bookmarklet](https://deadhead.cevdet.ch/install#bookmarklet).
+
+## Usage
 
 `deadhead` takes files, directories, or globs -- it expands globs itself, so they
 behave the same in every shell:
 
 ```bash
-deadhead dist                        # walk a directory for .html and .htm
-deadhead "src/**/*.html"             # quote it; the CLI does the expanding
-deadhead --format=sarif dist         # stylish (default), json, sarif
-deadhead --fail-on=harmful dist      # exit 1 only on harmful findings
-deadhead --skip-templates dist       # leave <template> contents alone
+npx deadhead dist                   # walk a directory for .html and .htm
+npx deadhead "src/**/*.html"         # quote it; the CLI does the expanding
+npx deadhead --format=sarif dist     # stylish (default), json, sarif
+npx deadhead --fail-on=harmful dist  # exit 1 only on harmful findings
+npx deadhead --skip-templates dist  # leave <template> contents alone
 ```
 
 ```bash
-deadhead --fix dist                   # rewrite files, then report what is left
+npx deadhead --fix dist             # rewrite files, then report what is left
 ```
+
+To check stdin, pass `-` as the only input:
+
+```bash
+cat page.html | npx deadhead - --stdin-filename page.html
+```
+
+`--stdin-filename` requires `-`. Baselines and baseline updates require files,
+including when a baseline is set in `deadhead.config.ts`. `--jobs` must be a
+positive integer.
 
 Exit codes are the CI contract: **0** nothing at or above the `--fail-on` threshold,
 **1** threshold met, **2** usage, config or I/O error, no HTML files to lint, or an
@@ -195,8 +234,8 @@ For production and CI, keep `"postbuild": "deadhead dist"`. The plugin runs duri
 Adopt deadhead on an existing site without fixing the backlog first:
 
 ```bash
-deadhead --baseline .deadhead-baseline.json --update-baseline dist   # accept today
-deadhead --baseline .deadhead-baseline.json dist                     # fail only on new
+npx deadhead --baseline .deadhead-baseline.json --update-baseline dist   # accept today
+npx deadhead --baseline .deadhead-baseline.json dist                     # fail only on new
 ```
 
 The baseline records a **count per file per rule**, not line numbers or source hashes.
@@ -280,6 +319,10 @@ refined by a `match` function stays out, because its selector is a pre-filter an
 drawing it would outline markup the engine passes.
 
 ### ESLint
+
+```bash
+npm install --save-dev eslint eslint-plugin-deadhead
+```
 
 ```js
 // eslint.config.js

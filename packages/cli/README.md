@@ -6,11 +6,40 @@ Every finding links to a researched explanation with sources on
 
 ESM only. Node 24.8 or newer.
 
+## Quick start
+
+[Try HTML in your browser](https://deadhead.cevdet.ch/try) without installing
+anything, or check a file or built site from your terminal:
+
+```sh
+npx deadhead index.html
+npx deadhead dist
+```
+
+Run your project's build first. Replace `dist` with your HTML output directory;
+Astro and Vite use `dist` by default. No configuration is required.
+
+Each finding includes a file, line, severity and a link explaining what to change.
+`npx deadhead --fix dist` removes fixable markup and reports what remains. Apply
+changes to source templates too, so they survive the next build.
+
 ## Install
 
 ```sh
 npm install --save-dev deadhead
 ```
+
+Add a script to your existing `package.json`:
+
+```json
+{
+  "scripts": {
+    "lint:html": "deadhead dist"
+  }
+}
+```
+
+Run `npm run lint:html` after building, locally or in CI.
 
 ## Use
 
@@ -22,6 +51,16 @@ npx deadhead --fail-on=harmful dist  # exit 1 only on harmful findings
 npx deadhead --fix dist              # rewrite files, then report what is left
 npx deadhead --jobs 4 dist           # lint large trees in worker threads
 ```
+
+To check stdin, pass `-` as the only input:
+
+```sh
+cat page.html | npx deadhead - --stdin-filename page.html
+```
+
+`--stdin-filename` requires `-`. Baselines and baseline updates require files,
+including when a baseline is set in `deadhead.config.ts`. `--jobs` must be a
+positive integer.
 
 Exit codes: **0** nothing at or above the `--fail-on` threshold, **1** threshold
 met, **2** usage, config or I/O error.

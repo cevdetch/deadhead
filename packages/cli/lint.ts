@@ -6,13 +6,13 @@
 import { glob, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { availableParallelism } from "node:os";
 import { extname, join, sep } from "node:path";
-import { Worker } from "node:worker_threads";
 
 import type { CompiledRules, Rule } from "../core/index.ts";
 import { loadRules } from "../rules/load.ts";
 import { applySettings, type RuleSetting } from "./config.ts";
 import type { FileResult } from "./reporters/index.ts";
 import { compileForRun, lintSource, type LintOptions } from "./source.ts";
+import { runWorkerJobs } from "./worker-jobs.ts";
 
 // The per-source lint path lives in source.ts, which the try page bundles for the browser.
 export { analyseSource, compileForRun, lintSource, type LintOptions } from "./source.ts";
@@ -135,19 +135,9 @@ export async function lintFilesParallel(
   // the published bundle. A computed specifier keeps the bundler from
   // treating it as an asset to copy.
   const workerUrl = new URL(import.meta.url.endsWith(".ts") ? "./worker.ts" : "./worker.js", import.meta.url);
-  const parts = await Promise.all(
-    slices.filter((s) => s.length > 0).map(
-      (slice) =>
-        new Promise<FileResult[]>((resolve, reject) => {
-          const worker = new Worker(workerUrl);
-          worker.once("message", (results: FileResult[]) => {
-            void worker.terminate();
-            resolve(results);
-          });
-          worker.once("error", reject);
-          worker.postMessage({ files: slice, settings, options });
-        }),
-    ),
+  const parts = await runWorkerJobs(
+    workerUrl,
+    slices.filter(slice => slice.length > 0).map(files => ({ files, settings, options })),
   );
   const byFile = new Map(parts.flat().map((r) => [r.file, r]));
   const compiled = compileForRun(applySettings(await loadRules(), settings), options);

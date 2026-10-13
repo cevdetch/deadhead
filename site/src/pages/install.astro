@@ -11,27 +11,60 @@ const href = bookmarkletUrl(bundle);
 >
     <h1>Install</h1>
     <p class="lede">
-      Node 24.8 or newer; both packages are ESM only. No configuration is
-      required to start. The defaults are the point.
+      Check HTML in your browser, from your terminal or as you develop.
+      The CLI and ESLint plugin need Node 24.8 or newer and use ESM.
+    </p>
+
+    <h2>Try without installing</h2>
+    <p>
+      <a href="/try">Paste HTML into Try</a> to see findings, explanations and
+      the fixed HTML. To inspect a page you have open, use the{" "}
+      <a href="#bookmarklet">bookmarklet</a>.
     </p>
 
     <h2>CLI</h2>
-    <pre><code>npx deadhead dist
-npm install --save-dev deadhead</code></pre>
+    <p>Check one file or a built site. No configuration is required:</p>
+    <pre><code>npx deadhead index.html
+npx deadhead dist</code></pre>
+    <p>
+      Run your project's build first, then replace <code>dist</code> with its
+      HTML output directory. Astro and Vite use <code>dist</code> by default.
+      Each finding gives you a file, line, severity and a link explaining
+      what to change.
+    </p>
+    <p>To keep deadhead in your project:</p>
+    <pre><code>npm install --save-dev deadhead</code></pre>
+    <p>Add a script to your existing <code>package.json</code>:</p>
+    <pre><code>&lbrace;
+  "scripts": &lbrace;
+    "lint:html": "deadhead dist"
+  &rbrace;
+&rbrace;</code></pre>
+    <p>
+      Run <code>npm run lint:html</code> after building, locally or in CI.
+      Use <code>--fix</code> to remove fixable markup and report what remains.
+      Apply changes to source templates too, so they survive the next build.
+    </p>
+    <h3>More commands</h3>
     <p>
       It takes files and directories, and expands globs itself so they
       behave the same in every shell:
     </p>
-    <pre><code>deadhead dist                     # walk a directory for .html and .htm
-deadhead "src/**/*.html"          # quote it; the CLI does the expanding
-deadhead --format=sarif dist      # stylish (default), json, sarif
-deadhead --fail-on=harmful dist   # exit 1 only on harmful findings
-deadhead --fix dist               # rewrite files, then report what is left
-deadhead --jobs 4 dist            # large trees in worker threads
-deadhead --quiet dist             # only findings at or above --fail-on
-deadhead --output-file r.sarif --format=sarif dist
-deadhead --list-rules             # every rule, then exit
-cat page.html | deadhead - --stdin-filename page.html</code></pre>
+    <pre><code>npx deadhead "src/**/*.html"         # quote it; the CLI expands it
+npx deadhead --format=sarif dist     # stylish (default), json, sarif
+npx deadhead --fail-on=harmful dist  # exit 1 only on harmful findings
+npx deadhead --fix dist              # rewrite files, then report what remains
+npx deadhead --jobs 4 dist           # large trees in worker threads
+npx deadhead --quiet dist            # only findings at or above --fail-on
+npx deadhead --output-file r.sarif --format=sarif dist
+npx deadhead --list-rules            # every rule, then exit
+cat page.html | npx deadhead - --stdin-filename page.html</code></pre>
+    <p>
+      Pass <code>-</code> as the only input to check stdin.{" "}
+      <code>--stdin-filename</code> requires <code>-</code>. Baselines and
+      baseline updates require files, including baselines set in the config.{" "}
+      <code>--jobs</code> must be a positive integer.
+    </p>
     <p>
       Exit codes are the CI contract: <strong>0</strong> nothing at or above the{" "}
       <code>--fail-on</code> threshold, <strong>1</strong> threshold met,{" "}
@@ -131,7 +164,7 @@ export default defineConfig(&lbrace;
       <code>&lt;xmp&gt;</code>, which an HTML parser reads as text.
     </p>
 
-    <h2>Bookmarklet</h2>
+    <h2 id="bookmarklet">Bookmarklet</h2>
     <p>Drag this link to your bookmarks bar, then click it on any page:</p>
     <p><a href={href}>deadhead</a></p>
     <p>
