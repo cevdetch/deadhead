@@ -132,7 +132,7 @@ checking; a plain object works either way.
 A typo in a rule id is an error rather than a setting that silently does nothing. The
 failure it prevents is a rule you thought you had disabled still being on.
 
-### Vite (next release: 0.3.0)
+### Vite
 
 Use `deadhead/vite` with Vite 8 to check pages as you open them during development:
 
@@ -143,6 +143,21 @@ import deadhead from "deadhead/vite";
 
 export default defineConfig({ plugins: [deadhead()] });
 ```
+
+In Astro, put the plugin under `vite.plugins` in `astro.config.mjs`:
+
+```js
+import { defineConfig } from "astro/config";
+import deadhead from "deadhead/vite";
+
+export default defineConfig({
+  vite: { plugins: [deadhead()] },
+});
+```
+
+Astro does not register Vite plugins from a top-level `plugins` property. Start
+the dev server and open a page to trigger a report. A clean page reports no
+findings; starting the server alone does not lint pages.
 
 You get findings with advice and rule links in the terminal and in a collapsed
 DevTools console group. The terminal prints again when a page's findings change.
@@ -296,7 +311,7 @@ become drift.
 
 ## Status
 
-0.2.1 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
+0.3.0 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
 [`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead), with 203
 rules; see [CHANGELOG.md](CHANGELOG.md). All three runtimes work and are checked against
 each other, and rule ids are permanent since 0.1.0. One markdown file per rule;
