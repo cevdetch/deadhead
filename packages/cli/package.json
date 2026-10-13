@@ -11,10 +11,13 @@
   "bin": { "deadhead": "./dist/deadhead.js" },
   "exports": {
     ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./vite": { "types": "./dist/vite.d.ts", "default": "./dist/vite.js" },
     "./package.json": "./package.json"
   },
   "files": ["dist"],
   "engines": { "node": ">=24.8.0" },
   "dependencies": { "parse5": "^8.0.1" },
+  "peerDependencies": { "vite": "^8.0.0" },
+  "peerDependenciesMeta": { "vite": { "optional": true } },
   "publishConfig": { "access": "public" }
 }

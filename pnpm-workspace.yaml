@@ -8,13 +8,3 @@ packages:
 # tree. If a dependency genuinely needs a build, approve it below in its own PR
 # with a reason.
 onlyBuiltDependencies: []
-
-# Per-dependency decisions. `false` is a recorded "no", not an oversight:
-# pnpm otherwise fails the install asking to be told.
-#
-#   esbuild — pulled in by Vite, under Astro, under site/. Its platform binary
-#   arrives as an optional dependency; the postinstall script only re-resolves
-#   and validates that binary. `pnpm --filter @deadhead/site build` produces the
-#   full site without it, and nothing outside site/ depends on esbuild at all.
-allowBuilds:
-  esbuild: false
