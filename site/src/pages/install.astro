@@ -39,7 +39,7 @@ cat page.html | deadhead - --stdin-filename page.html</code></pre>
       looks like a clean run.
     </p>
 
-    <h2 id="vite">Vite (next release: 0.3.0)</h2>
+    <h2 id="vite">Vite</h2>
     <p>
       Add <code>deadhead/vite</code> to a Vite 8 project to see findings in the
       terminal and DevTools console as you open pages during development:
@@ -49,6 +49,23 @@ import &lbrace; defineConfig &rbrace; from "vite";
 import deadhead from "deadhead/vite";
 
 export default defineConfig(&lbrace; plugins: [deadhead()] &rbrace;);</code></pre>
+    <h3>Astro</h3>
+    <p>
+      In <code>astro.config.mjs</code>, put the plugin under{" "}
+      <code>vite.plugins</code>:
+    </p>
+    <pre><code>import &lbrace; defineConfig &rbrace; from "astro/config";
+import deadhead from "deadhead/vite";
+
+export default defineConfig(&lbrace;
+  vite: &lbrace; plugins: [deadhead()] &rbrace;,
+&rbrace;);</code></pre>
+    <p>
+      Astro does not register Vite plugins from a top-level{" "}
+      <code>plugins</code> property. Start the dev server and open a page to
+      trigger a report. A clean page reports no findings; starting the server
+      alone does not lint pages.
+    </p>
     <p>
       Positions refer to the served HTML, after Vite's transforms. SSR routes
       served through Vite's middleware stack get the same check. The terminal
