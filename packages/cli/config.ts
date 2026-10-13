@@ -60,7 +60,7 @@ const isSeverity = (value: unknown): value is Severity =>
  * error a contributor sees is the point. "unknown rule `meta/viewport` in
  * deadhead.config.ts" beats "invalid enum value at rules.meta/viewport".
  */
-function validate(raw: unknown, knownRules: Set<string>, path: string): DeadheadConfig {
+export function validateConfig(raw: unknown, knownRules: Set<string>, path: string): DeadheadConfig {
   assertIsRecord(raw, `${path}: default export must be an object`);
   const input = raw;
   const config: DeadheadConfig = {};
@@ -148,7 +148,7 @@ export async function loadConfig(
     throw new ConfigError(`${path}: must \`export default\` a config object`);
   }
 
-  return { config: validate(module.default, knownRules, path), path, dir: resolve(path, "..") };
+  return { config: validateConfig(module.default, knownRules, path), path, dir: resolve(path, "..") };
 }
 
 /** Resolve a config-relative path against the config's own directory. */

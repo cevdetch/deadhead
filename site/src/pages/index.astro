@@ -84,15 +84,18 @@ const jsonLd = {
       <p>
         Walks files and directories, and expands globs itself. Stylish, JSON and
         SARIF output, so
-        CI annotates the diff. Exit codes are the contract.
+        CI annotates the diff. Exit codes are the contract. In the next release,
+        0.3.0, the <a href="/install#vite">Vite plugin</a> checks served HTML
+        during development with the same parser and rules.
       </p>
     </section>
     <section>
       <h3>Bookmarklet</h3>
       <p>
-        One IIFE with the rules inlined and no <code>fetch</code>, so a strict
-        CSP cannot block it. It inspects rendered output, which is ground
-        truth.
+        Runs in the page with the rules inlined and no network request for the
+        lint pass. It checks the rendered DOM. Clicking full report re-reads the
+        HTML and opens it on <a href="/try">Try</a>; if CSP blocks the re-read,
+        it sends the rendered DOM.
       </p>
     </section>
     <section>

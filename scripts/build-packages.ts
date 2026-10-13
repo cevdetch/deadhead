@@ -15,17 +15,19 @@ import { dts } from "rolldown-plugin-dts";
 
 import { ROOT } from "./rules-source.ts";
 
-type Target = { dir: string; entries: Record<string, string>; external: RegExp[] };
+type Target = { dir: string; entries: Record<string, string>; types: Record<string, string>; external: RegExp[] };
 
 const TARGETS: Target[] = [
   {
     dir: "packages/cli",
-    entries: { deadhead: "bin/deadhead.ts", index: "index.ts", worker: "worker.ts" },
-    external: [/^node:/, /^parse5(\/|$)/],
+    entries: { deadhead: "bin/deadhead.ts", index: "index.ts", worker: "worker.ts", vite: "vite.ts" },
+    types: { index: "index.ts", vite: "vite.ts" },
+    external: [/^node:/, /^parse5(\/|$)/, /^vite(\/|$)/],
   },
   {
     dir: "packages/eslint-plugin",
     entries: { index: "index.ts" },
+    types: { index: "index.ts" },
     external: [/^node:/, /^@html-eslint\/parser(\/|$)/, /^eslint(\/|$)/],
   },
 ];
@@ -43,11 +45,11 @@ for (const target of TARGETS) {
   await js.write({ dir: out, format: "esm", entryFileNames: "[name].js", chunkFileNames: "[name]-[hash].js" });
   await js.close();
 
-  // Types, from the public entry alone. isolatedDeclarations selects the oxc
+  // Types, from the public entries. isolatedDeclarations selects the oxc
   // generator: no TypeScript program, and any export without an explicit
   // type fails the build (TS9010) instead of shipping a wrong declaration.
   const types = await rolldown({
-    input: { index: resolve(src, "index.ts") },
+    input: Object.fromEntries(Object.entries(target.types).map(([name, file]) => [name, resolve(src, file)])),
     external: target.external,
     platform: "node",
     plugins: [dts({ emitDtsOnly: true, tsconfig: false, compilerOptions: { isolatedDeclarations: true, declaration: true } })],
