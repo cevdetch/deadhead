@@ -19,7 +19,7 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     "## Docs",
     "",
-    `- [Install and usage](${at("/install")}): the CLI, bookmarklet, ESLint plugin and upcoming Vite integration (0.3.0)`,
+    `- [Install and usage](${at("/install")}): the CLI, bookmarklet, ESLint plugin and Vite integration, including Astro setup`,
     `- [Try deadhead in the browser](${at("/try")}): paste HTML and see each finding and the fixed HTML`,
     `- [Full text of every rule](${at("/llms-full.txt")}): all rules in one markdown file`,
     "",

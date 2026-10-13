@@ -41,7 +41,7 @@ A file with a doctype or an `<html>` tag is linted as a page. Anything else, suc
 as a layout partial or a component, is a fragment: it is checked for the markup it
 holds and never told to add head content another file supplies.
 
-## Vite (next release: 0.3.0)
+## Vite
 
 In a Vite 8 project:
 
@@ -52,6 +52,21 @@ import deadhead from "deadhead/vite";
 
 export default defineConfig({ plugins: [deadhead()] });
 ```
+
+In Astro, put the plugin under `vite.plugins` in `astro.config.mjs`:
+
+```js
+import { defineConfig } from "astro/config";
+import deadhead from "deadhead/vite";
+
+export default defineConfig({
+  vite: { plugins: [deadhead()] },
+});
+```
+
+Astro does not register Vite plugins from a top-level `plugins` property. Start
+the dev server and open a page to trigger a report. A clean page reports no
+findings; starting the server alone does not lint pages.
 
 Open a page during `vite dev` to see findings, advice and rule links in the
 terminal and DevTools console. Positions refer to the served HTML. The plugin

@@ -2,7 +2,7 @@
 title: "Check served HTML during Vite development"
 description: "Deadhead 0.3.0 adds a Vite plugin: check the HTML your dev server sends, with findings and advice in the terminal and DevTools console."
 pubDate: "2026-10-13"
-draft: true
+draft: false
 ---
 
 Deadhead 0.3.0 adds `deadhead/vite`. Open a page during development and read its
@@ -19,6 +19,24 @@ export default defineConfig({ plugins: [deadhead()] });
 
 You need Vite 8 and Node 24.8 or newer. Install `deadhead` as a dev dependency.
 The CLI and Vite plugin share a package and parser.
+
+## Use it with Astro
+
+Astro uses the same plugin. Put it under `vite.plugins`:
+
+```js
+// astro.config.mjs
+import { defineConfig } from "astro/config";
+import deadhead from "deadhead/vite";
+
+export default defineConfig({
+  vite: { plugins: [deadhead()] },
+});
+```
+
+Start the dev server and open a page. Deadhead checks the HTML Astro sends and
+reports in the terminal and DevTools. A clean page reports no findings. Astro
+does not register the plugin from a top-level `plugins` property.
 
 ## Check what the server sends
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import type { IncomingMessage, ServerResponse } from "node:http";
+import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test, { type TestContext } from "node:test";
@@ -267,4 +267,60 @@ test("vite build does not lint or inject the plugin report", async (t) => {
   assert.ok(String(html.source).includes('http-equiv="X-UA-Compatible"'));
   assert.ok(!String(html.source).includes("data-deadhead-report"));
   assert.ok(!logs.some((line) => line.includes("[deadhead]")));
+});
+
+test("a separate Node HTTP host reports HTML that passes through Vite middleware mode", async (t) => {
+  for (const console of [true, false]) {
+    const root = await mkdtemp(join(tmpdir(), "dh-vite-host-"));
+    const logs: string[] = [];
+    const logger = createLogger("info", { allowClearScreen: false });
+    logger.info = logger.warn = logger.error = (message) => { logs.push(message); };
+    let vite: ViteDevServer | undefined;
+    const host = createHttpServer((req, res) => {
+      assert.ok(vite);
+      vite.middlewares(req, res, () => {
+        if (req.url === "/data") {
+          res.setHeader("content-type", "application/json");
+          res.end('{"ok":true}');
+        } else {
+          res.setHeader("content-type", "text/html; charset=utf-8");
+          res.setHeader("content-length", Buffer.byteLength(PAGE));
+          res.setHeader("etag", '"original"');
+          res.end(PAGE);
+        }
+      });
+    });
+    t.after(async () => {
+      try {
+        if (host.listening) await new Promise<void>((resolve, reject) => {
+          host.close((error) => error ? reject(error) : resolve());
+        });
+      } finally {
+        await vite?.close();
+        await rm(root, { recursive: true, force: true });
+      }
+    });
+    vite = await createServer({
+      root, configFile: false, customLogger: logger,
+      plugins: [deadhead({ console })], appType: "custom",
+      server: { middlewareMode: true, watch: null },
+    });
+    await new Promise<void>((resolve, reject) => {
+      host.once("error", reject);
+      host.listen(0, "127.0.0.1", resolve);
+    });
+    const address = host.address();
+    assert.ok(address && typeof address !== "string");
+    const url = `http://127.0.0.1:${address.port}`;
+    const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+    const html = await response.text();
+    assert.match(logs.join("\n"), new RegExp(RULE));
+    assert.equal(console ? html.slice(0, html.indexOf(MARKER)) : html, PAGE);
+    assert.equal(html.split(MARKER).length, console ? 2 : 1);
+    assert.equal(response.headers.get("content-length"), console ? null : String(Buffer.byteLength(PAGE)));
+    assert.equal(response.headers.get("etag"), console ? null : '"original"');
+    const count = logs.length;
+    assert.equal(await (await fetch(`${url}/data`)).text(), '{"ok":true}');
+    assert.equal(logs.length, count);
+  }
 });
