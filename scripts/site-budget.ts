@@ -112,7 +112,7 @@ const jsClosure = async (entry: string, seen = new Set<string>()): Promise<Set<s
   if (seen.has(entry)) return seen;
   seen.add(entry);
   const text = await readFile(join(dist, entry), "utf8");
-  for (const match of text.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)["'](\.\/[^"']+\.js)["']/g)) {
+  for (const match of text.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)["'`](\.\/[^"'`]+\.js)["'`]/g)) {
     await jsClosure(join(dirname(entry), match[1] ?? "").split(sep).join("/"), seen);
   }
   return seen;

@@ -63,7 +63,8 @@ cat page.html | npx deadhead - --stdin-filename page.html</code></pre>
       Pass <code>-</code> as the only input to check stdin.{" "}
       <code>--stdin-filename</code> requires <code>-</code>. Baselines and
       baseline updates require files, including baselines set in the config.{" "}
-      <code>--jobs</code> must be a positive integer.
+      <code>--jobs</code> must be a positive integer and sets the maximum workers,
+      bounded by available CPUs and the number of files.
     </p>
     <p>
       Exit codes are the CI contract: <strong>0</strong> nothing at or above the{" "}

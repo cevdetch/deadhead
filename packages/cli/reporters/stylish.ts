@@ -28,8 +28,12 @@ export const stylish: Reporter = (results) => {
 
     // Align the position and severity columns within each file.
     const positions = findings.map((f) => (f.loc ? `${f.loc.line}:${f.loc.col}` : "-"));
-    const posWidth = Math.max(...positions.map((p) => p.length));
-    const sevWidth = Math.max(...findings.map((f) => f.severity.length));
+    let posWidth = 0;
+    let sevWidth = 0;
+    for (let i = 0; i < findings.length; i++) {
+      posWidth = Math.max(posWidth, positions[i]!.length);
+      sevWidth = Math.max(sevWidth, findings[i]!.severity.length);
+    }
 
     findings.forEach((finding, i) => {
       const position = (positions[i] ?? "-").padStart(posWidth);

@@ -4,10 +4,8 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { gunzipSync } from "node:zlib";
 
-import { parseHtml } from "../packages/cli/adapter.ts";
 import { compileForRun, lintSource } from "../packages/cli/lint.ts";
-import { runCompiled, type CompiledRules } from "../packages/core/index.ts";
-import { parseSuppressions } from "../packages/core/suppressions.ts";
+import type { CompiledRules } from "../packages/core/index.ts";
 import type { Finding } from "../packages/core/types.ts";
 import type { FixOp } from "../packages/core/vocabulary.ts";
 import { loadRules } from "../packages/rules/load.ts";
@@ -50,9 +48,10 @@ export function lintRecord(
     head: html.slice(0, 20_000),
   });
   const linted = rawOutcome === "linted";
-  const raw = linted ? runCompiled(compiled, parseHtml(html), { suppressions: parseSuppressions(html), fix: true }) : [];
+  const rawRun = linted ? lintSource(html, `${record.domain}.raw.html`, compiled, { fix: true }) : null;
+  const raw = rawRun?.initialFindings ?? [];
   const removed = linted ? fixBytes(html, raw, ops) : null;
-  const bytes = linted ? pageBytes(html, lintSource(html, `${record.domain}.raw.html`, compiled, { fix: true }).output) : null;
+  const bytes = rawRun === null ? null : pageBytes(html, rawRun.output);
 
   let renderedOutcome: LintLine["rendered"]["outcome"] = "not-rendered";
   if (record.rendered !== null) {

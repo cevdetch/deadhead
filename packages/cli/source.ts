@@ -20,17 +20,20 @@ export type LintOptions = { skipTemplates?: boolean; fix?: boolean; headOnly?: b
  */
 const MAX_FIX_PASSES = 10;
 
-/** One analysis pass. With `fix: true` each finding carries the edit that removes it. */
-export const analyseSource = (source: string, compiled: CompiledRules, options: LintOptions): Finding[] =>
-  runCompiled(compiled, parseHtml(source), {
-    // Suppression comments are read from the text, not the tree: the port has
-    // no comment accessor, and only the source-backed adapters can offer this.
-    suppressions: parseSuppressions(source),
+function analyse(source: string, compiled: CompiledRules, options: LintOptions): {
+  findings: Finding[]; warnings: { line: number; id: string }[];
+} {
+  const parsed = parseHtml(source);
+  const suppressions = parseSuppressions(parsed.comments);
+  const findings = runCompiled(compiled, parsed, {
+    suppressions,
     ...(options.skipTemplates !== undefined ? { skipTemplates: options.skipTemplates } : {}),
     // Fixes are computed on the --fix path only; anywhere else finding.fix
     // is null and the attrRange lookups are skipped.
     fix: options.fix === true,
   });
+  return { findings, warnings: suppressions.ids().filter(({ id }) => !compiled.ruleIds.has(id)) };
+}
 
 /**
  * Lint one source string: the fix loop and the analysis with no I/O. The
@@ -41,51 +44,30 @@ export function lintSource(
   file: string,
   compiled: CompiledRules,
   options: LintOptions,
-): { file: string; findings: Finding[]; fixed: number; output: string; warnings: { line: number; id: string }[] } {
-  const suppressions = parseSuppressions(source);
-  const known = new Set<string>();
-  for (const bucket of [compiled.byTag, compiled.byAttr]) {
-    for (const entries of bucket.values()) for (const entry of entries) known.add(entry.rule.meta.ruleId);
-  }
-  for (const entry of compiled.wildcard) known.add(entry.rule.meta.ruleId);
-  for (const rule of compiled.documents) known.add(rule.meta.ruleId);
-  const warnings = suppressions.ids().filter(({ id }) => !known.has(id));
-
+): { file: string; findings: Finding[]; initialFindings: Finding[]; fixed: number; output: string; warnings: { line: number; id: string }[] } {
   let current = source;
   let fixed = 0;
-  // Findings from the latest fix pass, reused as the report when the loop
-  // stabilises on the current source. Analysing is deterministic, so a pass
-  // that already saw these exact bytes returns these exact findings — parsing
-  // the same text again would only repeat the work.
-  let stable: Finding[] | null = null;
+  let analysis = analyse(current, compiled, options);
+  // The playground displays original findings alongside the final fixed text.
+  const initialFindings = analysis.findings;
 
   if (options.fix === true) {
     for (let pass = 0; pass < MAX_FIX_PASSES; pass++) {
-      const findings = analyseSource(current, compiled, options);
-      const fixes = findings
+      const fixes = analysis.findings
         .map((finding) => finding.fix)
         .filter((fix) => fix !== null);
-      // Nothing left to fix: this pass already parsed the final source.
-      if (fixes.length === 0) {
-        stable = findings;
-        break;
-      }
+      if (fixes.length === 0) break;
 
       const result = applyFixes(current, fixes);
       // No progress: the source this pass saw is still current.
-      if (result.applied.length === 0 || result.output === current) {
-        stable = findings;
-        break;
-      }
+      if (result.applied.length === 0 || result.output === current) break;
       current = result.output;
       fixed += result.applied.length;
+      analysis = analyse(current, compiled, options);
     }
   }
 
-  // `stable` is set exactly when the last fix pass ran on the current source.
-  // It stays null when the loop exhausted its passes while still changing the
-  // file (or never ran), and then one final analyse reports what is left.
-  return { file, findings: stable ?? analyseSource(current, compiled, options), fixed, output: current, warnings };
+  return { file, ...analysis, initialFindings, fixed, output: current };
 }
 
 /**

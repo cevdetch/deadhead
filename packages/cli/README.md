@@ -60,7 +60,11 @@ cat page.html | npx deadhead - --stdin-filename page.html
 
 `--stdin-filename` requires `-`. Baselines and baseline updates require files,
 including when a baseline is set in `deadhead.config.ts`. `--jobs` must be a
-positive integer.
+positive integer; workers are bounded by available CPUs and the number of files.
+
+JSON and SARIF reports remain complete JSON on stdout. Fix summaries and baseline
+notices go to stderr with these formats. The CLI validates an existing baseline
+before `--fix` writes any HTML.
 
 Exit codes: **0** nothing at or above the `--fail-on` threshold, **1** threshold
 met, **2** usage, config or I/O error.

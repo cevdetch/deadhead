@@ -26,6 +26,7 @@ const childElements = (element: Element): Element[] =>
   isTemplate(element) ? [...element.content.children] : [...element.children];
 
 function makePorts(): (element: Element) => ElementPort {
+  const templateParents = new WeakMap<Element, Element>();
   return withPortCache<Element>((element, portFor) => {
     // getAttribute lowercases its argument only for HTML elements in an HTML
     // document. On SVG and MathML it compares exactly, and the parser has
@@ -44,6 +45,9 @@ function makePorts(): (element: Element) => ElementPort {
       return attrs;
     };
 
+    let children: ElementPort[] | undefined;
+    const parentElement = (): Element | null => element.parentElement ?? templateParents.get(element) ??
+      (element.parentNode as { host?: Element } | null)?.host ?? null;
     const port: ElementPort = {
       // `tagName` is uppercase for HTML elements in a real document.
       tag: element.tagName.toLowerCase(),
@@ -54,17 +58,22 @@ function makePorts(): (element: Element) => ElementPort {
       attrRange: () => null,
       text: () => element.textContent ?? "",
       parent: () => {
-        // A template's content lives in a fragment, so climb back to the
-        // template element rather than stopping at the fragment.
-        const parent = element.parentElement;
-        if (parent !== null) return portFor(parent);
-        const host = (element.parentNode as { host?: Element } | null)?.host;
-        return host === undefined ? null : portFor(host);
+        const parent = parentElement();
+        return parent === null ? null : portFor(parent);
       },
-      children: () => childElements(element).map(portFor),
+      children: () => {
+        if (children === undefined) {
+          const elements = childElements(element);
+          // Template DocumentFragments have no host property. Remember their
+          // children while opening the content, before making those ports.
+          if (isTemplate(element)) for (const child of elements) templateParents.set(child, element);
+          children = elements.map(portFor);
+        }
+        return children;
+      },
       index: () => {
-        const parent = element.parentElement;
-        return parent === null ? 0 : childElements(parent).indexOf(element);
+        const parent = parentElement();
+        return parent === null ? 0 : portFor(parent).children().indexOf(port);
       },
       // No source text in a live document: there is nothing to splice.
       range: () => null,
@@ -117,5 +126,5 @@ export function fromDocument(document: Document): Parsed {
     querySelectorAll: (selector) => [...document.querySelectorAll(selector)].map(portFor),
   };
 
-  return { roots: root === null ? [] : [portFor(root)], doc, source: null };
+  return { roots: root === null ? [] : [portFor(root)], doc, source: null, comments: null };
 }

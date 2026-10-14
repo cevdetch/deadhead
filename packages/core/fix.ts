@@ -12,7 +12,7 @@
 
 import { asciiLower, parseSelector, presenceTests, type TokenTest, tokenTests } from "./selector.ts";
 import type { ElementPort, Range } from "./types.ts";
-import type { RuleMeta } from "./vocabulary.ts";
+import type { RuntimeRuleMeta } from "./vocabulary.ts";
 
 export type Fix = { ruleId: string; range: Range; text: string };
 
@@ -30,6 +30,7 @@ function wholeLineIfAlone(source: string, [start, end]: Range): Range {
 
   let after = end;
   while (after < source.length && (source[after] === " " || source[after] === "\t")) after++;
+  if (source[after] === "\r" && source[after + 1] === "\n") return [lineStart, after + 2];
   if (after < source.length && source[after] !== "\n") return [start, end];
 
   return [lineStart, after < source.length ? after + 1 : after];
@@ -37,6 +38,26 @@ function wholeLineIfAlone(source: string, [start, end]: Range): Range {
 
 /** ASCII whitespace, which is how HTML splits a token-set attribute. */
 const SPACE = /[\t\n\f\r ]+/;
+
+/** Delete tokens and their adjacent separators; keep survivors' bytes. */
+function pruneTokens(value: string, isDead: (token: string) => boolean): { text: string; survivors: number } | null {
+  const tokens = [...value.matchAll(/[^\t\n\f\r ]+/g)];
+  let survivors = 0;
+  let text = value.slice(0, tokens[0]?.index ?? 0);
+  let separator = "";
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (isDead(token[0])) continue;
+    if (survivors > 0) text += separator;
+    text += token[0];
+    survivors++;
+    separator = value.slice(token.index + token[0].length, tokens[i + 1]?.index ?? value.length);
+  }
+  if (survivors === tokens.length) return null;
+  const last = tokens[tokens.length - 1];
+  if (last !== undefined) text += value.slice(last.index + last[0].length);
+  return { text, survivors };
+}
 
 /**
  * The range of an attribute's *value*, inside its quotes.
@@ -122,7 +143,7 @@ const META_KEYS = ["name", "property", "http-equiv", "itemprop", "charset"] as c
  *   removing it would take a live key along with the dead one.
  */
 export function computeFix(
-  meta: RuleMeta,
+  meta: RuntimeRuleMeta,
   element: ElementPort,
   source: string | null,
 ): Fix | null {
@@ -181,18 +202,19 @@ export function computeFix(
     const valueRange = quotedValueRange(source, range);
     // No quotes to slice: read the decoded value from the port; character
     // references can still make it several keywords.
-    const parts = (valueRange === null ? (element.attr(attr) ?? "") : source.slice(valueRange[0], valueRange[1]))
-      .split(SPACE)
-      .filter((p) => p !== "");
-    const kept = parts.filter((part) => !isDead(part));
-    if (kept.length === parts.length) return null; // nothing dead here
-    if (kept.length === 0) {
+    const value = valueRange === null ? (element.attr(attr) ?? "") : source.slice(valueRange[0], valueRange[1]);
+    // Encoded separators need a source-to-decoded mapping. Decline rather than
+    // inventing bytes or removing a live keyword. CRLF folding is harmless.
+    if (valueRange !== null && value.replace(/\r\n?/g, "\n") !== element.attr(attr)) return null;
+    const pruned = pruneTokens(value, isDead);
+    if (pruned === null) return null;
+    if (pruned.survivors === 0) {
       const whole = element.range();
       return whole === null ? null : { ruleId: meta.ruleId, range: wholeLineIfAlone(source, whole), text: "" };
     }
     // Some survive, but an unquoted value cannot be rewritten without quoting it.
     if (valueRange === null) return null;
-    return { ruleId: meta.ruleId, range: valueRange, text: kept.join(" ") };
+    return { ruleId: meta.ruleId, range: valueRange, text: pruned.text };
   }
 
   if (meta.fix.op === "remove-attribute") {
@@ -208,16 +230,17 @@ export function computeFix(
   if (valueRange === null) return null;
 
   const value = source.slice(valueRange[0], valueRange[1]);
+  if (value.replace(/\r\n?/g, "\n") !== element.attr(attr)) return null;
   const wanted = asciiLower(token);
-  const kept = value.split(SPACE).filter((part) => part !== "" && asciiLower(part) !== wanted);
+  const pruned = pruneTokens(value, part => asciiLower(part) === wanted);
 
   // Nothing changed: the token was not actually there.
-  if (kept.length === value.split(SPACE).filter((part) => part !== "").length) return null;
+  if (pruned === null) return null;
   // Removing the last keyword would leave an empty attribute, which means
   // something different from what the author wrote. Let them decide.
-  if (kept.length === 0) return null;
+  if (pruned.survivors === 0) return null;
 
-  return { ruleId: meta.ruleId, range: valueRange, text: kept.join(" ") };
+  return { ruleId: meta.ruleId, range: valueRange, text: pruned.text };
 }
 
 export type ApplyResult = {

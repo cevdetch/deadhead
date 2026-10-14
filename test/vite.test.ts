@@ -50,6 +50,45 @@ async function start(t: TestContext, options: DeadheadViteOptions = {}, route?: 
   return { server, root, logs, url: `http://127.0.0.1:${address.port}` };
 }
 
+test("unchanged responses reuse analysis and changed HTML is rechecked", async t => {
+  const rule = (await loadRules()).find(rule => rule.meta.ruleId === "attr/script-async")!;
+  const original = rule.match!;
+  let calls = 0;
+  rule.match = (element, context) => { calls++; return original(element, context); };
+  t.after(() => { rule.match = original; });
+  let page = PAGE.replace("</body>", '<script async>console.log("x")</script></body>');
+  const { url, logs } = await start(t, {}, (_req, res) => {
+    res.setHeader("content-type", "text/html");
+    res.end(page);
+  });
+  const first = await (await fetch(url)).text();
+  const count = logs.length;
+  assert.equal(await (await fetch(url + "?reload=1")).text(), first);
+  assert.equal(calls, 1);
+  assert.equal(logs.length, count);
+  page += "\n";
+  await (await fetch(url)).text();
+  assert.equal(calls, 2);
+  assert.equal(logs.length, count, "changed bytes with identical findings still avoid repeated terminal output");
+});
+
+test("large reports evict old cached analysis instead of retaining unlimited text", async t => {
+  const rule = (await loadRules()).find(rule => rule.meta.ruleId === "attr/script-async")!;
+  const original = rule.match!;
+  let calls = 0;
+  rule.match = (element, context) => { calls++; return original(element, context); };
+  t.after(() => { rule.match = original; });
+  const page = PAGE.replace("</head>", '<meta name="keywords" content="x">'.repeat(50) + "</head>")
+    .replace("</body>", '<script async>console.log("x")</script></body>');
+  const { url } = await start(t, {}, (_req, res) => { res.setHeader("content-type", "text/html"); res.end(page); });
+  await (await fetch(url + "/first")).text();
+  await (await fetch(url + "/first")).text();
+  assert.equal(calls, 1);
+  for (let i = 0; i < 150; i++) await (await fetch(url + `/other-${i}`)).text();
+  await (await fetch(url + "/first")).text();
+  assert.equal(calls, 152, "the first report was evicted and recomputed");
+});
+
 function browserLogs(html: string): string[] {
   const script = html.slice(html.indexOf(MARKER)).replace(/^\n<script[^>]*>/, "").replace(/<\/script>$/, "");
   const logs: string[] = [];

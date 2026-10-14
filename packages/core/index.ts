@@ -36,6 +36,7 @@ export type {
   Parsed,
   Range,
   RuleContext,
+  SourceComment,
 } from "./types.ts";
 export {
   SEVERITY_RANK,

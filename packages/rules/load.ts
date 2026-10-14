@@ -4,16 +4,28 @@
  * module graph: no per-rule dynamic import, no top-level await for consumers.
  */
 
-import type { Rule } from "../core/engine.ts";
+import type { DocumentedRule, Rule } from "../core/engine.ts";
 
 export class RulesNotBuiltError extends Error {}
 
-export async function loadRules(): Promise<Rule[]> {
+export async function loadRules(): Promise<DocumentedRule[]> {
   try {
     return (await import("./registry.gen.ts")).RULES;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND") {
       throw new RulesNotBuiltError("packages/rules/registry.gen.ts does not exist. It is generated from content/rules — run `pnpm build`.");
+    }
+    throw err;
+  }
+}
+
+/** Browser runtime registry: the same logic and engine metadata, without documentation-only fields. */
+export async function loadRuntimeRules(): Promise<Rule[]> {
+  try {
+    return (await import("./registry.runtime.gen.ts")).RULES;
+  } catch (err) {
+    if ((err as { code?: string }).code === "ERR_MODULE_NOT_FOUND") {
+      throw new RulesNotBuiltError("packages/rules/registry.runtime.gen.ts does not exist. Run `pnpm build`.");
     }
     throw err;
   }

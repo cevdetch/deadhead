@@ -22,11 +22,11 @@ import type {
   Parsed,
   RuleContext,
 } from "./types.ts";
-import { type RuleMeta, ruleUrl } from "./vocabulary.ts";
+import { type RuleMeta, type RuntimeRuleMeta, ruleUrl } from "./vocabulary.ts";
 
 /** A rule as the engine consumes it: metadata plus whatever code it needs. */
 export type Rule = {
-  meta: RuleMeta;
+  meta: RuntimeRuleMeta | RuleMeta;
   /**
    * When `meta.kind === "element"` and `meta.match === "logic"`, the module
    * exports this, `fixable` or both.
@@ -41,7 +41,10 @@ export type Rule = {
   fixable?: FixableFn;
 };
 
-type Compiled = Rule & { parsed: Compound[] | null; index: number; stamp: number };
+/** The full metadata returned by the CLI's rule loader. */
+export type DocumentedRule = Rule & { meta: RuleMeta };
+
+type Compiled = Rule & { index: number; stamp: number };
 
 /**
  * One rule as a dispatch bucket sees it: the rule plus the slice of its
@@ -56,8 +59,9 @@ export type CompiledRules = {
   byTag: Map<string, Dispatched[]>;
   byAttr: Map<string, Dispatched[]>;
   wildcard: Dispatched[];
-  documents: Compiled[];
+  documents: Rule[];
   visitBody: boolean;
+  ruleIds: ReadonlySet<string>;
 };
 
 export type RunOptions = {
@@ -108,27 +112,34 @@ function doctypeText(doctype: DoctypePort): string {
  */
 function snippet(element: ElementPort | DoctypePort, source: string | null): string {
   const range = element.range();
-  let text: string;
-  if (source !== null && range !== null) {
-    text = source.slice(range[0], range[1]);
-  } else if (isDoctype(element)) {
-    text = doctypeText(element);
-  } else {
-    const attrs = element
-      .attrNames()
-      .map((name) => ` ${name}="${element.attr(name) ?? ""}"`)
-      .join("");
-    text = `<${element.tag}${attrs}>`;
+  const parts = source !== null && range !== null ? [source.slice(range[0], range[1])] :
+    isDoctype(element) ? [doctypeText(element)] :
+    [`<${element.tag}`, ...element.attrNames().flatMap(name => [` ${name}="`, element.attr(name) ?? "", '"']), ">"];
+  let text = "";
+  let space = false;
+  for (const part of parts) {
+    for (let i = 0; i < part.length; i++) {
+      const char = part[i]!;
+      if (/\s/.test(char)) { space = text !== ""; continue; }
+      if (space) { text += " "; space = false; }
+      text += char;
+      if (text.length > MAX_SNIPPET) return `${text.slice(0, MAX_SNIPPET - 1)}…`;
+    }
   }
-  text = text.replace(/\s+/g, " ").trim();
-  return text.length > MAX_SNIPPET ? `${text.slice(0, MAX_SNIPPET - 1)}…` : text;
+  return text;
 }
 
-function contextFor(rule: Rule, source: string | null, fix: boolean): RuleContext {
+function contextFor(rule: Rule, source: string | null, fix: boolean, snippets: WeakMap<ElementPort | DoctypePort, string>): RuleContext {
   const { meta } = rule;
+  const url = ruleUrl(meta.ruleId);
   return {
     ruleId: meta.ruleId,
     report(target, extra) {
+      let preview = snippets.get(target);
+      if (preview === undefined) {
+        preview = snippet(target, source);
+        snippets.set(target, preview);
+      }
       const finding: Finding = {
         ruleId: meta.ruleId,
         severity: meta.severity,
@@ -137,10 +148,10 @@ function contextFor(rule: Rule, source: string | null, fix: boolean): RuleContex
         possible: meta.detectability === "partial",
         message: meta.description,
         replacement: meta.replacement,
-        url: ruleUrl(meta.ruleId),
+        url,
         loc: target.loc(),
         range: target.range(),
-        node: { tag: target.tag, snippet: snippet(target, source) },
+        node: { tag: target.tag, snippet: preview },
         // Fixes are computed only when asked: without them there are no
         // `attrRange` lookups. No fix op edits a doctype without changing
         // the rendering mode, and `fixable` vetoes an element whose removal
@@ -173,7 +184,7 @@ export function compile(rules: Rule[]): CompiledRules {
   const byTag = new Map<string, Dispatched[]>();
   const byAttr = new Map<string, Dispatched[]>();
   const wildcard: Dispatched[] = [];
-  const documents: Compiled[] = [];
+  const documents: Rule[] = [];
   let visitBody = false;
 
   rules.forEach((rule, index) => {
@@ -187,12 +198,11 @@ export function compile(rules: Rule[]): CompiledRules {
       }
       parsed = result.ast;
     }
-    const compiled: Compiled = { ...rule, parsed, index, stamp: -1 };
-
     if (rule.meta.kind === "document") {
-      documents.push(compiled);
+      documents.push({ ...rule });
       return;
     }
+    const compiled: Compiled = { ...rule, index, stamp: -1 };
     if (rule.meta.scope !== "head") visitBody = true;
 
     if (parsed === null) {
@@ -217,38 +227,29 @@ export function compile(rules: Rule[]): CompiledRules {
     if (loose.length > 0) wildcard.push({ rule: compiled, compounds: loose });
   });
 
-  return { byTag, byAttr, wildcard, documents, visitBody };
+  return { byTag, byAttr, wildcard, documents, visitBody, ruleIds: new Set(rules.map(rule => rule.meta.ruleId)) };
 }
-
-/**
- * Sort key. Source offset is the real ordering; line/col is the fallback for
- * adapters that have no offsets, and breaks ties when nothing else can.
- */
-const positionOf = (finding: Finding): [number, number, number] => [
-  finding.range?.[0] ?? Number.MAX_SAFE_INTEGER,
-  finding.loc?.line ?? 0,
-  finding.loc?.col ?? 0,
-];
 
 export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: RunOptions = {}): Finding[] {
   const { byTag, byAttr, wildcard, documents, visitBody } = compiled;
   const suppressions = options.suppressions ?? NO_SUPPRESSIONS;
   const findings: Finding[] = [];
   const fix = options.fix === true;
+  const snippets = new WeakMap<ElementPort | DoctypePort, string>();
 
   // Document rules first: they query the whole tree rather than riding the walk.
   for (const rule of documents) {
     if (!rule.check) {
       throw new Error(`${rule.meta.ruleId}: kind "document" requires a check() logic module`);
     }
-    findings.push(...rule.check(parsed.doc, contextFor(rule, parsed.source, fix)));
+    for (const finding of rule.check(parsed.doc, contextFor(rule, parsed.source, fix, snippets))) findings.push(finding);
   }
 
   const contexts = new Map<string, RuleContext>();
   const contextOf = (rule: Rule): RuleContext => {
     let ctx = contexts.get(rule.meta.ruleId);
     if (!ctx) {
-      ctx = contextFor(rule, parsed.source, fix);
+      ctx = contextFor(rule, parsed.source, fix, snippets);
       contexts.set(rule.meta.ruleId, ctx);
     }
     return ctx;
@@ -261,8 +262,7 @@ export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: Ru
     parsed.roots,
     (element, region) => {
       const visit = ++visitCounter;
-      let local: Finding[] | null = null;
-      let localIndex: number[] | null = null;
+      let local: Compiled[] | null = null;
 
       const consider = (entry: Dispatched): void => {
         const rule = entry.rule;
@@ -274,17 +274,15 @@ export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: Ru
         if (rule.stamp === visit) return;
         if (entry.compounds !== null && !matches(element, entry.compounds)) return;
         rule.stamp = visit;
-        const ctx = contextOf(rule);
         if (rule.meta.match === "logic") {
           if (rule.match) {
-            if (!rule.match(element, ctx)) return;
+            if (!rule.match(element, contextOf(rule))) return;
           } else if (!rule.fixable) {
             // A module exporting only `fixable` leaves matching to the selector.
             throw new Error(`${rule.meta.ruleId}: match "logic" requires a match() or fixable() logic module`);
           }
         }
-        (local ??= []).push(ctx.report(element));
-        (localIndex ??= []).push(rule.index);
+        (local ??= []).push(rule);
       };
 
       // Two loops rather than a concatenation: this runs once per node, and
@@ -299,17 +297,12 @@ export function runCompiled(compiled: CompiledRules, parsed: Parsed, options: Ru
       }
       for (const entry of wildcard) consider(entry);
 
-      if (local === null || localIndex === null) return;
-      const done = local as Finding[];
-      const doneIdx = localIndex as number[];
-      if (done.length === 1) {
-        findings.push(done[0] as Finding);
-        return;
-      }
+      // TypeScript cannot track assignments inside consider().
+      const matched = local as Compiled[] | null;
+      if (matched === null) return;
       // One element, several rules: report in rule order, whichever bucket found them.
-      const pairs: [number, number][] = doneIdx.map((idx: number, i: number) => [idx, i]);
-      pairs.sort((a: [number, number], b: [number, number]) => a[0] - b[0]);
-      for (const [, i] of pairs) findings.push(done[i] as Finding);
+      if (matched.length > 1) matched.sort((a, b) => a.index - b.index);
+      for (const rule of matched) findings.push(contextOf(rule).report(element));
     },
     walkOptions,
   );
@@ -350,9 +343,9 @@ function dedupe(findings: Finding[], suppressions: Suppressions): Finding[] {
   // adapter, where nothing has an offset and *every* finding ties -- sorting
   // by ruleId there would list a page's findings alphabetically instead of
   // top to bottom.
-  return kept.sort((a, b) => {
-    const [ao, al, ac] = positionOf(a);
-    const [bo, bl, bc] = positionOf(b);
-    return ao - bo || al - bl || ac - bc;
-  });
+  // Source offset orders findings; line/column are the fallback and tie break.
+  return kept.sort((a, b) =>
+    (a.range?.[0] ?? Number.MAX_SAFE_INTEGER) - (b.range?.[0] ?? Number.MAX_SAFE_INTEGER) ||
+    (a.loc?.line ?? 0) - (b.loc?.line ?? 0) ||
+    (a.loc?.col ?? 0) - (b.loc?.col ?? 0));
 }

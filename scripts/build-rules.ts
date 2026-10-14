@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Compile `content/rules/**\/*.md` into `packages/rules/rules.json`.
+ * Compile rule Markdown into JSON and full/runtime TypeScript registries.
  *
  * The markdown is the source of truth; this is the only thing that turns it
  * into something a runtime can load. The output is gitignored on purpose —
@@ -18,99 +18,89 @@ import { styleText } from "node:util";
 import { pathToFileURL } from "node:url";
 
 import { META_KEYS, type RuleMeta } from "./schema.ts";
+import { RUNTIME_META_KEYS } from "../packages/core/vocabulary.ts";
 import { ROOT, loadRules, printDiagnostics, rel } from "./rules-source.ts";
 
 const OUT = resolve(ROOT, "packages/rules/rules.json");
 const REGISTRY_OUT = resolve(ROOT, "packages/rules/registry.gen.ts");
+const RUNTIME_OUT = resolve(ROOT, "packages/rules/registry.runtime.gen.ts");
 
 /** Fixed key order, so a one-field change is a one-line diff when inspected. */
-function ordered(meta: RuleMeta): Record<string, unknown> {
+function ordered(meta: RuleMeta): RuleMeta {
   const out: Record<string, unknown> = {};
   for (const key of META_KEYS) out[key] = meta[key];
-  return out;
+  return out as RuleMeta;
 }
 
 /**
- * The compiled rules.json text. Pure: no I/O beyond reading the markdown
- * source, and no write — `import.meta.main` below owns the file write so
- * importing this module never rewrites the shared, gitignored output.
- */
-export async function buildRulesJson(): Promise<string> {
-  const { rules, diagnostics } = await loadRules();
-  if (diagnostics.length > 0) {
-    printDiagnostics(diagnostics);
-    throw new Error(`${diagnostics.length} problem(s); refusing to build rules.json`);
-  }
-  // Sorted by ruleId (loadRules guarantees it) and newline-terminated: the
-  // output is reproducible, so a rebuild that changes nothing produces zero
-  // bytes of diff.
-  return `${JSON.stringify({ schemaVersion: 1, rules: rules.map((rule) => ordered(rule.meta)) }, null, 2)}\n`;
-}
-
-/**
- * A module that imports every logic entry statically and exports the full rule set.
+ * Both registries share one pass over the logic modules and their exports.
  *
  * Build-time dynamic import decides which names exist: element modules may
  * export `fixable` alone, and a named import of a missing export fails at link
  * time, so only names the module actually exports are imported.
  */
-export async function renderRegistry(metas: RuleMeta[]): Promise<string> {
+async function renderRegistries(metas: RuleMeta[]): Promise<{ full: string; runtime: string }> {
   const imports: string[] = [];
   const entries: string[] = [];
+  const runtimeEntries: string[] = [];
   for (let i = 0; i < metas.length; i++) {
     const meta = metas[i]!;
-    const needs = meta.match === "logic" || meta.kind === "document";
-    if (!needs) {
-      entries.push(`  { meta: ${JSON.stringify(meta)} },`);
-      continue;
-    }
-    const file = resolve(ROOT, "packages/rules/logic", `${meta.ruleId}.ts`);
-    const module: Record<string, unknown> = await import(pathToFileURL(file).href);
-    if (meta.kind === "document") {
-      if (typeof module["check"] !== "function") {
-        throw new Error(`${meta.ruleId}: packages/rules/logic/${meta.ruleId}.ts must export check()`);
-      }
-      imports.push(`import { check as l${i} } from "./logic/${meta.ruleId}.ts";`);
-      entries.push(`  { meta: ${JSON.stringify(meta)}, check: l${i} },`);
-      continue;
-    }
     const parts: string[] = [];
-    if (typeof module["match"] === "function") {
-      imports.push(`import { match as l${i}m } from "./logic/${meta.ruleId}.ts";`);
-      parts.push(`match: l${i}m`);
+    if (meta.match === "logic" || meta.kind === "document") {
+      const file = resolve(ROOT, "packages/rules/logic", `${meta.ruleId}.ts`);
+      const module: Record<string, unknown> = await import(pathToFileURL(file).href);
+      if (meta.kind === "document") {
+        if (typeof module["check"] !== "function") {
+          throw new Error(`${meta.ruleId}: packages/rules/logic/${meta.ruleId}.ts must export check()`);
+        }
+        imports.push(`import { check as l${i} } from "./logic/${meta.ruleId}.ts";`);
+        parts.push(`check: l${i}`);
+      } else {
+        if (typeof module["match"] === "function") {
+          imports.push(`import { match as l${i}m } from "./logic/${meta.ruleId}.ts";`);
+          parts.push(`match: l${i}m`);
+        }
+        if (typeof module["fixable"] === "function") {
+          imports.push(`import { fixable as l${i}f } from "./logic/${meta.ruleId}.ts";`);
+          parts.push(`fixable: l${i}f`);
+        }
+        if (parts.length === 0) {
+          throw new Error(`${meta.ruleId}: packages/rules/logic/${meta.ruleId}.ts must export match() or fixable()`);
+        }
+      }
     }
-    if (typeof module["fixable"] === "function") {
-      imports.push(`import { fixable as l${i}f } from "./logic/${meta.ruleId}.ts";`);
-      parts.push(`fixable: l${i}f`);
-    }
-    if (parts.length === 0) {
-      throw new Error(`${meta.ruleId}: packages/rules/logic/${meta.ruleId}.ts must export match() or fixable()`);
-    }
-    entries.push(`  { meta: ${JSON.stringify(meta)}${parts.length > 0 ? `, ${parts.join(", ")}` : ""} },`);
+    const suffix = parts.length === 0 ? "" : `, ${parts.join(", ")}`;
+    entries.push(`  { meta: ${JSON.stringify(meta)}${suffix} },`);
+    const runtime = Object.fromEntries(RUNTIME_META_KEYS.map(key => [key, meta[key]]));
+    runtimeEntries.push(`  { meta: ${JSON.stringify(runtime)}${suffix} },`);
   }
-  return `// Generated by scripts/build-rules.ts from content/rules. Do not edit.
-import type { Rule } from "../core/engine.ts";
+  const registry = (type: string, rows: string[]): string => `// Generated by scripts/build-rules.ts from content/rules. Do not edit.
+import type { ${type} } from "../core/engine.ts";
 ${imports.join("\n")}
 
-export const RULES: Rule[] = [
-${entries.join("\n")}
+export const RULES: ${type}[] = [
+${rows.join("\n")}
 ];
 `;
+  return { full: registry("DocumentedRule", entries), runtime: registry("Rule", runtimeEntries) };
 }
 
 if (import.meta.main) {
-  let json: string;
-  try {
-    json = await buildRulesJson();
-  } catch (err) {
-    process.stderr.write(`\n${styleText("red", (err as Error).message)}\n`);
+  const { rules, diagnostics } = await loadRules();
+  if (diagnostics.length > 0) {
+    printDiagnostics(diagnostics);
+    process.stderr.write(`\n${styleText("red", `${diagnostics.length} problem(s); refusing to build rules.json`)}\n`);
     process.exit(1);
   }
+  const metas = rules.map(rule => ordered(rule.meta));
+  // Preserve key order and final newlines across unchanged builds.
+  const json = `${JSON.stringify({ schemaVersion: 1, rules: metas }, null, 2)}\n`;
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, json, "utf8");
-  const count = (JSON.parse(json) as { rules: unknown[] }).rules.length;
-  process.stdout.write(`${styleText("green", "✓")} ${count} rule(s) → ${rel(OUT)}\n`);
-  const metas = (JSON.parse(json) as { rules: RuleMeta[] }).rules;
-  await writeFile(REGISTRY_OUT, await renderRegistry(metas), "utf8");
+  process.stdout.write(`${styleText("green", "✓")} ${metas.length} rule(s) → ${rel(OUT)}\n`);
+  const { full, runtime } = await renderRegistries(metas);
+  await writeFile(REGISTRY_OUT, full, "utf8");
   process.stdout.write(`${styleText("green", "✓")} ${metas.length} rule(s) → ${rel(REGISTRY_OUT)}\n`);
+  await writeFile(RUNTIME_OUT, runtime, "utf8");
+  process.stdout.write(`${styleText("green", "✓")} ${metas.length} rule(s) → ${rel(RUNTIME_OUT)}\n`);
 }

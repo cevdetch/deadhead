@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -46,6 +46,35 @@ test("an empty glob is a usage error, not an empty run", async () => {
       assert.match((err as Error).message, /no files matched/);
       return true;
     });
+  });
+});
+
+test("equivalent paths are linted once, retaining the first report spelling", async () => {
+  await sandbox(async dir => {
+    const file = join(dir, "page.html");
+    await writeFile(file, PAGE);
+    assert.deepEqual(await collectFiles([file, `${dir}/./page.html`, dir]), [file]);
+  });
+});
+
+test("directory walks prune ignored trees before opening them", { skip: process.platform === "win32" || process.getuid?.() === 0 }, async () => {
+  await sandbox(async dir => {
+    const ignored = join(dir, "node_modules");
+    await mkdir(ignored);
+    await writeFile(join(dir, "page.html"), PAGE);
+    await chmod(ignored, 0);
+    try { assert.deepEqual(await collectFiles([dir]), [join(dir, "page.html")]); }
+    finally { await chmod(ignored, 0o700); }
+  });
+});
+
+test("discovery keeps linked HTML files and ignores linked directories", { skip: process.platform === "win32" }, async () => {
+  await sandbox(async dir => {
+    await mkdir(join(dir, "pages"));
+    await writeFile(join(dir, "pages", "page.html"), PAGE);
+    await symlink(join(dir, "pages", "page.html"), join(dir, "linked.htm"));
+    await symlink(join(dir, "pages"), join(dir, "directory.html"));
+    assert.deepEqual(await collectFiles([dir]), [join(dir, "linked.htm"), join(dir, "pages", "page.html")]);
   });
 });
 

@@ -16,6 +16,16 @@ export type DeadheadViteOptions = Pick<DeadheadConfig, "include" | "ignore" | "r
 };
 
 const MAX_PAGES = 512;
+const MAX_CACHE_BYTES = 4 * 1024 * 1024;
+type CachedReport = {
+  input: string;
+  fingerprint: string;
+  script: string;
+  terminal: string;
+  warnings: string[];
+  hasFindings: boolean;
+  bytes: number;
+};
 
 /** Inline script data must not be able to close its script or create HTML. */
 const jsonForScript = (value: unknown): string => JSON.stringify(value).replace(/</g, "\\u003c");
@@ -72,6 +82,17 @@ export default function deadhead(options: DeadheadViteOptions = {}): Plugin {
       const activeRules = compiled;
       if (activeRules === undefined) throw new Error("deadhead/vite: configResolved must run before configureServer");
       const seen = new Map<string, string>();
+      const reports = new Map<string, CachedReport>();
+      let retainedBytes = 0;
+      const emit = (path: string, report: CachedReport): void => {
+        if (seen.get(path) === report.fingerprint) return;
+        seen.delete(path);
+        seen.set(path, report.fingerprint);
+        if (seen.size > MAX_PAGES) seen.delete(seen.keys().next().value!);
+        if (report.hasFindings) server.config.logger.warn(report.terminal);
+        else server.config.logger.info(report.terminal);
+        for (const warning of report.warnings) server.config.logger.warn(warning);
+      };
 
       server.middlewares.use((req, res, next) => {
         let path: string;
@@ -82,21 +103,37 @@ export default function deadhead(options: DeadheadViteOptions = {}): Plugin {
         if (config.ignore?.some((glob) => posix.matchesGlob(path, glob))) { next(); return; }
         observeHtml(req, res, browserConsole, (html) => {
           try {
+            const input = createHash("sha256").update(html).digest("hex");
+            const cached = reports.get(path);
+            if (cached?.input === input) {
+              reports.delete(path);
+              reports.set(path, cached);
+              emit(path, cached);
+              return cached.script;
+            }
             const result = lintSource(html, `/${path} (served HTML)`, activeRules, config);
             // A real rule disabled in config is still a valid suppression id,
             // just as on the CLI path. lintSource only knows the active rules.
             result.warnings = result.warnings.filter(({ id }) => !known.has(id));
             const fingerprint = createHash("sha256").update(JSON.stringify([result.findings, result.warnings])).digest("hex");
-            if (seen.get(path) !== fingerprint) {
-              seen.delete(path);
-              seen.set(path, fingerprint);
-              if (seen.size > MAX_PAGES) seen.delete(seen.keys().next().value!);
-              const report = `[deadhead] ${result.findings.length === 0 ? result.file + "\n" : ""}${stylish([result]).trimEnd()}`;
-              if (result.findings.length === 0) server.config.logger.info(report);
-              else server.config.logger.warn(report);
-              for (const { line, id } of result.warnings) server.config.logger.warn(`[deadhead] /${path}:${line}: unknown suppression \`${id}\``);
+            const script = browserConsole ? consoleScript(result, server.config.html?.cspNonce) : "";
+            const terminal = `[deadhead] ${result.findings.length === 0 ? result.file + "\n" : ""}${stylish([result]).trimEnd()}`;
+            const warnings = result.warnings.map(({ line, id }) => `[deadhead] /${path}:${line}: unknown suppression \`${id}\``);
+            // Retain prepared text, never the response body or parsed tree.
+            const bytes = 2 * (script.length + terminal.length + warnings.reduce((sum, warning) => sum + warning.length, 0) + path.length) + 256;
+            const report: CachedReport = { input, fingerprint, script, terminal, warnings, hasFindings: result.findings.length > 0, bytes };
+            emit(path, report);
+            if (cached !== undefined) { reports.delete(path); retainedBytes -= cached.bytes; }
+            if (bytes <= MAX_CACHE_BYTES) {
+              reports.set(path, report);
+              retainedBytes += bytes;
+              while (reports.size > MAX_PAGES || retainedBytes > MAX_CACHE_BYTES) {
+                const oldest = reports.keys().next().value!;
+                retainedBytes -= reports.get(oldest)!.bytes;
+                reports.delete(oldest);
+              }
             }
-            return browserConsole ? consoleScript(result, server.config.html?.cspNonce) : "";
+            return script;
           } catch (error) {
             // A lint failure must not swallow the application's final chunk.
             server.config.logger.error(`[deadhead] /${path}: ${error instanceof Error ? error.message : String(error)}`);

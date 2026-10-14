@@ -57,6 +57,12 @@ test("removing an element sharing a line takes only the element", () => {
   assert.equal(html.slice(...fix.range), '<meta name="a">');
 });
 
+test("standalone removals keep CRLF and remove the entire line", () => {
+  const html = '<head>\r\n\t<meta name="a">\r\n<title>t</title>\r\n</head>';
+  const fixes = fixesFor(html, [removeMeta]);
+  assert.equal(applyFixes(html, fixes).output, '<head>\r\n<title>t</title>\r\n</head>');
+});
+
 test("removing an attribute takes the whitespace before it", () => {
   const html = '<html><head><script type="text/javascript" src="a.js"></script></head><body></body></html>';
   const [fix] = fixesFor(html, [removeType]);
@@ -208,6 +214,16 @@ test("remove-token matches the keyword case-insensitively but leaves survivors a
   // rel keywords are ASCII case-insensitive, so `Shortcut` must be found; the
   // tokens that stay are the author's text and are not normalised.
   assert.match(fixed('<link rel="Shortcut Icon mask-icon" href="/f.svg">'), /rel="Icon mask-icon"/);
+});
+
+test("token removal preserves survivors' separators and declines encoded values", () => {
+  assert.match(fixed('<link rel="stylesheet\tshortcut\ticon  mask-icon" href="/f.ico">'), /rel="stylesheet\ticon  mask-icon"/);
+  for (const value of ["short&#99;ut icon", "shortcut&#32;icon", "shortcut icon&#32;stylesheet"]) {
+    const html = page(`<link rel="${value}" href="/f.ico">`);
+    const findings = run([dropShortcut], parseHtml(html), { fix: true });
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0]!.fix, null);
+  }
 });
 
 test("remove-token never touches the quote style", () => {

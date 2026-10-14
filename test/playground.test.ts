@@ -7,17 +7,40 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { collectFiles, compileForRun, lintSource } from "../packages/cli/lint.ts";
-import { loadRules } from "../packages/rules/load.ts";
+import { loadRules, loadRuntimeRules } from "../packages/rules/load.ts";
 import { decodeShare, encodeShare, lintHtml, SHARE_LIMIT } from "../site/src/lib/playground.ts";
 
 const compiled = compileForRun(await loadRules(), {});
+const runtime = compileForRun(await loadRuntimeRules(), {});
 const fixtures = await collectFiles(["test/fixtures"]);
+
+test("the browser registry omits documentation fields and retains full finding metadata", async () => {
+  const full = await loadRules();
+  const slim = await loadRuntimeRules();
+  assert.equal(slim.length, full.length);
+  for (let i = 0; i < slim.length; i++) {
+    assert.equal("title" in slim[i]!.meta, false);
+    assert.equal("tags" in slim[i]!.meta, false);
+    assert.equal(slim[i]!.meta.ruleId, full[i]!.meta.ruleId);
+    assert.equal(slim[i]!.check, full[i]!.check);
+    assert.equal(slim[i]!.match, full[i]!.match);
+    assert.equal(slim[i]!.fixable, full[i]!.fixable);
+  }
+});
+
+test("the playground checks stable input once", async () => {
+  const keywords = (await loadRules()).find(rule => rule.meta.ruleId === "meta/keywords")!;
+  let calls = 0;
+  const active = compileForRun([{ ...keywords, meta: { ...keywords.meta, match: "logic" }, match: () => { calls++; return false; } }], {});
+  lintHtml('<head><meta name="keywords" content="x"></head>', active);
+  assert.equal(calls, 1);
+});
 
 test("lintHtml: the same findings, in the same order, as the CLI on every fixture", async () => {
   for (const file of fixtures) {
     const html = await readFile(file, "utf8");
     const cli = lintSource(html, file, compiled, {}).findings.map((f) => `${f.loc?.line}:${f.loc?.col} ${f.ruleId}`);
-    const view = lintHtml(html, compiled).findings.map((f) => `${f.line}:${f.col} ${f.ruleId}`);
+    const view = lintHtml(html, runtime).findings.map((f) => `${f.line}:${f.col} ${f.ruleId}`);
     assert.deepEqual(view, cli, file);
   }
 });
@@ -26,7 +49,7 @@ test("lintHtml: the fixed HTML and the fix count are what --fix writes", async (
   for (const file of fixtures) {
     const html = await readFile(file, "utf8");
     const cli = lintSource(html, file, compiled, { fix: true });
-    const view = lintHtml(html, compiled);
+    const view = lintHtml(html, runtime);
     assert.equal(view.output, cli.output, file);
     assert.equal(view.fixed, cli.fixed, file);
   }

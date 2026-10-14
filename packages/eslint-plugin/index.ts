@@ -22,13 +22,14 @@ import * as htmlParser from "@html-eslint/parser";
 import type { ESLint, Linter, Rule } from "eslint";
 import manifest from "./package.json" with { type: "json" };
 
-import { type CompiledRules, compile, runCompiled } from "../core/engine.ts";
+import { compile, runCompiled } from "../core/engine.ts";
 import { parseSuppressions } from "../core/suppressions.ts";
 import type { Rule as DeadheadRule } from "../core/engine.ts";
 import type { Finding } from "../core/types.ts";
 import { ruleUrl } from "../core/vocabulary.ts";
 import { RULES as loaded } from "../rules/registry.gen.ts";
 import { fromProgram } from "./adapter.ts";
+import { createCompiledCache } from "./compiled-cache.ts";
 
 
 /**
@@ -55,20 +56,17 @@ const eslintType = (rule: DeadheadRule): "problem" | "suggestion" =>
 type FileRun = { requested: Set<string>; findings: Map<string, Finding[]> | null };
 const perFile = new WeakMap<object, FileRun>();
 /** Compiled rule subsets, reused across files with the same enabled set. */
-const compiledBySet = new Map<string, CompiledRules>();
+const compiledBySet = createCompiledCache();
 let passes = 0;
 
 function findingsFor(run: FileRun, program: unknown, source: string): Map<string, Finding[]> {
   if (run.findings !== null) return run.findings;
   const key = [...run.requested].sort().join("\n");
-  let compiled = compiledBySet.get(key);
-  if (compiled === undefined) {
-    compiled = compile(loaded.filter((rule) => run.requested.has(rule.meta.ruleId)));
-    compiledBySet.set(key, compiled);
-  }
+  const compiled = compiledBySet.getOrCreate(key, () => compile(loaded.filter(rule => run.requested.has(rule.meta.ruleId))));
   passes++;
   const grouped = new Map<string, Finding[]>();
-  for (const finding of runCompiled(compiled, fromProgram(program, source), { suppressions: parseSuppressions(source), fix: true })) {
+  const parsed = fromProgram(program, source);
+  for (const finding of runCompiled(compiled, parsed, { suppressions: parseSuppressions(parsed.comments), fix: true })) {
     (grouped.get(finding.ruleId) ?? grouped.set(finding.ruleId, []).get(finding.ruleId)!).push(finding);
   }
   run.findings = grouped;

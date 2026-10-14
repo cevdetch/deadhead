@@ -135,6 +135,12 @@ export type RuleMeta = {
   related: string[];
 };
 
+/** Metadata consumed by the engine; documentation fields stay in the full registry. */
+export const RUNTIME_META_KEYS = [
+  "ruleId", "description", "severity", "detectability", "kind", "scope", "selector", "match", "fix", "replacement",
+] as const;
+export type RuntimeRuleMeta = Pick<RuleMeta, (typeof RUNTIME_META_KEYS)[number]>;
+
 /**
  * Where the rules are published. Defined once, here, because it is a contract
  * rather than a preference: the url is printed into CI logs, SARIF uploads and

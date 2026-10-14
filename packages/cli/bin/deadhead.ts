@@ -64,7 +64,7 @@ ${styleText("bold", "deadhead")} — lint HTML for deprecated, unnecessary and h
   -c, --config <path>     defaults to ./deadhead.config.ts when present
       --baseline <path>   ignore findings already accounted for (files only)
       --update-baseline   rewrite the baseline from files, then exit 0
-  -j, --jobs <n>          positive worker count (large file trees only)
+  -j, --jobs <n>          maximum workers, bounded by CPUs and files (large trees)
   -o, --output-file <path> write the report to <path> instead of stdout
   -q, --quiet             report only findings at or above --fail-on
       --list-rules        print every rule, then exit 0
@@ -88,6 +88,15 @@ const fail: (message: string) => never = (message) => {
   process.stderr.write(`${styleText("red", "error")} ${message}\n`);
   process.exit(2);
 };
+
+const writeStdout = (text: string): Promise<void> => new Promise((resolve, reject) => {
+  const error = (cause: Error): void => { reject(cause); };
+  process.stdout.once("error", error);
+  process.stdout.write(text, cause => {
+    if (cause) reject(cause);
+    else { process.stdout.removeListener("error", error); resolve(); }
+  });
+});
 
 let values;
 let positionals: string[];
@@ -117,17 +126,17 @@ try {
 }
 
 if (values.help) {
-  process.stdout.write(USAGE);
+  await writeStdout(USAGE);
   process.exit(0);
 }
 
 if (values.version) {
-  process.stdout.write(`${await readVersion()}\n`);
+  await writeStdout(`${await readVersion()}\n`);
   process.exit(0);
 }
 
 const isSarif = values.format === "sarif";
-const reporter = isSarif ? undefined : REPORTERS[values.format];
+const reporter = Object.hasOwn(REPORTERS, values.format) ? REPORTERS[values.format] : undefined;
 if (reporter === undefined && !isSarif) {
   fail(`unknown --format ${JSON.stringify(values.format)} (expected ${[...Object.keys(REPORTERS), "sarif"].join(", ")})`);
 }
@@ -154,13 +163,11 @@ try {
 
   if (values["list-rules"]) {
     if (values.format === "json") {
-      process.stdout.write(
+      await writeStdout(
         `${JSON.stringify(rules.map((rule) => ({ ruleId: rule.meta.ruleId, severity: rule.meta.severity, description: rule.meta.description, url: ruleUrl(rule.meta.ruleId) })), null, 2)}\n`,
       );
     } else {
-      for (const rule of rules) {
-        process.stdout.write(`${rule.meta.ruleId}  ${rule.meta.severity}  ${rule.meta.description}\n`);
-      }
+      await writeStdout(rules.map(rule => `${rule.meta.ruleId}  ${rule.meta.severity}  ${rule.meta.description}\n`).join(""));
     }
     process.exit(0);
   }
@@ -175,7 +182,7 @@ try {
   let jobs = defaultJobs();
   if (values.jobs !== undefined) {
     const parsed = Number(values.jobs);
-    if (!Number.isInteger(parsed) || parsed < 1) {
+    if (!Number.isSafeInteger(parsed) || parsed < 1) {
       fail(`--jobs must be a positive integer (got ${JSON.stringify(values.jobs)})`);
     }
     jobs = parsed;
@@ -185,6 +192,12 @@ try {
   if (stdin && (values["update-baseline"] || baselinePath !== undefined)) {
     fail("baseline options require files; they cannot be used with stdin");
   }
+  if (values["update-baseline"] && baselinePath === undefined) {
+    fail("--update-baseline needs --baseline <path>, or `baseline` in the config");
+  }
+  // Read and validate before --fix can change an input file.
+  const baseline = baselinePath !== undefined && !values["update-baseline"]
+    ? await readBaseline(baselinePath) : null;
 
   const skipTemplates = values["skip-templates"] ?? config.skipTemplates ?? false;
   const lintOptions = {
@@ -245,15 +258,15 @@ try {
       const baseline = summarise(results, dirname(resolve(baselinePath)));
       await writeBaseline(baselinePath, baseline);
       const count = total(results);
-      process.stdout.write(
+      await writeStdout(
         `${styleText("green", "✓")} baseline written to ${baselinePath} ` +
           `(${count} finding${count === 1 ? "" : "s"} accepted)\n`,
       );
       process.exit(0);
     }
 
-    if (baselinePath !== undefined) {
-      const applied = applyBaseline(results, await readBaseline(baselinePath), dirname(resolve(baselinePath)));
+    if (baseline !== null) {
+      const applied = applyBaseline(results, baseline, dirname(resolve(baselinePath!)));
       results = applied.results;
       resolved = applied.resolved;
     }
@@ -282,17 +295,21 @@ try {
   if (values["output-file"] !== undefined) {
     await writeFile(values["output-file"], text, "utf8");
   } else {
-    process.stdout.write(text);
+    await writeStdout(text);
   }
 
   const fixed = totalFixed(results);
+  const notice = async (text: string): Promise<void> => {
+    if (values.format === "stylish") await writeStdout(text);
+    else process.stderr.write(text);
+  };
   if (fixed > 0) {
-    process.stdout.write(
+    await notice(
       `${styleText("green", "✓")} fixed ${fixed} finding${fixed === 1 ? "" : "s"}\n`,
     );
   }
   if (resolved > 0) {
-    process.stdout.write(
+    await notice(
       `${styleText("dim", `${resolved} baseline entr${resolved === 1 ? "y is" : "ies are"} ` +
         "no longer needed; re-run with --update-baseline to prune")}\n`,
     );
@@ -310,16 +327,8 @@ try {
     process.exitCode = breached ? 1 : 0;
   }
 
-  // process.exit() drops whatever stdout still holds when the destination is a
-  // pipe, so a large report lost its tail here (a SARIF run over the fixtures
-  // corpus ended mid-object). Park the code above and let the stream drain;
-  // falling off the end exits with that code.
-  if (process.stdout.writableLength > 0) {
-    await new Promise<void>((resolve) => {
-      process.stdout.once("drain", () => resolve());
-      process.stdout.once("error", () => resolve());
-    });
-  }
+  // Writes have completed. Leave the exit code for Node instead of dropping
+  // buffered diagnostics with process.exit().
 } catch (err) {
   if (err instanceof UsageError || err instanceof RulesNotBuiltError) fail(err.message);
   if (err instanceof ConfigError || err instanceof BaselineError) fail(err.message);
