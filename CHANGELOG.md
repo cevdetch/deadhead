@@ -5,6 +5,63 @@ Adding or renaming a rule is a minor release; prose-only and fix-only changes
 are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
 is marked as breaking.
 
+## 0.3.1 - 2026-10-14
+
+Fix CLI input handling, suppression comments and byte preservation, and reduce
+repeated work in the CLI, browser playground and Vite integration. Both packages
+move to 0.3.1 together; the catalogue remains at 203 rules.
+
+### CLI
+
+- Reject unsupported stdin options and invalid worker counts. Settle workers
+  that exit without a report and clean up siblings on failure
+  ([#505](https://github.com/cevdetta/deadhead/pull/505)).
+- Validate baseline options and files before `--fix` changes HTML. Reject
+  malformed baseline entries and counts outside the safe integer range.
+- Keep JSON and SARIF parseable with fixes and baseline notices by sending
+  those notices to stderr. Wait for stdout writes, including rule listings,
+  before exiting. Reject inherited object names as report formats.
+- Prune ignored directories before traversing them, deduplicate equivalent
+  input paths, and cap worker counts at available CPUs and selected files.
+- Report large finding lists without exceeding JavaScript's argument limit.
+- Clarify first-run help and installation examples
+  ([#505](https://github.com/cevdetta/deadhead/pull/505)).
+
+### Findings and fixes
+
+- Read suppression directives from actual parsed HTML comments. Comment-like
+  strings in scripts, styles, RCDATA and attributes cannot suppress findings.
+  Unknown-rule warnings use line numbers from the source after fixes.
+- Preserve surviving whitespace and quote style in keyword fixes. Remove a
+  standalone element's full CRLF line. Decline quoted encoded token values
+  where a source edit cannot preserve their decoded meaning.
+- Build bounded finding previews and reuse them across rules reporting the
+  same element, preserving the existing text and 90-character limit.
+- Align ESLint text with HTML comment, RCDATA and newline semantics. Preserve
+  template parents and sibling indices in the live DOM adapter.
+
+### Runtime reuse and browser
+
+- Retain at most 128 compiled ESLint rule subsets with least-recently-used
+  eviction; findings, fixes and one engine pass per file survive eviction.
+- Reuse analysis for unchanged Vite HTML. Bound cached prepared reports to
+  512 URL paths and 4 MiB of retained text, without retaining response bodies.
+- Reuse the playground's original analysis in its fix loop, and the corpus
+  runner's initial findings when measuring fixed HTML.
+- Remove unused analysis/single-file/baseline helpers and internal exports.
+  Simplify finding ordering and per-port child caches, and generate both
+  registries in one pass without parsing the generated JSON again.
+- Generate a browser registry with the same logic and engine metadata, omitting
+  documentation fields that the playground never reads.
+- Include backtick dynamic imports when measuring the playground's JavaScript
+  payload; the size check previously omitted its generated registry chunk.
+- Bound decoded link data to 10 MiB and encoded handoffs to one million
+  characters. Cancel oversized decompression; local file input has no link limit.
+- Report clipboard, file-read and malformed-link failures in the playground.
+  Clear incoming page fragments before decoding them.
+- Add worker-count benchmark options, reject failed cold-start measurements,
+  and clean up synthetic benchmark files.
+
 ## 0.3.0 - 2026-10-13
 
 The new `deadhead/vite` export adds dev-time checking to Vite 8 projects. Both

@@ -6,7 +6,6 @@ import test from "node:test";
 
 import {
   applyBaseline,
-  emptyBaseline,
   readBaseline,
   summarise,
   writeBaseline,
@@ -156,7 +155,7 @@ test("fixing the backlog is reported as entries no longer needed", () => {
 });
 
 test("an empty baseline changes nothing", () => {
-  const { results, resolved } = applyBaseline([result("a.html", "r/one")], emptyBaseline());
+  const { results, resolved } = applyBaseline([result("a.html", "r/one")], { version: 1, entries: {} });
   assert.equal(results[0]?.findings.length, 1);
   assert.equal(resolved, 0);
 });

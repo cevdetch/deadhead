@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { tally, total, totalFixed } from "../packages/cli/reporters/index.ts";
+import { stylish } from "../packages/cli/reporters/stylish.ts";
 import type { FileResult } from "../packages/cli/reporters/index.ts";
 import type { Finding } from "../packages/core/types.ts";
 
@@ -19,6 +20,13 @@ const finding = (ruleId: string, severity: Finding["severity"]): Finding => ({
 });
 
 const result = (file: string, findings: Finding[], fixed = 0): FileResult => ({ file, findings, fixed, warnings: [] });
+
+test("stylish reports more findings than a function's argument limit", () => {
+  const findings = Array.from({ length: 150_000 }, () => finding("meta/keywords", "unnecessary"));
+  const text = stylish([result("large.html", findings)]);
+  assert.match(text, /150000 findings/);
+  assert.equal(text.split("https://deadhead.cevdet.ch/rules/meta/keywords").length - 1, findings.length);
+});
 
 test("tally counts per severity in harmful, deprecated, unnecessary order", () => {
   const results = [

@@ -5,7 +5,7 @@
  */
 import { decodeHandoff } from "../../../packages/browser/handoff.ts";
 import { compileForRun } from "../../../packages/cli/source.ts";
-import { loadRules } from "../../../packages/rules/load.ts";
+import { loadRuntimeRules } from "../../../packages/rules/load.ts";
 import { decodeShare, encodeShare, lintHtml, SHARE_LIMIT, type LintView } from "../lib/playground.ts";
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -25,7 +25,7 @@ const output = $<HTMLTextAreaElement>("try-output");
 const copy = $<HTMLButtonElement>("try-copy");
 const from = $<HTMLParagraphElement>("try-from");
 
-const compiled = compileForRun(await loadRules(), {});
+const compiled = compileForRun(await loadRuntimeRules(), {});
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] => {
   const node = document.createElement(tag);
@@ -74,7 +74,15 @@ function render(view: LintView): void {
   output.value = view.output;
 }
 
-const run = (): void => render(lintHtml(input.value, compiled));
+const run = (): void => {
+  try { render(lintHtml(input.value, compiled)); }
+  catch {
+    results.replaceChildren();
+    fixedBox.hidden = true;
+    output.value = "";
+    status.textContent = "Could not check this HTML. Try the CLI.";
+  }
+};
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -91,29 +99,45 @@ input.addEventListener("keydown", (event) => {
 file.addEventListener("change", async () => {
   const chosen = file.files?.[0];
   if (chosen === undefined) return;
-  input.value = await chosen.text();
-  run();
+  try {
+    const text = await chosen.text();
+    if (file.files?.[0] !== chosen) return;
+    input.value = text;
+    run();
+  } catch { status.textContent = "Could not read this file. Paste its HTML instead."; }
 });
 
+async function copyText(text: string, success: string, failure: string): Promise<void> {
+  try { await navigator.clipboard.writeText(text); status.textContent = success; }
+  catch { status.textContent = failure; }
+}
+
 share.addEventListener("click", async () => {
-  const fragment = await encodeShare(input.value);
-  if (fragment.length > SHARE_LIMIT) {
-    status.textContent = `This HTML is too long to share in a link (${fragment.length} of ${SHARE_LIMIT} characters after compression).`;
-    return;
-  }
-  history.replaceState(null, "", fragment);
-  await navigator.clipboard.writeText(location.href);
-  status.textContent = "Link copied. It holds the HTML itself; nothing is stored anywhere.";
+  share.disabled = true;
+  try {
+    const fragment = await encodeShare(input.value);
+    if (fragment.length > SHARE_LIMIT) {
+      status.textContent = `This HTML is too long for a share link (${fragment.length} of ${SHARE_LIMIT} characters).`;
+      return;
+    }
+    history.replaceState(null, "", fragment);
+    await copyText(location.href, "Link copied. It holds the HTML.", "Could not copy the link. Copy it from the address bar.");
+  } catch (error) {
+    status.textContent = error instanceof RangeError ? error.message : "Could not create a link. Copy the HTML instead.";
+  } finally { share.disabled = false; }
 });
 
 copy.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(output.value);
-  status.textContent = "Fixed HTML copied.";
+  await copyText(output.value, "Fixed HTML copied.", "Could not copy the fixed HTML. Copy the text manually.");
 });
 
 input.addEventListener("input", () => (from.hidden = true), { once: true });
 
-const handed = await decodeHandoff(location.hash);
+const fragment = location.hash;
+const isHandoff = fragment.startsWith("#page=");
+if (isHandoff) history.replaceState(null, "", location.pathname + location.search);
+const handed = await decodeHandoff(fragment);
+let unreadable = false;
 if (handed !== null) {
   input.value = handed.html;
   from.textContent =
@@ -121,10 +145,10 @@ if (handed !== null) {
       ? `HTML of ${handed.url}, as its server sent it.`
       : `HTML of ${handed.url}, read from the rendered DOM: the page blocked re-reading its source, so scripts may have added or changed markup.`;
   from.hidden = false;
-  // The fragment holds the whole page: keep it out of the address bar and out of a copied link.
-  history.replaceState(null, "", location.pathname + location.search);
 } else {
-  const shared = await decodeShare(location.hash);
+  const shared = await decodeShare(fragment);
   if (shared !== null) input.value = shared;
+  else unreadable = isHandoff || fragment.startsWith("#html=");
 }
 run();
+if (unreadable) status.textContent = "Could not read this link. Paste HTML or open a file.";

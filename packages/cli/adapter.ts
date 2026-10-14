@@ -12,7 +12,7 @@
 
 import { type DefaultTreeAdapterTypes, defaultTreeAdapter, html, parse, parseFragment } from "parse5";
 import { makeDocumentQueries, makeDoctypePort, withPortCache } from "../core/port.ts";
-import type { DoctypePort, DocumentPort, ElementPort, Parsed, Range } from "../core/types.ts";
+import type { DoctypePort, DocumentPort, ElementPort, Parsed, Range, SourceComment } from "../core/types.ts";
 
 type P5Element = DefaultTreeAdapterTypes.Element;
 type P5Node = DefaultTreeAdapterTypes.ChildNode;
@@ -77,12 +77,6 @@ function makePorts(
   parents: WeakMap<P5Element, P5Element>,
   elementChildren: WeakMap<P5Element, P5Element[]>,
 ): (node: P5Element) => ElementPort {
-  // Ports of each node's element children, materialised on first use. The
-  // engine walk calls children() once per visited element, so sharing one
-  // array per node removes the filter().map() allocation that used to show
-  // up once per node. Shared by reference: rules must not mutate it.
-  const childPorts = new WeakMap<P5Element, ElementPort[]>();
-
   return withPortCache<P5Element>((node, portFor) => {
     // parse5 lowercases HTML tag names and attribute names during parsing, so
     // the port's "lowercase" guarantee costs nothing here. Foreign attributes
@@ -95,6 +89,8 @@ function makePorts(
       const qualified = prefix === "" ? attr.name : `${prefix}:${attr.name}`;
       attrs.set(qualified.toLowerCase(), attr.value);
     }
+    // One cached child array per port. Rules must not mutate it.
+    let children: ElementPort[] | undefined;
 
     const port: ElementPort = {
       tag: node.tagName.toLowerCase(),
@@ -113,14 +109,7 @@ function makePorts(
         const parent = parents.get(node);
         return parent === undefined ? null : portFor(parent);
       },
-      children: () => {
-        let ports = childPorts.get(node);
-        if (ports === undefined) {
-          ports = (elementChildren.get(node) ?? []).map(portFor);
-          childPorts.set(node, ports);
-        }
-        return ports;
-      },
+      children: () => children ??= (elementChildren.get(node) ?? []).map(portFor),
       index: () => {
         const parent = parents.get(node);
         if (parent === undefined) return 0;
@@ -187,6 +176,7 @@ export function parseHtml(source: string): Parsed {
     page || writesHalves ? document : parseFragment(TEMPLATE, source, { sourceCodeLocationInfo: true });
 
   const elements: P5Element[] = [];
+  const comments: SourceComment[] = [];
   const parents = new WeakMap<P5Element, P5Element>();
   // Element children per node, recorded in the same pass. The engine walk
   // calls children() on every visited element, so deriving them here fuses
@@ -207,6 +197,9 @@ export function parseHtml(source: string): Parsed {
   const stack: [P5Node | P5Parent, P5Element | null][] = [[top, null]];
   while (stack.length > 0) {
     const [node, parent] = stack.pop()!;
+    if (node.nodeName === "#comment" && "data" in node && node.sourceCodeLocation != null) {
+      comments.push({ text: node.data, line: node.sourceCodeLocation.startLine, offset: node.sourceCodeLocation.startOffset });
+    }
     // On a fragment an element parse5 invented is left out, and its children
     // move up to the nearest written ancestor, as the author wrote them.
     const element = isElement(node) && (page || written(node)) ? node : null;
@@ -235,5 +228,6 @@ export function parseHtml(source: string): Parsed {
     ...makeDocumentQueries(elements, byTag, portFor),
   };
 
-  return { roots: roots.map(portFor), doc, source };
+  comments.sort((a, b) => a.offset - b.offset);
+  return { roots: roots.map(portFor), doc, source, comments };
 }

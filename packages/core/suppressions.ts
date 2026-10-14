@@ -7,14 +7,13 @@
  *
  * A bare `deadhead-disable` with no rule id suppresses everything.
  *
- * These are read out of the source text rather than off the tree, because the
- * element port has no comment accessor and adding one would mean extending all
- * three adapters for a feature only two of them can serve. Where there is no
- * source text — the DOM adapter — there are no suppressions, and a finding
- * with no line cannot be suppressed by line.
+ * Source adapters supply actual comment nodes so strings inside scripts or
+ * attributes cannot masquerade as directives. The DOM adapter supplies no
+ * source comments, and a finding with no line cannot be suppressed by line.
  */
 
-const COMMENT = /<!--([\s\S]*?)-->/g;
+import type { SourceComment } from "./types.ts";
+
 const DIRECTIVE = /^deadhead-(disable-next-line|disable|enable)\b([\s\S]*)$/;
 
 /** Rule ids may be separated by whitespace, commas, or both. */
@@ -36,7 +35,8 @@ export type Suppressions = {
 /** Nothing is suppressed. Used where there is no source text to read. */
 export const NO_SUPPRESSIONS: Suppressions = { isSuppressed: () => false, ids: () => [] };
 
-export function parseSuppressions(source: string): Suppressions {
+export function parseSuppressions(comments: readonly SourceComment[] | null): Suppressions {
+  if (comments === null || !comments.some(comment => comment.text.includes("deadhead-"))) return NO_SUPPRESSIONS;
   const blocks: Block[] = [];
   const nextLine = new Map<number, { all: boolean; ids: Set<string> }>();
 
@@ -58,16 +58,9 @@ export function parseSuppressions(source: string): Suppressions {
     openIds.clear();
   };
 
-  let line = 1;
-  let scanned = 0;
-
-  for (const comment of source.matchAll(COMMENT)) {
-    const at = comment.index;
-    // Count newlines only once across the whole scan; matches arrive in order.
-    for (let i = scanned; i < at; i++) if (source[i] === "\n") line++;
-    scanned = at;
-
-    const directive = DIRECTIVE.exec((comment[1] ?? "").trim());
+  for (const comment of comments) {
+    const { line } = comment;
+    const directive = DIRECTIVE.exec(comment.text.trim());
     if (!directive) continue;
 
     const kind = directive[1] as "disable-next-line" | "disable" | "enable";

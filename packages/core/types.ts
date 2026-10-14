@@ -128,6 +128,9 @@ export type FixableFn = (element: ElementPort) => boolean;
 /** `kind: "document"`: no selector can express it, so the rule walks the document. */
 export type CheckFn = (doc: DocumentPort, ctx: RuleContext) => Finding[];
 
+/** A real HTML comment, with its position in the original source. */
+export type SourceComment = { text: string; line: number; offset: number };
+
 /**
  * What an adapter hands the engine: the tree to walk, the document rules see,
  * and the original text.
@@ -145,4 +148,6 @@ export type Parsed = {
   roots: ElementPort[];
   doc: DocumentPort;
   source: string | null;
+  /** Source-backed comments in source order; null for a live DOM. */
+  comments: readonly SourceComment[] | null;
 };

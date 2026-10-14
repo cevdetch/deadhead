@@ -4,7 +4,7 @@ import type { CheckFn } from "../../types.ts";
  * The HTML Standard caps the encoding prescan at 1024 bytes.
  * https://html.spec.whatwg.org/multipage/parsing.html#prescan-a-byte-stream-to-determine-its-encoding
  */
-export const PRESCAN_LIMIT = 1024;
+const PRESCAN_LIMIT = 1024;
 
 /**
  * No selector can express "ends after byte 1024", which is what makes this a
