@@ -6,7 +6,7 @@ import type { CheckFn, DoctypePort } from "../../types.ts";
  * matches the quoted part literally.
  * https://html.spec.whatwg.org/multipage/syntax.html#doctype-legacy-string
  */
-export const LEGACY_COMPAT = "about:legacy-compat";
+const LEGACY_COMPAT = "about:legacy-compat";
 
 /**
  * What is wrong with a doctype, in the terms of the parser's own parse-error

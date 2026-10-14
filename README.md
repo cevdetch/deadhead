@@ -103,7 +103,11 @@ cat page.html | npx deadhead - --stdin-filename page.html
 
 `--stdin-filename` requires `-`. Baselines and baseline updates require files,
 including when a baseline is set in `deadhead.config.ts`. `--jobs` must be a
-positive integer.
+positive integer; workers are bounded by available CPUs and the number of files.
+
+JSON and SARIF reports remain complete JSON on stdout. Fix summaries and baseline
+notices go to stderr with these formats. The CLI validates an existing baseline
+before `--fix` writes any HTML.
 
 Exit codes are the CI contract: **0** nothing at or above the `--fail-on` threshold,
 **1** threshold met, **2** usage, config or I/O error, no HTML files to lint, or an
@@ -252,7 +256,8 @@ Silence a finding in the markup itself:
 ```
 
 `<!-- deadhead-disable -->` (optionally with rule ids) turns findings off until
-`<!-- deadhead-enable -->`. The engine never lints contents of `<pre>`, `<code>`,
+`<!-- deadhead-enable -->`. Only actual HTML comments act as directives; strings
+inside scripts, styles or attributes do not. The engine never lints contents of `<pre>`, `<code>`,
 `<textarea>`, `<samp>`, `<kbd>`, `<iframe>`, `<noembed>`, `<noframes>`, `<noscript>`,
 `<plaintext>`, `<title>` and `<xmp>` -- documenting bad markup is not writing it.
 
@@ -354,7 +359,7 @@ become drift.
 
 ## Status
 
-0.3.0 is on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
+The packages are on npm as [`deadhead`](https://www.npmjs.com/package/deadhead) and
 [`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead), with 203
 rules; see [CHANGELOG.md](CHANGELOG.md). All three runtimes work and are checked against
 each other, and rule ids are permanent since 0.1.0. One markdown file per rule;

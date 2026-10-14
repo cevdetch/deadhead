@@ -4,7 +4,7 @@
  * shape the result for display. Nothing here touches the DOM.
  */
 import { pack, unpack } from "../../../packages/browser/handoff.ts";
-import { analyseSource, lintSource } from "../../../packages/cli/source.ts";
+import { lintSource } from "../../../packages/cli/source.ts";
 import type { CompiledRules, Finding } from "../../../packages/core/index.ts";
 import type { Severity } from "../../../packages/core/vocabulary.ts";
 
@@ -49,8 +49,8 @@ const view = (finding: Finding): ViewFinding => ({
  * each finding carries its edit; `lintSource` runs the full fix loop.
  */
 export function lintHtml(html: string, compiled: CompiledRules): LintView {
-  const findings = analyseSource(html, compiled, { fix: true }).map(view);
-  const { output, fixed } = lintSource(html, "input.html", compiled, { fix: true });
+  const { output, fixed, initialFindings } = lintSource(html, "input.html", compiled, { fix: true });
+  const findings = initialFindings.map(view);
   const counts: Record<Severity, number> = { harmful: 0, deprecated: 0, unnecessary: 0 };
   for (const finding of findings) counts[finding.severity]++;
   return { findings, counts, fixed, output };

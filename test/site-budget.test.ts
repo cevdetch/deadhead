@@ -390,7 +390,7 @@ test("skips a page with no <head>, like a search-console verification file", asy
 });
 
 test("the try page: its HTML, and every script its module entry loads through static and dynamic imports", async () => {
-  const entry = 'import{a}from"./shared.ccc333.js";import("./rules.ddd444.js");console.log(a);';
+  const entry = 'import{a}from"./shared.ccc333.js";import(`./rules.ddd444.js`);console.log(a);';
   const shared = "export const a = 1;" + "s".repeat(300);
   const rules = "export const RULES = [];" + "r".repeat(800);
   const tryPage = doc("Try page", '<script type="module" src="/_astro/try.bbb222.js"></script>' + "t".repeat(500));

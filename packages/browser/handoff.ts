@@ -13,6 +13,8 @@ export type Handoff = { url: string; html: string; source: Source };
 
 /** Longest `#page=` fragment the bookmarklet writes: under Firefox's cap of 1,048,576 characters per URL. */
 export const HANDOFF_LIMIT = 1_000_000;
+/** Bound decoded link data; opening a local HTML file remains unrestricted. */
+export const MAX_TEXT_BYTES = 10 * 1024 * 1024;
 
 const PAGE = "#page=";
 
@@ -33,14 +35,26 @@ const pipe = async (bytes: Uint8Array, stream: CompressionStream | Decompression
 
 /** Text as base64url of its deflate-raw bytes. */
 export async function pack(text: string): Promise<string> {
-  return toBase64Url(await pipe(new TextEncoder().encode(text), new CompressionStream("deflate-raw")));
+  const bytes = new TextEncoder().encode(text);
+  if (bytes.byteLength > MAX_TEXT_BYTES) throw new RangeError("HTML in a link is limited to 10 MiB. Open a file instead.");
+  return toBase64Url(await pipe(bytes, new CompressionStream("deflate-raw")));
 }
 
 /** The text `pack` made, or null when the payload is not one. */
 export async function unpack(payload: string): Promise<string | null> {
-  if (!/^[A-Za-z0-9_-]+$/.test(payload)) return null;
+  if (payload.length > HANDOFF_LIMIT || !/^[A-Za-z0-9_-]+$/.test(payload)) return null;
   try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(await pipe(fromBase64Url(payload), new DecompressionStream("deflate-raw")));
+    let size = 0;
+    const bounded = new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        size += chunk.byteLength;
+        if (size > MAX_TEXT_BYTES) throw new RangeError("link data exceeds the limit");
+        controller.enqueue(chunk);
+      },
+    });
+    const stream = new Blob([new Uint8Array(fromBase64Url(payload))]).stream()
+      .pipeThrough(new DecompressionStream("deflate-raw")).pipeThrough(bounded);
+    return new TextDecoder("utf-8", { fatal: true }).decode(await new Response(stream).arrayBuffer());
   } catch {
     return null;
   }

@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { parseSuppressions } from "../packages/core/suppressions.ts";
+import { parseHtml } from "../packages/cli/adapter.ts";
+
+const suppressions = (source: string) => parseSuppressions(parseHtml(source).comments);
 
 const at = (source: string) => {
-  const s = parseSuppressions(source);
+  const s = suppressions(source);
   return (ruleId: string, line: number) => s.isSuppressed(ruleId, line);
 };
 
@@ -82,12 +85,12 @@ test("line numbers survive multi-line comments before the directive", () => {
 });
 
 test("a finding with no line can never be suppressed", () => {
-  const s = parseSuppressions("<!-- deadhead-disable -->");
+  const s = suppressions("<!-- deadhead-disable -->");
   assert.equal(s.isSuppressed("meta/x", null), false);
 });
 
 test("ids lists every rule id named in a directive with its line", () => {
-  const s = parseSuppressions(
+  const s = suppressions(
     ["<!-- deadhead-disable-next-line meta/a -->", "x", "<!-- deadhead-disable meta/b -->", "<!-- deadhead-enable meta/b -->"].join("\n"),
   );
   assert.deepEqual(s.ids(), [

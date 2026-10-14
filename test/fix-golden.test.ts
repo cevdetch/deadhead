@@ -61,7 +61,10 @@ for (const id of MUST_NOT_FIX) {
 for (const rule of fixable) {
   const id = rule.meta.ruleId;
   const original = await readFile(new URL(`fixtures/${id}/invalid.html`, import.meta.url), "utf8");
-  const lint = (source: string) => run([rule], parseHtml(source), { suppressions: parseSuppressions(source), fix: true });
+  const lint = (source: string) => {
+    const parsed = parseHtml(source);
+    return run([rule], parsed, { suppressions: parseSuppressions(parsed.comments), fix: true });
+  };
   const before = lint(original);
   const vetoes = rule.fixable !== undefined || (rule.meta.kind === "document" && before.some((f) => f.fix === null));
   const ends = vetoes ? "only vetoed findings" : KNOWN_PARTIAL.has(id) ? "no more findings" : "no findings";
@@ -75,6 +78,12 @@ for (const rule of fixable) {
       source = applyFixes(source, fixes).output;
     }
     const after = lint(source);
+    let cursor = 0;
+    for (let i = 0; i < source.length; i++) {
+      cursor = original.indexOf(source[i]!, cursor);
+      assert.notEqual(cursor, -1, "a shipped fix must only remove source bytes");
+      cursor++;
+    }
     if (vetoes) {
       assert.notEqual(source, original, "the fix changed nothing");
       if (!SIBLING_VETO.has(id)) assert.ok(after.length > 0, "invalid.html needs a case fixable() vetoes");

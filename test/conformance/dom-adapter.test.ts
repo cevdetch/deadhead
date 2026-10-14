@@ -31,3 +31,18 @@ test("DOM port reads SVG attributes case-insensitively, as the port promises", (
   assert.equal(port.hasAttr("baseprofile"), true);
   assert.deepEqual(port.attrNames(), ["viewbox", "baseprofile"]);
 });
+
+test("template children retain their logical parent and sibling index without a fragment host", () => {
+  const fragment = {};
+  const first = { tagName: "META", attributes: [], children: [], textContent: "", parentElement: null, parentNode: fragment };
+  const second = { tagName: "LINK", attributes: [], children: [], textContent: "", parentElement: null, parentNode: fragment };
+  const template = { tagName: "TEMPLATE", attributes: [], children: [], content: { children: [first, second] }, textContent: "", parentElement: null as unknown };
+  const root = { tagName: "HTML", attributes: [], children: [template], textContent: "", parentElement: null };
+  template.parentElement = root;
+  const parsed = fromDocument({ documentElement: root, doctype: null } as unknown as Document);
+  const port = parsed.roots[0]!.children()[0]!;
+  const children = port.children();
+  assert.equal(port.children(), children);
+  assert.deepEqual(children.map(child => [child.parent(), child.index()]), [[port, 0], [port, 1]]);
+  assert.equal(parsed.comments, null);
+});

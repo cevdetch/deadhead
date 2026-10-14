@@ -42,6 +42,28 @@ const lint = (source: string, enabled: Record<string, "error"> = allRules) =>
     rules: enabled,
   });
 
+test("rule-set churn preserves findings, fixes and one engine pass", () => {
+  const source = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>t</title><meta name="keywords" content="x"></head><body></body></html>';
+  const target = "deadhead/meta/keywords";
+  const enabled: Record<string, "error"> = { [target]: "error" };
+  const expected = lint(source, enabled);
+  assert.equal(expected.length, 1);
+  const alternatives = Object.keys(allRules).filter(id => id !== target).slice(0, 8);
+  assert.equal(alternatives.length, 8);
+  for (let mask = 0; mask < 160; mask++) {
+    const subset: Record<string, "error"> = { [target]: "error" };
+    alternatives.forEach((id, bit) => { if (mask & (1 << bit)) subset[id] = "error"; });
+    lint(source, subset);
+  }
+  const before = __passes();
+  assert.deepEqual(lint(source, enabled), expected);
+  assert.equal(__passes() - before, 1);
+  const fixed = linter.verifyAndFix(source, { plugins: { deadhead: asPlugin }, languageOptions: { parser: htmlParser }, rules: enabled });
+  assert.equal(fixed.fixed, true);
+  assert.ok(!fixed.output.includes('name="keywords"'));
+  assert.deepEqual(fixed.messages, []);
+});
+
 test("every rule id resolves to this plugin", () => {
   // An unresolved rule surfaces as a message with a null ruleId, which is easy
   // to miss if you only look at the count.

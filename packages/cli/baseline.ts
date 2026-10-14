@@ -27,8 +27,6 @@ export type Baseline = {
 
 export class BaselineError extends Error {}
 
-export const emptyBaseline = (): Baseline => ({ version: 1, entries: {} });
-
 export async function readBaseline(path: string): Promise<Baseline> {
   let raw: string;
   try {
@@ -54,7 +52,7 @@ export async function readBaseline(path: string): Promise<Baseline> {
     if (!("version" in value) || !("entries" in value)) {
       throw new BaselineError(`${path}: not a deadhead baseline (expected { version: 1, entries })`);
     }
-    if (value.version !== 1 || typeof value.entries !== "object" || value.entries === null) {
+    if (value.version !== 1 || typeof value.entries !== "object" || value.entries === null || Array.isArray(value.entries)) {
       throw new BaselineError(`${path}: not a deadhead baseline (expected { version: 1, entries })`);
     }
     for (const [file, perRule] of Object.entries(value.entries)) {
@@ -62,9 +60,9 @@ export async function readBaseline(path: string): Promise<Baseline> {
         throw new BaselineError(`${path}: entry for ${JSON.stringify(file)} must map ruleIds to counts`);
       }
       for (const [ruleId, count] of Object.entries(perRule)) {
-        if (typeof count !== "number" || !Number.isInteger(count) || count < 0) {
+        if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
           throw new BaselineError(
-            `${path}: entry ${JSON.stringify(file)} → ${JSON.stringify(ruleId)} must be a non-negative integer`,
+            `${path}: entry ${JSON.stringify(file)} → ${JSON.stringify(ruleId)} must be a non-negative safe integer`,
           );
         }
       }
@@ -140,9 +138,10 @@ export function applyBaseline(
     out.push({ ...result, findings: kept });
   }
 
-  const expected = Object.values(baseline.entries)
-    .flatMap((perRule) => Object.values(perRule))
-    .reduce((sum, count) => sum + count, 0);
+  let expected = 0;
+  for (const perRule of Object.values(baseline.entries)) {
+    for (const count of Object.values(perRule)) expected += count;
+  }
 
   return { results: out, resolved: Math.max(0, expected - accountedFor) };
 }

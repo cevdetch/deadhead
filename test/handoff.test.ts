@@ -6,8 +6,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { deflateRawSync } from "node:zlib";
 
-import { decodeHandoff, encodeHandoff, HANDOFF_LIMIT, pack, unpack } from "../packages/browser/handoff.ts";
+import { decodeHandoff, encodeHandoff, HANDOFF_LIMIT, MAX_TEXT_BYTES, pack, unpack } from "../packages/browser/handoff.ts";
 
 test("handoff: a page survives the round trip, Unicode included", async () => {
   const page = { url: "https://example.test/ä?q=1#x", html: "<!doctype html><title>日本語</title>", source: "raw" as const };
@@ -41,4 +42,11 @@ test("the codec stays import-free so the site and the bookmarklet can both load 
   const source = await readFile(new URL("../packages/browser/handoff.ts", import.meta.url), "utf8");
   assert.doesNotMatch(source, /^\s*import\s/m);
   assert.doesNotMatch(source, /import\s*\(/);
+});
+
+test("link data has encoded and decoded size bounds", async () => {
+  await assert.rejects(pack("x".repeat(MAX_TEXT_BYTES + 1)), /10 MiB/);
+  const payload = deflateRawSync("x".repeat(MAX_TEXT_BYTES + 1)).toString("base64url");
+  assert.equal(await unpack(payload), null, "highly compressed input is cancelled before retaining its full output");
+  assert.equal(await unpack("A".repeat(HANDOFF_LIMIT + 1)), null);
 });

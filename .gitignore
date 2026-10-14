@@ -11,6 +11,7 @@ dist/
 # Generated from content/rules/**/*.md by scripts/build-rules.ts
 packages/rules/rules.json
 packages/rules/registry.gen.ts
+packages/rules/registry.runtime.gen.ts
 packages/browser/deadhead.css
 packages/browser/bookmarklet.js
 

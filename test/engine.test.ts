@@ -33,8 +33,10 @@ const meta = (overrides: Partial<RuleMeta> & { ruleId: string }): RuleMeta => ({
   ...overrides,
 });
 
-const lint = (html: string, rules: Rule[], suppress = false): Finding[] =>
-  run(rules, parseHtml(html), suppress ? { suppressions: parseSuppressions(html) } : {});
+const lint = (html: string, rules: Rule[], suppress = false): Finding[] => {
+  const parsed = parseHtml(html);
+  return run(rules, parsed, suppress ? { suppressions: parseSuppressions(parsed.comments) } : {});
+};
 
 /** A fragment through @html-eslint/parser, which builds exactly what was written. */
 const lintAsWritten = (html: string, rules: Rule[]): Finding[] =>

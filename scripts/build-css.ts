@@ -19,7 +19,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { styleText } from "node:util";
 
-import type { Rule } from "../packages/core/engine.ts";
+import type { DocumentedRule, Rule } from "../packages/core/engine.ts";
 import { ruleUrl, SITE_URL, type RuleMeta, type Severity } from "../packages/core/vocabulary.ts";
 import { loadRules, RulesNotBuiltError } from "../packages/rules/load.ts";
 import { ROOT, rel } from "./rules-source.ts";
@@ -34,7 +34,7 @@ const COLOUR: Record<Severity, string> = {
 };
 
 /** CSS string escaping for the `content` property. */
-export const cssString = (value: string): string =>
+const cssString = (value: string): string =>
   `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
 /** Top-level comma split that respects quoted values: `[x="a,b"]` stays whole. */
@@ -88,7 +88,7 @@ export const selectorDecides = (rule: Pick<Rule, "meta" | "match" | "check">): b
   rule.check === undefined;
 
 /** The stylesheet for a rule set. Pure: no I/O. */
-export function renderCss(all: Rule[]): string {
+export function renderCss(all: DocumentedRule[]): string {
   const rules = all.filter(selectorDecides).map((rule) => rule.meta);
   const skipped = all.filter((rule) => !selectorDecides(rule)).map((rule) => rule.meta.ruleId);
 
@@ -159,7 +159,7 @@ if (import.meta.main) {
   process.stdout.write(`${styleText("green", "✓")} ${count} rule(s) → ${rel(OUT)}\n`);
 }
 
-async function readRules(): Promise<Rule[]> {
+async function readRules(): Promise<DocumentedRule[]> {
   try {
     return await loadRules();
   } catch (err) {
