@@ -345,6 +345,38 @@ test("checkLibModules sees async functions and types, and type-only imports", as
   }
 });
 
+test("checkLibModules matches complete JavaScript identifiers including dollar signs", async (t) => {
+  const { checkLibModules } = await import("../scripts/rules-source.ts");
+  const dir = await mkdtemp(join(tmpdir(), "deadhead-lib-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const lib = join(dir, "lib");
+  const logic = join(dir, "logic", "meta");
+  await mkdir(lib, { recursive: true });
+  await mkdir(logic, { recursive: true });
+  await writeFile(join(lib, "x.ts"), "export const $leading = 1;\nexport const trailing$ = 2;\nexport const leading = 3;\nexport const trailing = 4;\n");
+  await writeFile(join(logic, "a.ts"), 'import { $leading, trailing$ } from "../../lib/x.ts";\n');
+  assert.deepEqual((await checkLibModules(lib, join(dir, "logic"))).map((d) => d.message), [
+    "`leading` is exported but no logic module imports it",
+    "`trailing` is exported but no logic module imports it",
+  ]);
+});
+
+test("checkLibModules treats module filenames literally", async (t) => {
+  const { checkLibModules } = await import("../scripts/rules-source.ts");
+  const dir = await mkdtemp(join(tmpdir(), "deadhead-lib-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const lib = join(dir, "lib");
+  const logic = join(dir, "logic", "meta");
+  await mkdir(lib, { recursive: true });
+  await mkdir(logic, { recursive: true });
+  await writeFile(join(lib, "x.ts"), "export const value = 1;\n");
+  await writeFile(join(logic, "a.ts"), 'import { value } from "../../lib/xXts";\n');
+  assert.equal((await checkLibModules(lib, join(dir, "logic"))).length, 1);
+  await writeFile(join(lib, "x+.ts"), "export const extra = 2;\n");
+  await writeFile(join(logic, "a.ts"), 'import { value } from "../../lib/x.ts";\nimport { extra } from "../../lib/x+.ts";\n');
+  assert.deepEqual(await checkLibModules(lib, join(dir, "logic")), []);
+});
+
 test("lib/json-ld someNode walks an array too long to spread into arguments", async () => {
   const { someNode } = await import("../packages/rules/lib/json-ld.ts");
   const huge: unknown[] = Array.from({ length: 500_000 }, () => 0);
