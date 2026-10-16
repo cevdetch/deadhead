@@ -1,10 +1,15 @@
-Closes #
+## Summary
 
-## Rule
+<!-- Explain the problem and the resulting behavior. Use Closes #N for a resolved issue, or Refs #N for related work. -->
 
-- ruleId: <!-- namespace/name; must match the file path -->
+## Validation
 
-## Definition of done
+<!-- List the checks you ran and their results. Include any checks that could not run. -->
+
+<details>
+<summary>Rule changes: complete this checklist when adding or changing a rule</summary>
+
+ruleId: <!-- namespace/name; must match the file path -->
 
 - [ ] Frontmatter validates (`pnpm validate:rules`), and `ruleId` matches the file path
 - [ ] At least two independent sources under `## Resources`
@@ -15,6 +20,8 @@ Closes #
 - [ ] Fixtures pass in all three adapters (conformance suite)
 - [ ] Each tag is carried by ≥2 rules
 - [ ] If the rule has a fix op, `test/fix-golden.test.ts` covers it and the fix changes no behaviour
+
+</details>
 
 ## Notes for the reviewer
 

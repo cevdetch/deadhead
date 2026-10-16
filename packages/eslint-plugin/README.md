@@ -32,4 +32,4 @@ told to add head content another file supplies.
 
 For the command line, use [`deadhead`](https://www.npmjs.com/package/deadhead).
 Everything else is on the [site](https://deadhead.cevdet.ch/install) and in the
-[repository](https://github.com/cevdetta/deadhead).
+[repository](https://github.com/cevdetch/deadhead).

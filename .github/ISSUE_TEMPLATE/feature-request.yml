@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a CLI, integration, browser, or documentation improvement.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a missing HTML check, use the **New rule** form and include a small HTML example.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the task you cannot complete or the behavior you want to improve.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Include a command, configuration, or HTML example when useful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Describe any workaround or other approach you considered.

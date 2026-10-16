@@ -1,204 +1,48 @@
 name: New rule
-description: Propose a single lint rule. Fill in the research — the PR is largely transcription.
-title: "[rule] <namespace>/<name>"
+description: Request an HTML check that deadhead does not cover yet.
+title: "[rule] "
 labels: ["rule"]
 body:
   - type: markdown
     attributes:
       value: |
-        One rule per issue. If you cannot produce two independent sources,
-        the rule is not ready — finding that out here costs ten minutes
-        instead of a review cycle.
-
-  - type: input
-    id: ruleId
-    attributes:
-      label: ruleId
-      description: Permanent. Namespace by where the thing lives (meta/, link/, head/, script/, attr/), never by whether it is bad.
-      placeholder: meta/http-equiv-x-ua-compatible
-    validations:
-      required: true
-
-  - type: input
-    id: title
-    attributes:
-      label: Title
-      description: Short identifier shown in reporter output.
-      placeholder: meta http-equiv=X-UA-Compatible
-    validations:
-      required: true
-
+        Suggest one missing HTML check per issue. You do not need to know the rule ID,
+        selector syntax, severity, or implementation. Include standards or browser
+        documentation if you have it; the maintainer will research the rule before implementation.
   - type: textarea
-    id: description
+    id: pattern
     attributes:
-      label: Description
-      description: One-line summary shown in reporter output.
-      placeholder: One-line summary shown in reporter output.
+      label: What should deadhead check?
+      description: Describe the HTML pattern that existing rules do not cover.
     validations:
       required: true
-
-  - type: dropdown
-    id: status
-    attributes:
-      label: Status
-      options:
-        - avoid
-        - recommended
-        - situational
-    validations:
-      required: true
-
-  - type: dropdown
-    id: severity
-    attributes:
-      label: Severity
-      description: harmful = actively breaks something for users; deprecated = formally obsolete but inert; unnecessary = works, but dead weight.
-      options:
-        - harmful
-        - deprecated
-        - unnecessary
-    validations:
-      required: true
-
-  - type: dropdown
-    id: standardsBasis
-    attributes:
-      label: Standards basis
-      options:
-        - spec
-        - spec-obsolete
-        - browser-convention
-        - vendor
-        - community
-    validations:
-      required: true
-
-  - type: dropdown
-    id: detectability
-    attributes:
-      label: Detectability
-      description: partial = reported as "possible" and never autofixed.
-      options:
-        - "yes"
-        - partial
-        - "no"
-    validations:
-      required: true
-
-  - type: dropdown
-    id: kind
-    attributes:
-      label: Kind
-      description: element = selector match; document = needs code in packages/rules/logic/.
-      options:
-        - element
-        - document
-    validations:
-      required: true
-
-  - type: dropdown
-    id: scope
-    attributes:
-      label: Scope
-      description: Rules scoped to head never walk <body>. This is the main performance lever.
-      options:
-        - head
-        - body
-        - any
-    validations:
-      required: true
-
-  - type: input
-    id: selector
-    attributes:
-      label: Selector
-      description: Matching expression only — tag names, [attr] forms, the i flag, :not(...), comma lists. No combinators, no pseudo-classes. Leave blank for kind=document rules with no pre-filter.
-      placeholder: 'meta[http-equiv="X-UA-Compatible" i]'
-    validations:
-      required: false
-
-  - type: checkboxes
-    id: logic
-    attributes:
-      label: Logic module
-      options:
-        - label: Needs packages/rules/logic/<ruleId>.ts (the selector subset cannot express the match)
-
-  - type: dropdown
-    id: fix
-    attributes:
-      label: Fix
-      description: remove-attribute also needs `attr`; remove-token needs `attr` and `token`; remove-tokens needs `attr`. A fix must never change behaviour — if the element is doing something, choose none.
-      options:
-        - remove-element
-        - remove-attribute
-        - remove-token
-        - remove-tokens
-        - none
-    validations:
-      required: true
-
   - type: textarea
-    id: replacement
+    id: example
     attributes:
-      label: Replacement
-      description: Shown in reporter output. Runnable markup, or explicitly "delete it".
-      placeholder: "Delete it. Internet Explorer and legacy Edge modes no longer exist."
+      label: HTML example
+      description: Show a small example of the markup you want deadhead to check.
+      render: html
     validations:
       required: true
-
   - type: textarea
     id: consequence
     attributes:
-      label: Why avoid (or Why use)
-      description: The concrete consequence, not just "it's old".
-      placeholder: What breaks, for whom, and how badly?
+      label: Why should deadhead report it?
+      description: Explain the effect on users, browsers, accessibility, performance, or maintenance.
     validations:
       required: true
-
   - type: textarea
-    id: instead
+    id: replacement
     attributes:
-      label: Use instead
-      description: Runnable markup, or explicitly "delete it".
-    validations:
-      required: true
-
+      label: Suggested replacement
+      description: Show a better alternative if you know one, or explain why the markup can be removed.
   - type: textarea
     id: resources
     attributes:
-      label: Resources
-      description: At least two independent sources (spec text, browser bug tracker, vendor documentation, or a well-argued primary post). One blog post is not evidence.
-      placeholder: "- https://…\n- https://…"
-    validations:
-      required: true
-
-  - type: input
-    id: tags
-    attributes:
-      label: Tags
-      description: Comma-separated.
-      placeholder: forms, hyperlinks
-    validations:
-      required: false
-
-  - type: checkboxes
-    id: impacts
-    attributes:
-      label: Impacts
-      options:
-        - label: performance
-        - label: interop
-        - label: a11y
-        - label: seo
-        - label: security
-        - label: maintainability
-
-  - type: input
+      label: Sources
+      description: Optional links to specifications, browser documentation, or other evidence.
+  - type: textarea
     id: related
     attributes:
-      label: Related rules
-      description: Comma-separated ruleIds.
-      placeholder: meta/viewport
-    validations:
-      required: false
+      label: Related rules or issues
+      description: Link any existing checks or discussions you found while looking for this rule.

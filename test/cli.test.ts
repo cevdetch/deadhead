@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { stripVTControlCharacters } from "node:util";
 
 import { loadRules } from "../packages/rules/load.ts";
 import { collectFiles, lintFiles } from "../packages/cli/lint.ts";
@@ -18,8 +19,19 @@ const BIN = fileURLToPath(new URL("../packages/cli/bin/deadhead.ts", import.meta
 
 // rules.json is built once by `pnpm test` before any test process starts.
 
-const deadhead = (...args: string[]) =>
-  spawnSync(process.execPath, [BIN, ...args], { cwd: ROOT, encoding: "utf8" });
+// Test pipe detection independently of colour settings inherited from pnpm or CI.
+const cliEnv = { ...process.env };
+delete cliEnv["FORCE_COLOR"];
+delete cliEnv["NO_COLOR"];
+delete cliEnv["NODE_DISABLE_COLORS"];
+
+const deadhead = (...args: string[]) => {
+  const result = spawnSync(process.execPath, [BIN, ...args], {
+    cwd: ROOT, encoding: "utf8", env: cliEnv,
+  });
+  assert.ifError(result.error);
+  return result;
+};
 
 const rules = await loadRules();
 const { rules: markdown } = await loadMarkdown();
@@ -187,9 +199,21 @@ test("sarif output is parseable and declares every rule it references", () => {
 });
 
 test("colour is dropped when stdout is not a terminal", () => {
-  // spawnSync gives the child a pipe, so styleText must emit no escape codes.
+  // Without a colour override, spawnSync gives the child a pipe and no styling.
   const ESC = String.fromCharCode(27);
   assert.ok(!deadhead("test/fixtures").stdout.includes(ESC));
+});
+
+test("FORCE_COLOR enables help styling even when stdout is piped", () => {
+  const help = spawnSync(process.execPath, [BIN, "--help"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: { ...cliEnv, FORCE_COLOR: "1" },
+  });
+  assert.ifError(help.error);
+  assert.equal(help.status, 0);
+  assert.ok(help.stdout.includes(String.fromCharCode(27)));
+  assert.match(stripVTControlCharacters(help.stdout), /Usage: deadhead/);
 });
 
 // --- file collection --------------------------------------------------------

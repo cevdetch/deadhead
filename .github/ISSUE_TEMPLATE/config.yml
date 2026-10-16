@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Usage and rule documentation
+    url: https://deadhead.cevdet.ch/
+    about: Read installation instructions, integration examples, and rule explanations.
+  - name: Security reports
+    url: https://github.com/cevdetch/deadhead/security/policy
+    about: Follow the security policy for sensitive findings.

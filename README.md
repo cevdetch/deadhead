@@ -369,7 +369,10 @@ bottleneck by design.
 ## Contributing
 
 One rule per issue, one rule per pull request. Open a **New rule** issue; the form is
-the research checklist. See [CONTRIBUTING.md](CONTRIBUTING.md).
+the research checklist. Use the [issue forms](https://github.com/cevdetch/deadhead/issues/new/choose)
+for bug reports and feature requests. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+contribution workflow and help, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community
+standards, and [SECURITY.md](SECURITY.md) for sensitive findings.
 
 Working from a clone needs Node 24 or newer (`engine-strict=true` in [`.npmrc`](.npmrc))
 and pnpm at the version pinned in [`package.json`](package.json)'s `packageManager`:
