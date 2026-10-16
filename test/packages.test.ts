@@ -22,7 +22,7 @@ test("both published packages are ESM-only, share one version and the Node floor
     assert.deepEqual(pkg.files, ["dist"]);
     assert.equal(pkg.engines.node, ">=24.8.0");
     assert.equal(pkg.license, "MIT");
-    assert.equal(pkg.repository.url, "git+https://github.com/cevdetta/deadhead.git");
+    assert.equal(pkg.repository.url, "git+https://github.com/cevdetch/deadhead.git");
     assert.deepEqual(pkg.publishConfig, { access: "public" });
   }
   assert.deepEqual(cli.bin, { deadhead: "./dist/deadhead.js" });

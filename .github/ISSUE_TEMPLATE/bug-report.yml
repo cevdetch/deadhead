@@ -1,0 +1,52 @@
+name: Bug report
+description: Report an incorrect finding, unsafe fix, crash, or integration problem.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include a small HTML example and the command or configuration that reproduces the problem.
+        For sensitive security findings, follow [SECURITY.md](https://github.com/cevdetch/deadhead/security/policy).
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where does the problem occur?
+      options:
+        - CLI
+        - ESLint plugin
+        - Vite or Astro integration
+        - Browser playground or bookmarklet
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Include the deadhead or eslint-plugin-deadhead version, or the documentation URL.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include minimal HTML, the command or config, and the affected rule ID if known.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include the finding, error, or changed HTML.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Node.js and OS versions; for browser problems, include the browser and version.

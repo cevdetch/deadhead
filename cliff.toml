@@ -31,7 +31,7 @@ body = """
 """
 trim = true
 postprocessors = [
-  { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/cevdetta/deadhead/pull/${1}))" },
+  { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/cevdetch/deadhead/pull/${1}))" },
 ]
 
 [git]

@@ -29,7 +29,7 @@ export const WEBSITE_LD = ld({
   name: "deadhead",
   url: "https://deadhead.cevdet.ch/",
   inLanguage: "en",
-  publisher: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetta" },
+  publisher: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetch" },
 });
 
 export const ARTICLE_LD = ld({
@@ -42,7 +42,7 @@ export const ARTICLE_LD = ld({
       url: "https://deadhead.cevdet.ch/rules/meta/a",
       datePublished: "2026-09-28T00:00:00.000Z",
       dateModified: "2026-09-29T00:00:00.000Z",
-      author: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetta" },
+      author: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetch" },
       citation: ["https://example.com/one", "https://example.com/two"],
     },
     { "@type": "BreadcrumbList", itemListElement: [] },

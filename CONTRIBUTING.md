@@ -1,6 +1,13 @@
 # Contributing
 
-The unit of work here is **one rule**: one issue, one pull request.
+For rule contributions, the unit of work is **one rule**: one issue, one pull request.
+Use the **Bug report** or **Feature request** issue form for CLI, integration,
+browser, and documentation changes. Follow the [code of conduct](CODE_OF_CONDUCT.md)
+in project discussions and [SECURITY.md](SECURITY.md) for sensitive findings.
+
+For usage questions, start with the [documentation](https://deadhead.cevdet.ch/)
+and [browser playground](https://deadhead.cevdet.ch/try). If they do not answer your
+question, open a blank issue with a small example and the package version.
 
 ## Setup
 
@@ -19,10 +26,11 @@ tool.
 
 ## Adding a rule
 
-1. Open a **New rule** issue. The form mirrors the rule's frontmatter field for field,
-   so filling it in *is* the research. If you cannot produce two independent sources,
-   the rule is not ready, and finding that out costs you ten minutes instead of a
-   review cycle.
+1. Open a **New rule** issue with the HTML pattern, a small example, and the
+   consequence worth checking. You can request a rule without choosing its ID,
+   severity, selector, or fix. Include sources if you have them. Before anyone
+   implements the rule, confirm that existing rules do not cover it and research
+   at least two independent primary sources.
 2. Add `content/rules/<namespace>/<name>.md`, plus fixtures at
    `test/fixtures/<ruleId>/invalid.html` and `valid.html`.
 3. Most rules need no code. If the selector subset cannot express the match, add

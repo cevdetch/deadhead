@@ -136,4 +136,4 @@ responses; the CLI checks your framework's final build output.
 For ESLint, use [`eslint-plugin-deadhead`](https://www.npmjs.com/package/eslint-plugin-deadhead).
 Everything else, including the bookmarklet, is on the
 [site](https://deadhead.cevdet.ch/install) and in the
-[repository](https://github.com/cevdetta/deadhead).
+[repository](https://github.com/cevdetch/deadhead).

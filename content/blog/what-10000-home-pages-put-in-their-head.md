@@ -171,6 +171,6 @@ source is [`meta/twitter-card-names`](/rules/meta/twitter-card-names), with
 - The data: [2026-10-04-top10000.json](/data/2026-10-04-top10000.json), the aggregate behind
   every number above.
 - The method, in full: the corpus
-  [README](https://github.com/cevdetta/deadhead/blob/main/corpus/README.md).
+  [README](https://github.com/cevdetch/deadhead/blob/main/corpus/README.md).
 - Run deadhead on your own site: the CLI on your built HTML, the ESLint plugin in your editor,
   or the bookmarklet on a live page. See [Install](/install).
