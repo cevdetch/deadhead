@@ -385,7 +385,7 @@ export async function checkLibModules(libDir: string = LIB_DIR, logicDir: string
       const name = m[1]!;
       // `import { x }`, `import type { X }` and `import { type X }` all count.
       const used = new RegExp(
-        `import\\s*(?:type\\s+)?\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*["']\\.\\./\\.\\./lib/${file}["']`,
+        `import\\s*(?:type\\s+)?\\{[^}]*(?<![\\w$])${RegExp.escape(name)}(?![\\w$])[^}]*\\}\\s*from\\s*["']\\.\\./\\.\\./lib/${RegExp.escape(file)}["']`,
       ).test(logicText);
       if (!used) {
         diagnostics.push({
