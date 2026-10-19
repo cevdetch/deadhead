@@ -301,9 +301,10 @@ document assembled by a framework, which is where head markup goes wrong.
   foundation: for framework users the head tags live in JSX, Vue or Svelte where
   an HTML parser never sees them.
 
-All three run the same rule set and are tested against each other, so they cannot
-disagree. `pnpm test:conformance` runs every fixture through every adapter and fails
-if they diverge, including the built bookmarklet, executed as a bundle.
+All three use the same core and rule set. `pnpm test:conformance` checks their
+agreement on shared capabilities, including the built bookmarklet, executed as a
+bundle. The rendered DOM has no source locations or source fixes; those differences
+are described below and checked by the suite.
 
 ### Browser artifacts
 
@@ -311,10 +312,11 @@ if they diverge, including the built bookmarklet, executed as a bundle.
 pnpm build && pnpm build:bookmarklet && pnpm build:css
 ```
 
-`packages/browser/bookmarklet.js` is one self-contained IIFE with the rules inlined and
-no network access at all, so a strict Content-Security-Policy cannot block it.
-That matters, because a locked-down page is the one worth inspecting. The same file is
-the devtools snippet: paste it into **Sources → Snippets** and run.
+`packages/browser/bookmarklet.js` is one self-contained IIFE with the rules inlined.
+Initial linting needs no network request. Its **full report** button tries to fetch
+the page's original HTML, falls back to the rendered DOM if that request is blocked,
+and opens the report on `/try`. The same file is the devtools snippet: paste it into
+**Sources → Snippets** and run.
 
 `packages/browser/deadhead.css` outlines offenders in place, in the
 [ct.css](https://csswizardry.com/ct/) spirit, using `head, head * { display: block }` to
@@ -374,7 +376,7 @@ for bug reports and feature requests. See [CONTRIBUTING.md](CONTRIBUTING.md) for
 contribution workflow and help, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community
 standards, and [SECURITY.md](SECURITY.md) for sensitive findings.
 
-Working from a clone needs Node 24 or newer (`engine-strict=true` in [`.npmrc`](.npmrc))
+Working from a clone needs Node 24.8 or newer (`engine-strict=true` in [`.npmrc`](.npmrc))
 and pnpm at the version pinned in [`package.json`](package.json)'s `packageManager`:
 
 ```bash
