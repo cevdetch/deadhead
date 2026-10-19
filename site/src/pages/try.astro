@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-// Shown on first visit: a head that trips several rules, so the output explains itself.
+// Runs automatically on first visit, like shared links and bookmarklet handoffs.
 const example = `<!doctype html>
 <html lang="en">
   <head>
@@ -19,11 +19,12 @@ const example = `<!doctype html>
 
 <Layout
   title="Lint your HTML in the browser"
-  description="Paste HTML or drop a file: deadhead lints it in your browser with the CLI's own rules and shows each finding and the fixed HTML."
+  description="Paste HTML or open a file to read deadhead findings and explanations, then copy HTML after automatic fixes. Runs in your browser."
 >
   <style slot="head" is:inline>
     #try-input,#try-output{width:100%;padding:.8rem 1rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:inherit;font:var(--small)/1.55 var(--mono);resize:vertical}
     #try-input{min-height:18rem}
+    #try-report{min-height:100svh}
     .try-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-block-start:.6rem}
     .try-row small,#try-from{color:var(--muted);margin-inline-start:auto;overflow-wrap:anywhere}
     #try-form button,#try-file::file-selector-button,#try-fixed summary{font:inherit;font-size:var(--small);padding:.45rem .9rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--text);cursor:pointer}
@@ -34,13 +35,12 @@ const example = `<!doctype html>
     #try-status span,.rules li>span{font-size:.75rem;border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem;margin-inline-start:.4rem;white-space:nowrap}
     .rules pre{grid-column:1/-1;margin:0}
     .rules li>p:first-of-type{color:var(--text)}
-    #try-results p code,#try-status code{white-space:nowrap}
+    #try-results p code{white-space:nowrap}
     #try-fixed summary{display:inline-block}
   </style>
   <h1>Try deadhead</h1>
   <p class="lede">
-    Paste HTML or drop a file. deadhead lints it here, in your browser, with the same rules and
-    parser as the CLI. Nothing you paste leaves this page.
+    Paste HTML or open a file. Your HTML stays in your browser.
   </p>
   <form id="try-form">
     <label for="try-input">HTML</label>
@@ -52,16 +52,18 @@ const example = `<!doctype html>
       <small><kbd>Ctrl</kbd> + <kbd>Enter</kbd> lints</small>
     </div>
   </form>
-  <p><small>Links support up to 10 MiB of HTML. Open a file for larger input.</small></p>
-  <p id="try-from" hidden></p>
-  <p id="try-status" role="status"></p>
-  <section id="try-results" aria-live="polite"></section>
-  <details id="try-fixed" hidden>
-    <summary>Fixed HTML</summary>
-    <textarea id="try-output" readonly rows="16" spellcheck="false"></textarea>
-    <p><button id="try-copy" type="button">Copy the fixed HTML</button></p>
-  </details>
+  <p><small>Links hold up to 10 MiB of HTML. Open larger files directly.</small></p>
   <noscript><p>The linter runs in your browser and needs JavaScript. The CLI does the same offline: see <a href="/install">Install</a>.</p></noscript>
+  <section id="try-report" aria-label="Lint report">
+    <p id="try-from" hidden></p>
+    <p id="try-status" role="status"></p>
+    <section id="try-results" aria-live="polite"></section>
+    <details id="try-fixed" hidden>
+      <summary>HTML after automatic fixes</summary>
+      <textarea id="try-output" readonly rows="16" spellcheck="false"></textarea>
+      <p><button id="try-copy" type="button">Copy HTML</button></p>
+    </details>
+  </section>
 </Layout>
 
 <script>

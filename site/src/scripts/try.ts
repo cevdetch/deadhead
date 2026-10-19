@@ -25,7 +25,7 @@ const output = $<HTMLTextAreaElement>("try-output");
 const copy = $<HTMLButtonElement>("try-copy");
 const from = $<HTMLParagraphElement>("try-from");
 
-const compiled = compileForRun(await loadRuntimeRules(), {});
+let compiled: ReturnType<typeof compileForRun> | undefined;
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] => {
   const node = document.createElement(tag);
@@ -43,13 +43,13 @@ const badge = (severity: string, text: string): HTMLSpanElement => {
 function render(view: LintView): void {
   results.replaceChildren();
   const total = view.findings.length;
-  if (total === 0) status.textContent = "No findings. Nothing here for deadhead to report.";
+  if (total === 0) status.textContent = "No findings.";
   else {
     status.replaceChildren(`${total} finding${total === 1 ? "" : "s"}`);
     for (const severity of ["harmful", "deprecated", "unnecessary"] as const) {
       if (view.counts[severity] > 0) status.append(badge(severity, `${view.counts[severity]} ${severity}`));
     }
-    status.append(" · ", el("code", "--fix"), ` removes ${view.fixed}`);
+    status.append(` · ${view.fixed} automatically fixed · ${view.remaining} remaining`);
     const list = el("ol");
     list.className = "rules";
     for (const finding of view.findings) {
@@ -63,7 +63,7 @@ function render(view: LintView): void {
       const snippet = el("pre");
       snippet.append(el("code", finding.snippet));
       const advice = el("p", finding.replacement);
-      if (finding.fixable) advice.append(" Fixed by ", el("code", "--fix"), ".");
+      advice.append(finding.fixable ? " Automatic fix." : " Manual change.");
       if (finding.detail !== null) advice.append(el("br"), el("small", finding.detail));
       item.append(link, badge(finding.severity, `${finding.severity}${finding.possible ? ", possible" : ""}`), message, snippet, advice);
       list.append(item);
@@ -74,8 +74,11 @@ function render(view: LintView): void {
   output.value = view.output;
 }
 
-const run = (): void => {
-  try { render(lintHtml(input.value, compiled)); }
+const run = async (): Promise<void> => {
+  try {
+    compiled ??= compileForRun(await loadRuntimeRules(), {});
+    render(lintHtml(input.value, compiled));
+  }
   catch {
     results.replaceChildren();
     fixedBox.hidden = true;
@@ -86,13 +89,13 @@ const run = (): void => {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  run();
+  void run();
 });
 
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
-    run();
+    void run();
   }
 });
 
@@ -103,7 +106,7 @@ file.addEventListener("change", async () => {
     const text = await chosen.text();
     if (file.files?.[0] !== chosen) return;
     input.value = text;
-    run();
+    await run();
   } catch { status.textContent = "Could not read this file. Paste its HTML instead."; }
 });
 
@@ -128,7 +131,7 @@ share.addEventListener("click", async () => {
 });
 
 copy.addEventListener("click", async () => {
-  await copyText(output.value, "Fixed HTML copied.", "Could not copy the fixed HTML. Copy the text manually.");
+  await copyText(output.value, "HTML copied.", "Could not copy the HTML. Copy the text manually.");
 });
 
 input.addEventListener("input", () => (from.hidden = true), { once: true });
@@ -137,18 +140,15 @@ const fragment = location.hash;
 const isHandoff = fragment.startsWith("#page=");
 if (isHandoff) history.replaceState(null, "", location.pathname + location.search);
 const handed = await decodeHandoff(fragment);
-let unreadable = false;
+const shared = handed === null ? await decodeShare(fragment) : null;
 if (handed !== null) {
   input.value = handed.html;
   from.textContent =
     handed.source === "raw"
-      ? `HTML of ${handed.url}, as its server sent it.`
-      : `HTML of ${handed.url}, read from the rendered DOM: the page blocked re-reading its source, so scripts may have added or changed markup.`;
+      ? `Source HTML from ${handed.url}.`
+      : `Rendered HTML from ${handed.url}. Source could not be fetched; scripts may have changed the markup.`;
   from.hidden = false;
-} else {
-  const shared = await decodeShare(fragment);
-  if (shared !== null) input.value = shared;
-  else unreadable = isHandoff || fragment.startsWith("#html=");
-}
-run();
+} else if (shared !== null) input.value = shared;
+const unreadable = (isHandoff || fragment.startsWith("#html=")) && handed === null && shared === null;
 if (unreadable) status.textContent = "Could not read this link. Paste HTML or open a file.";
+else await run();
