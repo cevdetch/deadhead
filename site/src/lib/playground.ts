@@ -26,6 +26,7 @@ export type LintView = {
   findings: ViewFinding[];
   counts: Record<Severity, number>;
   fixed: number;
+  remaining: number;
   output: string;
 };
 
@@ -49,11 +50,11 @@ const view = (finding: Finding): ViewFinding => ({
  * each finding carries its edit; `lintSource` runs the full fix loop.
  */
 export function lintHtml(html: string, compiled: CompiledRules): LintView {
-  const { output, fixed, initialFindings } = lintSource(html, "input.html", compiled, { fix: true });
+  const { output, fixed, initialFindings, findings: remaining } = lintSource(html, "input.html", compiled, { fix: true });
   const findings = initialFindings.map(view);
   const counts: Record<Severity, number> = { harmful: 0, deprecated: 0, unnecessary: 0 };
   for (const finding of findings) counts[finding.severity]++;
-  return { findings, counts, fixed, output };
+  return { findings, counts, fixed, remaining: remaining.length, output };
 }
 
 /**

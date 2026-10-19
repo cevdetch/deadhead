@@ -52,6 +52,7 @@ test("lintHtml: the fixed HTML and the fix count are what --fix writes", async (
     const view = lintHtml(html, runtime);
     assert.equal(view.output, cli.output, file);
     assert.equal(view.fixed, cli.fixed, file);
+    assert.equal(view.remaining, cli.findings.length, file);
   }
 });
 
@@ -77,6 +78,25 @@ test("lintHtml: an empty paste has nothing to report and nothing to fix", () => 
   assert.deepEqual(view.findings, []);
   assert.equal(view.output, "");
   assert.equal(view.fixed, 0);
+  assert.equal(view.remaining, 0);
+});
+
+test("lintHtml: the demo leaves its two manual findings after three automatic fixes", () => {
+  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta http-equiv="X-UA-Compatible" content="IE=edge">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">' +
+    '<title>Example</title><meta name="keywords" content="html, head, linter">' +
+    '<link rel="shortcut icon" href="/favicon.ico">' +
+    '<script type="text/javascript" src="/app.js"></script></head><body></body></html>';
+  const result = lintHtml(html, runtime);
+  assert.equal(result.findings.length, 5);
+  assert.equal(result.fixed, 3);
+  assert.equal(result.remaining, 2);
+  assert.match(result.output, /X-UA-Compatible/);
+  assert.match(result.output, /user-scalable=no/);
+  assert.deepEqual(lintHtml(result.output, runtime).findings.map(finding => finding.ruleId), [
+    "meta/http-equiv-x-ua-compatible", "meta/viewport-user-scalable",
+  ]);
 });
 
 test("share: HTML survives the round trip through the fragment, Unicode included", async () => {

@@ -24,13 +24,16 @@ test("try page handles clipboard and file failures, then recovers", async () => 
     const status = document.getElementById("try-status")!;
     assert.match(status.textContent!, /Could not read this link/);
     assert.equal(location.hash, "", "handed-over HTML never remains in the address bar");
+    document.getElementById("try-form")!.dispatchEvent(new window.Event("submit", { cancelable: true }));
+    await setImmediate();
+    await setImmediate();
     const click = async (id: string) => { document.getElementById(id)!.dispatchEvent(new window.Event("click")); await setImmediate(); await setImmediate(); };
     await click("try-copy");
     assert.match(status.textContent!, /copy.*manually/);
     denied = false;
     await click("try-copy");
     assert.equal(copied.includes('name="keywords"'), false);
-    assert.equal(status.textContent, "Fixed HTML copied.");
+    assert.equal(status.textContent, "HTML copied.");
     const file = document.getElementById("try-file")!;
     Object.defineProperty(file, "files", { value: [{ async text() { throw new Error("unreadable"); } }], configurable: true });
     file.dispatchEvent(new window.Event("change"));
@@ -38,6 +41,8 @@ test("try page handles clipboard and file failures, then recovers", async () => 
     assert.match(status.textContent!, /Could not read this file/);
     assert.equal(input.value, PAGE);
     document.getElementById("try-form")!.dispatchEvent(new window.Event("submit", { cancelable: true }));
+    await setImmediate();
+    await setImmediate();
     assert.match(status.textContent!, /1 finding/);
   } finally {
     for (const [name, descriptor] of previous) {
