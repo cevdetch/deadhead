@@ -22,7 +22,7 @@
     "check:bookmarklet": "node scripts/check-bookmarklet-csp.ts",
     "check:packages": "pnpm build:packages && node scripts/check-packages.ts",
     "smoke:packages": "node scripts/smoke-packages.ts",
-    "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist && node scripts/site-budget.ts site/dist && node scripts/site-seo.ts site/dist",
+    "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist && node scripts/site-budget.ts site/dist && node scripts/site-seo.ts site/dist && node scripts/site-crawlers.ts site/dist",
     "corpus:list": "node corpus/list.ts",
     "corpus:snapshot": "node corpus/snapshot.ts",
     "corpus:lint": "node scripts/build-rules.ts && node corpus/lint.ts",
