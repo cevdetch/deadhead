@@ -2,6 +2,13 @@ packages:
   - packages/*
   - site
 
+overrides:
+  # Satori pins 0.7.3; 0.7.5 fixes GHSA-px8p-9vwx-vf98 on the same release line.
+  "fflate@0.7.3": 0.7.5
+  # ESLint and config-array require 10.x; GHSA-g3hv-75wg-m249 needs 11.0.1+.
+  # Remove this override once their dependency ranges include a patched release.
+  "minimatch@10.2.6": 11.0.4
+
 # pnpm blocks dependency lifecycle scripts unless they are approved here.
 # An empty allow-list is deliberate: a project that rejected gray-matter over an
 # RCE should not hand arbitrary postinstall execution to its own dependency
