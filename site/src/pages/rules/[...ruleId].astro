@@ -2,7 +2,7 @@
 import { getCollection, render } from "astro:content";
 import Layout, { REPO } from "../../layouts/Layout.astro";
 import RuleFacts from "../../components/RuleFacts.astro";
-import { AUTHOR, ruleCoreTitle } from "../../lib/seo.ts";
+import { PERSON, ruleCoreTitle } from "../../lib/seo.ts";
 import { resourceUrls } from "../../lib/citations.ts";
 import { modifiedDate, ruleCommitDates } from "../../lib/lastmod.ts";
 
@@ -27,7 +27,6 @@ const sourceUrl = `${REPO}/blob/main/content/rules/${data.ruleId}.md`;
 const namespace = data.ruleId.split("/")[0]!;
 
 const url = new URL(`/rules/${data.ruleId}`, Astro.site).href;
-const person = { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url };
 
 // The rule as an article, plus the visible breadcrumb. `citation` carries the
 // sources every rule is required to have; that is the site's point.
@@ -41,7 +40,7 @@ const jsonLd = {
       url,
       datePublished: data.pubDate.toISOString(),
       dateModified: `${modified}T00:00:00.000Z`,
-      author: person,
+      author: PERSON,
       citation: resourceUrls(rule.body ?? ""),
     },
     {

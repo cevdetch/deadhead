@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { replaceFigures } from "../../lib/figures.ts";
 import { getPosts } from "../../lib/posts.ts";
 import { loadResults } from "../../lib/results.ts";
-import { AUTHOR } from "../../lib/seo.ts";
+import { AUTHOR, PERSON } from "../../lib/seo.ts";
 
 export async function getStaticPaths() {
   return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
@@ -26,7 +26,7 @@ const jsonLd = {
   url,
   datePublished: data.pubDate.toISOString(),
   dateModified: modified.toISOString(),
-  author: { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url },
+  author: PERSON,
   ...(data.results === undefined ? {} : { isBasedOn: new URL(`/data/${data.results}`, Astro.site).href }),
 };
 ---
