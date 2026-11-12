@@ -100,4 +100,17 @@ const topics = defineCollection({
     .strict(),
 });
 
-export const collections = { rules, posts, topics };
+/**
+ * Impact introductions, `content/impacts/<impact>.md`, the same shape as the
+ * topic ones and rendered the same way on `/impacts/<impact>`.
+ */
+const impacts = defineCollection({
+  loader: glob({ pattern: "*.md", base: "../content/impacts" }),
+  schema: z
+    .object({
+      description: z.string().min(50).max(160),
+    })
+    .strict(),
+});
+
+export const collections = { rules, posts, topics, impacts };

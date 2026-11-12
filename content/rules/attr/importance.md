@@ -21,29 +21,67 @@ related: ["attr/fetchpriority-value", "attr/img-fetchpriority-loading"]
 trials, and the feature shipped as `fetchpriority`. A page still carrying `importance="high"`
 gets the default priority.
 
+Priority Hints began as a WICG proposal. Chrome ran it as an origin trial in 2018 and again from
+Chrome 96 to 99, with `importance` on elements and an `importance` member in `fetch()` options.
+Before shipping, the HTML attribute became `fetchpriority` and the `fetch()` option became
+`priority`. Chrome 101 shipped the renamed feature, and the trial tokens that enabled the old
+name have expired.
+
 ## Why avoid
 
 The blink-dev "Intent to Ship: Priority Hints": "The only change during the spec process was a
 name change of the HTML/fetch attributes from "importance" to "fetchpriority" and "priority"."
 Chromium's list of HTML attribute names carries `fetchpriority` and no `importance`, and the
-HTML Standard defines `fetchpriority` alone. Firefox and Safari shipped `fetchpriority` and never
-`importance`.
+HTML Standard defines `fetchpriority` alone. Firefox and Safari shipped `fetchpriority` and
+never `importance`.
+
+The attribute is now an unknown one. The parser keeps it in the DOM, no fetch reads it, and no
+`importance` property exists on `HTMLImageElement` or its siblings. Validators report it as an
+attribute the element does not allow.
+
+The risk is the intent it hides. A page that put `importance="high"` on its hero image during
+the trial wanted that image early, and still loads it at the default priority. web.dev describes
+Chrome starting images at "Low" priority and boosting those in the viewport at layout time; the
+hint was there to skip that wait. Anyone reading the markup sees a priority that is not in
+effect.
 
 ## Use instead
 
+Where the hint still matters, write the same keyword under the shipped name. `high`, `low` and
+`auto` carried over unchanged:
+
 ```html
+<!-- Before: no browser reads importance -->
+<img src="/hero.jpg" importance="high" alt="Roses in bloom">
+<script src="/analytics.js" async importance="low"></script>
+
+<!-- After -->
 <img src="/hero.jpg" fetchpriority="high" alt="Roses in bloom">
+<script src="/analytics.js" async fetchpriority="low"></script>
 ```
+
+Check each hint before carrying it over. MDN advises using `fetchpriority` sparingly, and a
+`high` written during the trial can point at an image that is no longer the page's largest. In
+script, rename the option: `fetch(url, { priority: "low" })`.
+
+On an `<iframe>` there is nothing to rename to. The HTML Standard defines `fetchpriority` on
+`<img>`, `<link>` and `<script>` alone; delete the attribute. For a below-the-fold frame,
+`loading="lazy"` defers the fetch.
 
 ## Detectability
 
 Detectable with one selector: `importance` on `img`, `link`, `script` or `iframe`, the elements
-the origin trial covered, with any value. The fix removes the attribute, which no browser reads,
-so no fetch changes. It does not add `fetchpriority`: that is the author's call.
+the origin trial covered, with any value. The CLI, the bookmarklet and the ESLint plugin report
+the same findings, and none skips. The fix removes the attribute, which no browser reads, so no
+fetch changes. It does not add `fetchpriority`: that is the author's call, and on an `<iframe>`
+there is no equivalent. A `fetch()` call with `importance` in its options is script, outside the
+reach of an HTML linter.
 
 ## Resources
 
-- [blink-dev: Intent to Ship: Priority Hints](https://groups.google.com/a/chromium.org/g/blink-dev/c/WS_ZBvTyvM4): the rename from `importance` to `fetchpriority` before shipping.
+- [blink-dev: Intent to Ship: Priority Hints](https://groups.google.com/a/chromium.org/g/blink-dev/c/WS_ZBvTyvM4): the rename from `importance` to `fetchpriority` and `priority` before shipping; the origin trial from Chrome 96 to 99.
+- [Chrome Platform Status: Fetch Priority](https://chromestatus.com/feature/5273474901737472): shipped in Chrome 101 on desktop, Android and WebView.
 - [Chromium: html_attribute_names.json5](https://github.com/chromium/chromium/blob/main/third_party/blink/renderer/core/html/html_attribute_names.json5): `fetchpriority` is a known attribute; `importance` is not.
-- [web.dev: Fetch Priority API](https://web.dev/articles/fetch-priority): the 2018 and 2021 origin trials "using the importance attribute".
-- [HTML Standard: fetch priority attributes](https://html.spec.whatwg.org/multipage/urls-and-fetching.html#fetch-priority-attributes): the standard name is `fetchpriority`.
+- [web.dev: Fetch Priority API](https://web.dev/articles/fetch-priority): the 2018 and 2021 origin trials "using the importance attribute"; images "start at 'Low' priority by default".
+- [HTML Standard: fetch priority attributes](https://html.spec.whatwg.org/multipage/urls-and-fetching.html#fetch-priority-attributes): the standard name is `fetchpriority`, on `link`, `img` and `script`.
+- [MDN: fetchpriority](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/fetchpriority): the three keywords, the supported elements, and "should be used sparingly".
