@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import RuleGroup from "../../components/RuleGroup.astro";
 import { groupRules } from "../../lib/group.ts";
@@ -9,12 +9,25 @@ import type { Impact } from "../../../../packages/core/vocabulary.ts";
 
 export async function getStaticPaths() {
   const byImpact = groupRules(await getCollection("rules"), (rule) => rule.data.impacts);
-  return [...byImpact].map(([impact, rules]) => ({ params: { impact }, props: { impact, rules } }));
+  const intros = new Map((await getCollection("impacts")).map((entry) => [entry.id, entry]));
+  const orphans = [...intros.keys()].filter((id) => !byImpact.has(id as Impact));
+  if (orphans.length > 0) throw new Error(`content/impacts: no rule carries the impact ${orphans.join(", ")}`);
+  return [...byImpact].map(([impact, rules]) => ({ params: { impact }, props: { impact, rules, intro: intros.get(impact) } }));
 }
 
-const { impact, rules } = Astro.props as { impact: Impact; rules: CollectionEntry<"rules">[] };
+const { impact, rules, intro } = Astro.props as {
+  impact: Impact;
+  rules: CollectionEntry<"rules">[];
+  intro: CollectionEntry<"impacts"> | undefined;
+};
+const Intro = intro === undefined ? undefined : (await render(intro)).Content;
 ---
 
-<Layout title={`${impactLabels[impact]} impact: ${rules.length} HTML lint rules`} description={impactBlurbs[impact]}>
-  <RuleGroup back={{ href: "/impacts", label: "impacts" }} heading={impactLabels[impact]} blurb={impactBlurbs[impact]} rules={rules} />
+<Layout
+  title={`${impactLabels[impact]} impact: ${rules.length} HTML lint rules`}
+  description={intro?.data.description ?? impactBlurbs[impact]}
+>
+  <RuleGroup back={{ href: "/impacts", label: "impacts" }} heading={impactLabels[impact]} blurb={impactBlurbs[impact]} rules={rules}>
+    {Intro && <Intro />}
+  </RuleGroup>
 </Layout>
