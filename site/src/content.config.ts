@@ -84,4 +84,33 @@ const posts = defineCollection({
     .strict(),
 });
 
-export const collections = { rules, posts };
+/**
+ * Topic introductions, `content/topics/<tag>.md`, read in place like the
+ * rules. The body opens `/topics/<tag>` above its rule list, and
+ * `description` becomes that page's meta description. A topic without a file
+ * keeps its one-line blurb. The topic page fails the build on a file whose
+ * name is no tag a rule carries, so a typo cannot publish nothing.
+ */
+const topics = defineCollection({
+  loader: glob({ pattern: "*.md", base: "../content/topics" }),
+  schema: z
+    .object({
+      description: z.string().min(50).max(160),
+    })
+    .strict(),
+});
+
+/**
+ * Impact introductions, `content/impacts/<impact>.md`, the same shape as the
+ * topic ones and rendered the same way on `/impacts/<impact>`.
+ */
+const impacts = defineCollection({
+  loader: glob({ pattern: "*.md", base: "../content/impacts" }),
+  schema: z
+    .object({
+      description: z.string().min(50).max(160),
+    })
+    .strict(),
+});
+
+export const collections = { rules, posts, topics, impacts };

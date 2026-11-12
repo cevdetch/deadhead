@@ -56,6 +56,7 @@ const defaultPages = (): Record<string, string> => ({
   "llms.txt": "# deadhead\n\n> A linter.\n\n## meta/\n\n- [meta/a](https://deadhead.cevdet.ch/rules/meta/a.md): a rule.\n",
   "llms-full.txt": "# deadhead\n\n# Rule meta/a\n",
   "rules/meta/a.md": "# Rule meta/a\n\n> A synthetic rule.\n",
+  _headers: '/_astro/*\n  Cache-Control: public, max-age=31536000, immutable\n/rules/*.md\n  Link: <https://deadhead.cevdet.ch/rules/:splat>; rel="canonical"\n',
 });
 
 async function runGate(pages: Record<string, string>): Promise<{ status: number | null; out: string }> {
@@ -183,4 +184,18 @@ test("fails a TechArticle date without a time zone", async () => {
   const { status, out } = await runGate(pages);
   assert.equal(status, 1);
   assert.match(out, /rules\/meta\/a\.html: TechArticle dateModified is not a datetime with a time zone: 2026-09-29/);
+});
+
+test("fails a _headers without the canonical Link for markdown copies", async () => {
+  for (const headers of [
+    "/_astro/*\n  Cache-Control: public, max-age=31536000, immutable\n",
+    // The header under another path's block does not count.
+    '/rules/*.md\n/_astro/*\n  Link: <https://deadhead.cevdet.ch/rules/:splat>; rel="canonical"\n',
+  ]) {
+    const pages = defaultPages();
+    pages["_headers"] = headers;
+    const { status, out } = await runGate(pages);
+    assert.equal(status, 1);
+    assert.match(out, /_headers: \/rules\/\*\.md lacks "Link: <https:\/\/deadhead\.cevdet\.ch\/rules\/:splat>; rel="canonical""/);
+  }
 });
