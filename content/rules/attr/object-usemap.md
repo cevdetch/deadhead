@@ -17,31 +17,57 @@ impacts: ["maintainability"]
 related: ["attr/input-ismap-usemap"]
 ---
 
-`usemap` on `object` points at a map no engine consults. WHATWG lists the attribute as obsolete with one replacement, the `img` element, and engines deleted the `object` map path outright, so the pointer is dead weight on every object that carries it.
+`usemap` on `object` points at a map that browsers no longer apply there. The HTML Standard
+lists the attribute as obsolete with one replacement: "Use the img element for image maps."
+
+HTML 4.01 allowed `usemap` on `IMG`, `INPUT` and `OBJECT`, from the period when `<object>` was
+meant to become the general way to embed anything, images included. Client-side image maps
+stayed with `<img>` in practice, and HTML5 kept them there.
 
 ## Why avoid
 
-WHATWG lists it as obsolete with one replacement. Section 16.2 names `usemap` on `object` elements as obsolete: use the `img` element for image maps. The attribute survived from an era when `object` could embed images; client maps now belong to `img`, whose map path every browser implements.
+The HTML Standard's image map processing model starts "If an img element has a usemap attribute
+specified", and covers no other element. Its list of non-conforming features names `usemap` on
+`object` and on `input` elements together: "Use the img element for image maps." A `useMap` IDL
+attribute remains on `HTMLObjectElement` for script, and MDN marks it deprecated.
 
-Engines deleted it outright. MDN badges `HTMLObjectElement.useMap` Deprecated. Chrome and Safari skip `object` maps, Firefox removed support for `object` and `input` maps, and the web-platform tests deleted the `object` map cases. A `usemap` value on `object` points at a map no engine consults, while the object itself renders or falls back as it would without it.
+The map does nothing in Chrome. In a probe on 2026-11-12, Chrome 156 hit-tested the `<area>` of
+a map attached to an `<img>`, and the `<object>` itself for the same kind of map attached to an
+`<object>`: the areas were not there to click. Firefox's support is less clear: Mozilla bug
+392994, "Remove support for `<input usemap>` and `<object usemap>`", is still open. A page that
+relies on the map works in one engine at most, and the standard defines no behaviour for it.
 
 ## Use instead
 
-Move the map to `img`, where the map path works:
+Move the image and its map to `img`, where every browser applies it:
 
 ```html
+<!-- Before -->
+<object data="shapes.png" type="image/png" usemap="#shapes">
+  <p>Fallback content.</p>
+</object>
+
+<!-- After -->
 <img src="shapes.png" usemap="#shapes" alt="Shapes">
 <map name="shapes">
   <area shape="rect" coords="25,25,125,125" href="red.html" alt="Red box">
 </map>
 ```
 
+Each `<area>` needs `alt` text, since it is a link with no other label. For an SVG image, links
+inside the SVG itself (`<a>` around shapes) do the job of a map and scale with the image.
+
 ## Detectability
 
-Complete detection. The rule matches `object[usemap]`: presence of the attribute is the whole verdict, so no logic module exists. The selector names the fix attribute itself, so the single `remove-attribute` fix covers every finding with no remainder.
+Detectable with one selector: `object[usemap]`. Presence of the attribute is the whole verdict,
+so no logic module exists. The CLI, the bookmarklet and the ESLint plugin report the same
+findings, and none skips. The autofix removes the attribute and leaves the `<object>` and the
+`<map>` alone; moving the image to `<img>` is the author's change. `attr/input-ismap-usemap`
+covers the same attribute on `input`.
 
 ## Resources
 
-- [WHATWG: Non-conforming features](https://html.spec.whatwg.org/multipage/obsolete.html): `usemap` on `object` is obsolete: use the `img` element for image maps.
-- [MDN: `HTMLObjectElement.useMap`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLObjectElement/useMap): badges the member Deprecated.
-- [Mozilla bug 392994](https://bugzilla.mozilla.org/show_bug.cgi?id=392994): removed support for `usemap` on `object` and `input` elements.
+- [HTML Standard: non-conforming features](https://html.spec.whatwg.org/multipage/obsolete.html#non-conforming-features): `usemap` on `input` and `object` elements, "Use the img element for image maps."
+- [HTML Standard: image maps](https://html.spec.whatwg.org/multipage/image-maps.html#image-map-processing-model): the processing model applies to `img` elements with `usemap`.
+- [MDN: `HTMLObjectElement.useMap`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLObjectElement/useMap): marked deprecated.
+- [Mozilla bug 392994](https://bugzilla.mozilla.org/show_bug.cgi?id=392994): "Remove support for `<input usemap>` and `<object usemap>`", open.
