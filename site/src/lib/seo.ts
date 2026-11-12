@@ -5,8 +5,19 @@ import type { Severity, Status } from "../../../packages/core/vocabulary.ts";
 
 export const SITE_NAME = "deadhead";
 
-/** The person behind the site, for JSON-LD `author` and `publisher`. */
-export const AUTHOR = { name: "Cevdet", url: "https://github.com/cevdetch" } as const;
+/** The person behind the site, for bylines, the feed and JSON-LD. */
+export const AUTHOR = { name: "Cevdet", url: "https://cevdet.ch/" } as const;
+
+/**
+ * JSON-LD `author` and `publisher`: a reference to the Person that
+ * cevdet.ch defines in full, so every site of the author's names one node.
+ */
+export const PERSON = {
+  "@type": "Person",
+  "@id": "https://cevdet.ch/#person",
+  name: AUTHOR.name,
+  url: AUTHOR.url,
+} as const;
 const MAX = 60;
 
 /** The core title plus the brand when both fit in 60 characters; the core alone otherwise. Never truncated. */

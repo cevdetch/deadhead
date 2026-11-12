@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import Layout, { REPO } from "../layouts/Layout.astro";
 import RuleList from "../components/RuleList.astro";
 import { getPosts } from "../lib/posts.ts";
-import { AUTHOR, SITE_NAME } from "../lib/seo.ts";
+import { PERSON, SITE_NAME } from "../lib/seo.ts";
 import { namespaceBlurbs } from "../vocabulary.ts";
 
 const rules = await getCollection("rules");
@@ -48,7 +48,7 @@ const jsonLd = {
   url: new URL("/", Astro.site).href,
   description,
   inLanguage: "en",
-  publisher: { "@type": "Person", name: AUTHOR.name, url: AUTHOR.url },
+  publisher: PERSON,
 };
 ---
 
