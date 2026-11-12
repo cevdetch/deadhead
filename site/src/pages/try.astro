@@ -1,5 +1,8 @@
 ---
+import { getCollection } from "astro:content";
 import Layout from "../layouts/Layout.astro";
+
+const ruleCount = (await getCollection("rules")).length;
 
 // Runs automatically on first visit, like shared links and bookmarklet handoffs.
 const example = `<!doctype html>
@@ -52,7 +55,7 @@ const example = `<!doctype html>
       <small><kbd>Ctrl</kbd> + <kbd>Enter</kbd> lints</small>
     </div>
   </form>
-  <p><small>Links hold up to 10 MiB of HTML. Open larger files directly.</small></p>
+  <p><small>Share links hold up to 16,000 characters of compressed HTML. Open larger files directly.</small></p>
   <noscript><p>The linter runs in your browser and needs JavaScript. The CLI does the same offline: see <a href="/install">Install</a>.</p></noscript>
   <section id="try-report" aria-label="Lint report">
     <p id="try-from" hidden></p>
@@ -64,6 +67,58 @@ const example = `<!doctype html>
       <p><button id="try-copy" type="button">Copy HTML</button></p>
     </details>
   </section>
+
+  <h2>What it checks</h2>
+  <p>
+    This page runs the CLI's own lint path in your browser: the same HTML parser
+    and all {ruleCount} rules at their default settings. A finding here is one{" "}
+    <code>npx deadhead</code> reports for the same file. Each lists the rule, the
+    line and column, the severity, the markup found and what to write instead,
+    and the rule id links to the page that explains it, with sources.
+  </p>
+  <p>
+    HTML with a doctype or an <code>&lt;html&gt;</code> tag is checked as a page.
+    Anything else is a fragment, such as a layout partial, and is checked for the
+    markup it holds, never for head content it lacks.
+  </p>
+
+  <h2>How to use it</h2>
+  <ul>
+    <li>
+      Paste HTML and press Lint, or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>{" "}
+      (<kbd>⌘</kbd> + <kbd>Enter</kbd> on a Mac). The example above runs on your
+      first visit.
+    </li>
+    <li>Open a file to load it and lint it in one step.</li>
+    <li>
+      Findings marked "Automatic fix" are removed in{" "}
+      <em>HTML after automatic fixes</em>, which holds the file as{" "}
+      <code>deadhead --fix</code> would write it.
+    </li>
+    <li>
+      Copy link compresses the HTML into the address and copies it. Whoever opens
+      the link gets the same report.
+    </li>
+    <li>
+      The <a href="/install#bookmarklet">bookmarklet</a>'s full report button
+      opens this page with the page you were on: its HTML as the server sent it,
+      or the rendered DOM when that copy cannot be read.
+    </li>
+  </ul>
+
+  <h2>Your HTML stays in your browser</h2>
+  <p>
+    The linter and its rules load with this page, and linting runs on your
+    machine. Nothing you paste is uploaded or stored. A share link carries the
+    HTML after the <code>#</code>, in the fragment, which browsers do not send to
+    servers, and the bookmarklet hands a page over the same way. The HTML leaves
+    your machine only when you send someone the link.
+  </p>
+  <p>
+    To check a whole site, in CI or as you develop, <a href="/install">install the
+    CLI or the Vite plugin</a>. Browse what it checks{" "}
+    <a href="/rules">by namespace</a> or <a href="/topics">by topic</a>.
+  </p>
 </Layout>
 
 <script>

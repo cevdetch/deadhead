@@ -15,6 +15,14 @@ const day = (date: Date) => date.toISOString().slice(0, 10);
 <Layout title="Blog" description="Measurements of what the web ships in its head, with the data behind every number and a rule page behind every finding.">
   <link slot="head" rel="alternate" type="application/atom+xml" title="deadhead blog" href="/blog/feed.xml" />
   <h1>Blog</h1>
+  <p class="lede">What the web ships in its head, measured, and what changes in deadhead.</p>
+  <p>
+    Measurement posts run deadhead over real pages, such as the home pages of the
+    10,000 most visited sites, and publish the data behind every number: each
+    figure is read from the data file when the page is built, and each rule named
+    links to its page and sources. Release posts explain a new feature, what it
+    checks and how to set it up.
+  </p>
   <ul>
     {posts.map((post) => (
       <li>
@@ -23,5 +31,5 @@ const day = (date: Date) => date.toISOString().slice(0, 10);
       </li>
     ))}
   </ul>
-  <p><a href="/blog/feed.xml">Atom feed</a></p>
+  <p>New posts appear in the <a href="/blog/feed.xml">Atom feed</a>.</p>
 </Layout>
