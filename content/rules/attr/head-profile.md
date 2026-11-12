@@ -17,35 +17,65 @@ impacts: ["maintainability"]
 related: ["attr/meta-scheme"]
 ---
 
-`profile` on `head` points at nothing that reads it. WHATWG calls the attribute unnecessary with its IDL "intentionally omitted", so no implementation supports it, and the W3C version splits the replacement by intent: registered names for meta terms, `link` elements for behaviors.
+`profile` on `head` points at nothing that reads it. The HTML Standard calls the attribute
+unnecessary, and says its IDL attribute is "intentionally omitted", so implementations "would
+therefore not support this attribute".
+
+HTML 4.01 introduced it for metadata. A profile was "a reference lexicon" that defined which
+`meta` names a page used and what their values meant, and `profile` on `head` pointed at it: "a
+profile designed to help search engines index documents might define properties such as
+"author", "copyright", "keywords"". Microformats later reused the attribute to announce which
+formats a page contained, as in `<head profile="http://gmpg.org/xfn/11">` for XFN. Neither use
+was ever read by a browser.
 
 ## Why avoid
 
-WHATWG buries it in one line. Section 16.2 names `profile` on `head` elements as unnecessary: omit it altogether. The IDL member is "intentionally omitted", so implementations would not support the attribute at all. A `profile` URI that names a metadata vocabulary changes nothing about how the page parses; one that names a behavior profile triggers nothing.
+The HTML Standard's list of non-conforming features names `profile` on `head` elements:
+"Unnecessary. Omit it altogether." For implementations it adds: "The profile IDL attribute on
+head elements (with the HTMLHeadElement interface) is intentionally omitted. Unless so required
+by another applicable specification, implementations would therefore not support this
+attribute." There is no `head.profile` for script, and no processing for the URI.
 
-The W3C version splits the replacement by intent. Where the attribute declares which meta terms the document uses, it is unnecessary: omit it and register the names. Where it triggers specific user-agent behaviors, use a `link` element instead. Either intent has a live mechanism; the attribute serves neither.
+The W3C HTML5 Recommendation split the replacement by intent. Where the attribute declared which
+meta terms the document used, it was unnecessary: register the names. Where it was meant to
+trigger behaviour in a user agent, use a `link` element. Either intent has a live mechanism; the
+attribute serves neither. The microformats community made the same move and documents
+`rel="profile"` links as its replacement for HTML5, where `<head profile>` is gone.
 
 ## Use instead
 
-Drop the attribute and register the names the metadata uses:
+Delete the attribute. Keep `meta` names that are standard or registered, so that their meaning
+does not depend on a profile:
 
 ```html
+<!-- Before -->
+<head profile="http://gmpg.org/xfn/11">
+  <meta name="author" content="Example">
+</head>
+
+<!-- After -->
 <head>
   <meta name="author" content="Example">
 </head>
 ```
 
-Trigger behaviors with link elements:
-
-```html
-<link href="behaviors.css" rel="stylesheet">
-```
+The HTML Standard defines a few names itself (`application-name`, `author`, `description`,
+`generator`, `keywords`, `referrer`, `theme-color`, `color-scheme`) and points to the WHATWG
+wiki's MetaExtensions page for others, which anyone can edit to record a name. Where a profile
+announced a vocabulary to a consumer that still exists, structured data with its own context,
+such as JSON-LD with a schema.org `@context`, carries that declaration inside the data.
 
 ## Detectability
 
-Complete detection. The rule matches `head[profile]`: presence of the attribute is the whole verdict, so no logic module exists. The selector names the fix attribute itself, so the single `remove-attribute` fix covers every finding with no remainder.
+Detectable with one selector: `head[profile]`. Presence of the attribute is the whole verdict,
+so no logic module exists. The CLI, the bookmarklet and the ESLint plugin report the same
+findings, and none skips. The autofix removes the attribute, which no browser reads, so nothing
+changes.
 
 ## Resources
 
-- [WHATWG: Non-conforming features](https://html.spec.whatwg.org/multipage/obsolete.html): `profile` on `head` is unnecessary with its IDL "intentionally omitted".
-- [W3C HTML5: Obsolete features](https://www.w3.org/TR/2014/REC-html5-20141028/obsolete.html): unnecessary for declaring meta terms with names registered instead, and `link` for behaviors.
+- [HTML Standard: non-conforming features](https://html.spec.whatwg.org/multipage/obsolete.html#non-conforming-features): `profile` on `head` elements, "Unnecessary. Omit it altogether."; the IDL attribute "is intentionally omitted".
+- [HTML 4.01: the HEAD element](https://www.w3.org/TR/html401/struct/global.html#adef-profile): the `profile` attribute, and the "reference lexicon" a profile names.
+- [microformats wiki: profile URIs](https://microformats.org/wiki/profile-uris): `<head profile>` for HTML 4 and XHTML 1, and `rel="profile"` links for HTML5.
+- [W3C HTML5: obsolete features](https://www.w3.org/TR/2014/REC-html5-20141028/obsolete.html): unnecessary for declaring meta terms, with names registered instead, and `link` for behaviours.
+- [HTML Standard: standard metadata names](https://html.spec.whatwg.org/multipage/semantics.html#standard-metadata-names): the names HTML defines; "consulting the WHATWG Wiki MetaExtensions page is encouraged" for others.
