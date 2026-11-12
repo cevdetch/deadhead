@@ -17,38 +17,54 @@ impacts: ["maintainability"]
 related: []
 ---
 
-`<meta scheme>` is dead: user agents are encouraged to ignore it. Drop the qualifier and keep the `name`/`content` pair.
+`<meta scheme>` names the format of a `content` value, and no browser reads it. The HTML
+Standard lists it as non-conforming. Drop the qualifier and keep the `name`/`content` pair.
+
+`scheme` came with HTML 4.01's metadata profiles. A `<meta name="identifier" scheme="ISBN">`
+told a reader which encoding the value used, so that the same name could hold an ISBN on one
+page and a URN on another. Dublin Core's HTML conventions and government metadata standards such
+as the UK's eGMS used it in that sense, read by their own harvesters, not by browsers.
 
 ## Why avoid
 
-The HTML Standard lists `scheme` on `meta` as non-conforming and tells authors not to use it.
+The HTML Standard lists `scheme` on `meta` elements as obsolete, with its replacement: "Use only
+one scheme per field, or make the scheme declaration part of the value." For implementations it
+adds that user agents "are encouraged to ignore the scheme attribute and instead process the
+value given to the metadata name as if it had been specified for each expected value of the
+scheme attribute". A `scheme` IDL attribute remains on `HTMLMetaElement` for script, and MDN
+marks it deprecated.
 
-User agents are encouraged to ignore it, so it has no effect in browsers.
-
-Validators flag it as a conformance error, so it adds noise to validation.
-
-No browser reads it; the Dublin Core pattern it served lives outside browsers.
+Nothing in a browser changes with or without it, and validators report it as a conformance
+error. The metadata it qualifies is only as useful as the reader that understands the name; for
+that reader, a value that carries its own format is easier to parse than a pair of attributes.
 
 ## Use instead
 
-Drop the qualifier and keep the pair:
+Drop the qualifier. Where a reader needs the format, give the field a name that implies one
+scheme, or put the scheme into the value:
 
 ```html
-<meta name="identifier" content="1580081754">
+<!-- Before -->
+<meta name="identifier" content="1580081754" scheme="ISBN">
+
+<!-- After: the format is part of the value -->
+<meta name="identifier" content="urn:isbn:1580081754">
 ```
 
-Fold the scheme into the `content` value where a reader needs the format.
+For metadata that search engines and other consumers read today, structured data such as JSON-LD
+with a schema.org type carries the format in its property names, for example `isbn` on a `Book`.
+`meta/dublin-core-without-schema` covers Dublin Core names that rely on a profile.
 
 ## Detectability
 
-The rule catches each case. It reports each `meta` with a `scheme` attribute, and skips all else.
-
-Matching tests presence alone: any `scheme` value trips the rule, whatever the string.
-
-The fix removes the `scheme` attribute and the whitespace before it. The `name`/`content` pair stays, so the metadata survives.
+Detectable with one selector: `meta[scheme]`. Any value trips the rule, whatever the string. The
+CLI, the bookmarklet and the ESLint plugin report the same findings, and none skips. The fix
+removes the `scheme` attribute and the whitespace before it. The `name`/`content` pair stays, so
+the metadata survives; folding the scheme into the value is a change for the author to make.
 
 ## Resources
 
-- [WHATWG HTML: scheme on meta](https://html.spec.whatwg.org/multipage/obsolete.html#attr-meta-scheme): lists the attribute as non-conforming for authors and gives the one-scheme-per-field guidance.
-- [MDN: HTMLMetaElement.scheme](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMetaElement/scheme): badges the property Deprecated, tells authors not to use it on new pages, and cites the WHATWG section.
-- [W3C HTML5: meta](https://www.w3.org/TR/2011/WD-html-markup-20110113/meta.html): calls the scheme attribute obsolete and quotes the make-the-scheme-declaration-part-of-the-value guidance.
+- [HTML Standard: `scheme` on `meta`](https://html.spec.whatwg.org/multipage/obsolete.html#attr-meta-scheme): "Use only one scheme per field, or make the scheme declaration part of the value"; user agents "are encouraged to ignore the scheme attribute".
+- [DCMI: Expressing Dublin Core metadata using HTML/XHTML meta and link elements (2008)](https://www.dublincore.org/specifications/dublin-core/dc-html/2008-08-04/): examples such as `<meta name="DCTERMS.modified" scheme="XSD.date" content="2007-07-22">`.
+- [MDN: `HTMLMetaElement.scheme`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMetaElement/scheme): marked deprecated, not for new pages.
+- [W3C HTML markup: meta](https://www.w3.org/TR/2011/WD-html-markup-20110113/meta.html): the `scheme` attribute is obsolete, with the make-the-scheme-part-of-the-value guidance.

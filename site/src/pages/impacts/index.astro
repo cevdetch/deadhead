@@ -10,6 +10,30 @@ const impacts = [...groupRules(await getCollection("rules"), (rule) => rule.data
 <Layout title="HTML lint rules by impact" description="Every deadhead rule, grouped by what the markup costs: performance, interop, accessibility, SEO, security or upkeep.">
     <h1>Impacts</h1>
     <p class="lede">What leaving the markup in place costs. A rule can have more than one impact.</p>
+    <p>
+      Every rule records two separate things about its markup. Severity says how bad the
+      finding is: <strong>harmful</strong> breaks something for users, <strong>deprecated</strong>{" "}
+      is formally obsolete but inert, <strong>unnecessary</strong> works but is dead weight.
+      Impact says who pays for it: visitors waiting on a slow load, browsers that disagree,
+      people using assistive technology, search engines, the page's security, or the people who
+      maintain it.
+    </p>
+    <p>
+      The two do not line up neatly. Most harmful rules cost accessibility, search, security or
+      performance, because those are where markup can fail someone. Most deprecated and
+      unnecessary rules cost maintenance alone: nothing behaves differently with them, but
+      someone has to understand them before deleting them. A rule can carry several impacts,
+      such as an <code>http-equiv="refresh"</code> that moves readers on a timer, which matters
+      for accessibility, search and security at once.
+    </p>
+    <p>
+      Each impact page explains what that cost looks like in the head and lists its rules,
+      worst first. Use them to review one concern at a time, for example the{" "}
+      <a href="/impacts/a11y">accessibility</a> rules in an accessibility review or the{" "}
+      <a href="/impacts/seo">SEO</a> rules before a launch. The same rules are grouped by
+      namespace in the <a href="/rules">rule index</a> and by feature under{" "}
+      <a href="/topics">topics</a>.
+    </p>
     <ul class="rules">
       {impacts.map(([impact, list]) => (
         <li>
