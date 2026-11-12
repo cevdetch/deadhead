@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
+import { SITE_URL } from "../packages/core/vocabulary.ts";
 import { modifiedDate, ruleCommitDates } from "./src/lib/lastmod.ts";
 
 // Sitemap `lastmod` per rule: the later of its `pubDate` frontmatter and the
@@ -67,8 +68,20 @@ export default defineConfig({
       hooks: {
         "astro:build:done": async ({ dir }) => {
           const { writeFile } = await import("node:fs/promises");
-          // Hashed build assets never change under the same name.
-          await writeFile(new URL("_headers", dir), "/_astro/*\n  Cache-Control: public, max-age=31536000, immutable\n");
+          // Hashed build assets never change under the same name. A rule's
+          // markdown copy names its HTML page as canonical, so search engines
+          // index the page and not the copy; Cloudflare fills `:splat` with
+          // what `*` matched, the ruleId.
+          await writeFile(
+            new URL("_headers", dir),
+            [
+              "/_astro/*",
+              "  Cache-Control: public, max-age=31536000, immutable",
+              "/rules/*.md",
+              `  Link: <${SITE_URL}/rules/:splat>; rel="canonical"`,
+              "",
+            ].join("\n"),
+          );
         },
       },
     },
