@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import RuleGroup from "../../components/RuleGroup.astro";
 import { groupRules } from "../../lib/group.ts";
@@ -11,12 +11,25 @@ import type { Tag } from "../../../../packages/core/vocabulary.ts";
 // no page, rather than an empty one.
 export async function getStaticPaths() {
   const byTag = groupRules(await getCollection("rules"), (rule) => rule.data.tags);
-  return [...byTag].map(([tag, rules]) => ({ params: { tag }, props: { tag, rules } }));
+  const intros = new Map((await getCollection("topics")).map((entry) => [entry.id, entry]));
+  const orphans = [...intros.keys()].filter((id) => !byTag.has(id as Tag));
+  if (orphans.length > 0) throw new Error(`content/topics: no rule carries the tag ${orphans.join(", ")}`);
+  return [...byTag].map(([tag, rules]) => ({ params: { tag }, props: { tag, rules, intro: intros.get(tag) } }));
 }
 
-const { tag, rules } = Astro.props as { tag: Tag; rules: CollectionEntry<"rules">[] };
+const { tag, rules, intro } = Astro.props as {
+  tag: Tag;
+  rules: CollectionEntry<"rules">[];
+  intro: CollectionEntry<"topics"> | undefined;
+};
+const Intro = intro === undefined ? undefined : (await render(intro)).Content;
 ---
 
-<Layout title={`${tagLabels[tag]} HTML: ${rules.length} lint rules with sources`} description={tagBlurbs[tag]}>
-  <RuleGroup back={{ href: "/topics", label: "topics" }} heading={tagLabels[tag]} blurb={tagBlurbs[tag]} rules={rules} />
+<Layout
+  title={`${tagLabels[tag]} HTML: ${rules.length} lint rules with sources`}
+  description={intro?.data.description ?? tagBlurbs[tag]}
+>
+  <RuleGroup back={{ href: "/topics", label: "topics" }} heading={tagLabels[tag]} blurb={tagBlurbs[tag]} rules={rules}>
+    {Intro && <Intro />}
+  </RuleGroup>
 </Layout>

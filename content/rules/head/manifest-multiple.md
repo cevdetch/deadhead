@@ -17,47 +17,66 @@ impacts: ["maintainability"]
 related: ["head/base-multiple", "head/canonical-multiple"]
 ---
 
-A document uses one web app manifest: the first `<link rel="manifest">`. Each manifest link
-past the first trips this rule.
+A document uses one web app manifest: the first `<link rel="manifest">`. Each manifest link past
+the first trips this rule.
+
+The manifest is a JSON file that describes the site as an installable app: its name, icons,
+start URL, display mode and theme colour. Chrome and Edge read it for installation, Safari on
+iOS since 11.3 and on macOS since 17 for Home Screen and Dock apps, and Firefox on Android. A
+second link can come from two tools that each add one, such as a favicon generator's
+`site.webmanifest` beside a PWA plugin's `manifest.json`, or a site that renamed its file and
+kept the old link.
 
 ## Why avoid
 
-HTML's `manifest` link type: "In any case, only the first link element in tree order whose
-rel attribute contains the token manifest may be used." Chromium's `Document::LinkManifest()`
-walks the children of `<head>`, returns the first link whose `rel` holds `manifest`, and
-notes that "Others are ignored."
+HTML's `manifest` link type: "In any case, only the first link element in tree order whose rel
+attribute contains the token manifest may be used." Chromium's `Document::LinkManifest()` walks
+the children of `<head>`, returns the first link whose `rel` holds `manifest`, and notes that
+"Others are ignored."
 
-A second manifest link is never fetched, and an edit to it changes nothing. The first stays
-in force, so the page installs and runs as before; the extra is dead markup that invites
-edits in the wrong file.
+A second manifest link is never fetched, and an edit to it changes nothing. The first stays in
+force, so the page installs and runs as before; the extra is dead markup that invites edits in
+the wrong file. When the two files differ, the one in use is decided by source order, not by
+which file is newer or more complete: an icon or name added to the second manifest never reaches
+the installed app, and the cause is hard to see from the files alone.
 
 ## Use instead
 
-One manifest link:
+One manifest link, pointing at the file that holds every field the app needs:
 
 ```html
+<!-- Before: two tools each added a manifest -->
+<link rel="manifest" href="/site.webmanifest">
+<link rel="manifest" href="/manifest.json">
+
+<!-- After -->
 <link rel="manifest" href="/app.webmanifest">
 ```
 
-To serve a different manifest per locale or theme, change the one `href` on the server.
+Merge the two files before deleting a link: copy any icons, `name`, `short_name`, `start_url`,
+`display` or `theme_color` the surviving manifest lacks, then remove the other file and the tool
+setting that generates it. To serve a different manifest per locale or theme, change the one
+`href` on the server.
 
 ## Detectability
 
-Countable in one document pass, which is why this is a `kind: "document"` rule: no selector
-can count to two. The logic in `packages/rules/logic/head/manifest-multiple.ts` lists the
-links matching `link[rel~="manifest" i]` in tree order and reports each one past the first.
-It reads the tree, never source offsets, so it reports in all three adapters. An empty `href`
-belongs to `link/href-missing`.
+Countable in one document pass, which is why this is a `kind: "document"` rule: no selector can
+count to two. The logic in `packages/rules/logic/head/manifest-multiple.ts` lists the links
+matching `link[rel~="manifest" i]` in tree order and reports each one past the first. It reads
+the tree, never source offsets, so the CLI, the bookmarklet and the ESLint plugin report the
+same findings. A manifest link without `href` belongs to `link/href-missing`.
 
-Chromium looks at the children of `<head>` alone, so a manifest link in `<body>` is never
-used there, even when it comes first in tree order. The rule counts in tree order, as HTML
-does, and reports the later link in that case too.
+Chromium looks at the children of `<head>` alone, so a manifest link in `<body>` is never used
+there, even when it comes first in tree order. The rule counts in tree order, as HTML does, and
+reports the later link in that case too.
 
-The autofix removes a later link when every keyword in its `rel` is `manifest`. The check
-drops the fix for a link such as `rel="manifest icon"`, since removing it would take a
-working icon with it.
+The autofix removes a later link when every keyword in its `rel` is `manifest`. The check drops
+the fix for a link such as `rel="manifest icon"`, since removing it would take a working icon
+with it.
 
 ## Resources
 
 - [HTML Standard: link type "manifest"](https://html.spec.whatwg.org/multipage/links.html#link-type-manifest): "In any case, only the first link element in tree order whose rel attribute contains the token manifest may be used."
 - [Chromium: `Document::LinkManifest()` in `document.cc`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/dom/document.cc): the first `<head>` child link whose `rel` holds `manifest`, with "The first matching link element is used. Others are ignored."
+- [MDN: web app manifests](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest): the manifest's members and the `<link rel="manifest">` that points to it.
+- [MDN browser-compat-data: `html.elements.link.rel.manifest`](https://github.com/mdn/browser-compat-data/blob/main/html/elements/link.json): Chrome 39, Edge 79, Safari 17, Safari on iOS 11.3, Firefox for Android 58, no desktop Firefox.

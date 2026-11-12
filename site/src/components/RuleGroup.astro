@@ -10,9 +10,18 @@ interface Props {
 }
 
 const { back, heading, blurb, rules } = Astro.props;
+// An introduction, when the page passes one, sits between the lede and the
+// list, and the list gets a heading of its own.
+const intro = Astro.slots.has("default") ? await Astro.slots.render("default") : "";
 ---
 
 <nav aria-label="Breadcrumb"><a href={back.href}>{back.label}</a></nav>
 <h1>{heading}</h1>
 <p class="lede">{blurb}</p>
+{intro.trim() !== "" && (
+  <>
+    <Fragment set:html={intro} />
+    <h2>The {rules.length} rules</h2>
+  </>
+)}
 <RuleList rules={rules} />
