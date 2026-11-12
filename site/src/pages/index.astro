@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Layout, { REPO } from "../layouts/Layout.astro";
 import RuleList from "../components/RuleList.astro";
+import { getPosts } from "../lib/posts.ts";
 import { AUTHOR, SITE_NAME } from "../lib/seo.ts";
 import { namespaceBlurbs } from "../vocabulary.ts";
 
@@ -19,6 +20,10 @@ const namespaces = [...new Set(rules.map((r) => r.data.ruleId.split("/")[0]!))]
     count: rules.filter((r) => r.data.ruleId.startsWith(`${namespace}/`)).length,
     blurb: namespaceBlurbs[namespace] ?? "",
   }));
+
+// The latest posts, so a new one is linked from the home page the day it ships.
+const posts = (await getPosts()).slice(0, 3);
+const day = (date: Date) => date.toISOString().slice(0, 10);
 
 const sample = `$ npx deadhead dist
 
@@ -135,6 +140,22 @@ const jsonLd = {
     </p>
     <h3>Newest</h3>
     <RuleList rules={newest} />
+
+    {posts.length > 0 && (
+      <>
+        <h2>From the blog</h2>
+        <ul class="rules">
+          {posts.map((post) => (
+            <li>
+              <a href={`/blog/${post.id}`}>{post.data.title}</a>{" "}
+              <time datetime={day(post.data.pubDate)}>{day(post.data.pubDate)}</time>
+              <p>{post.data.description}</p>
+            </li>
+          ))}
+        </ul>
+        <p><a href="/blog">All posts</a></p>
+      </>
+    )}
 
     <h2>Get it</h2>
     <p>
