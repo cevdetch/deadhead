@@ -7,12 +7,14 @@ import sitemap from "@astrojs/sitemap";
 import { modifiedDate, ruleCommitDates } from "./src/lib/lastmod.ts";
 
 // Sitemap `lastmod` per rule: the later of its `pubDate` frontmatter and the
-// rule file's newest commit, so a revised rule signals the change. Read here
-// rather than in a content loader: the sitemap integration only sees final
-// URLs, so the config joins them.
+// rule file's newest commit, so a revised rule signals the change. Per post:
+// its `updatedDate`, else its `pubDate`. Read here rather than in a content
+// loader: the sitemap integration only sees final URLs, so the config joins
+// them.
 const contentRulesDir = fileURLToPath(new URL("../content/rules/", import.meta.url));
+const contentBlogDir = fileURLToPath(new URL("../content/blog/", import.meta.url));
 
-/** @returns {Map<string, string>} URL path (`/rules/<ruleId>`) to `YYYY-MM-DD`. */
+/** @returns {Map<string, string>} URL path (`/rules/<ruleId>`, `/blog/<slug>`) to `YYYY-MM-DD`. */
 function loadLastmod() {
   const committed = ruleCommitDates(process.cwd());
   const out = new Map();
@@ -28,6 +30,20 @@ function loadLastmod() {
     const body = readFileSync(join(contentRulesDir, file), "utf8");
     const match = /^pubDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body);
     if (match?.[1]) out.set(`/rules/${ruleId}`, modifiedDate(match[1], committed.get(ruleId)));
+  }
+  // A draft gets an entry too, but no page, so the sitemap never asks for it.
+  let posts = [];
+  try {
+    posts = readdirSync(contentBlogDir);
+  } catch {
+    return out;
+  }
+  for (const file of posts) {
+    if (!file.endsWith(".md")) continue;
+    const body = readFileSync(join(contentBlogDir, file), "utf8");
+    const updated = /^updatedDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body)?.[1];
+    const day = updated ?? /^pubDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body)?.[1];
+    if (day) out.set(`/blog/${file.replace(/\.md$/, "")}`, day);
   }
   return out;
 }
