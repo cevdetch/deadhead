@@ -6,6 +6,7 @@
  */
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { SITE_URL } from "../packages/core/vocabulary.ts";
 
 const dist = process.argv[2] ?? "site/dist";
 const problems: string[] = [];
@@ -150,6 +151,24 @@ for (const { path } of rulePages) {
   else if (!text.startsWith("# ")) problems.push(`${md}: must open with "# "`);
 }
 if ((await readText("llms-full.txt")) === null) problems.push("llms-full.txt: missing");
+
+// The markdown copies are duplicates of the rule pages, so the host sends a
+// canonical Link header pointing each one at its HTML page.
+const markdownCanonical = `Link: <${SITE_URL}/rules/:splat>; rel="canonical"`;
+const headers = await readText("_headers");
+const headerLines = (headers ?? "").split("\n");
+const mdBlock = headerLines.indexOf("/rules/*.md");
+const mdLines: string[] = [];
+if (mdBlock !== -1) {
+  // A block is its path line and the indented lines under it.
+  for (const line of headerLines.slice(mdBlock + 1)) {
+    if (!/^\s/.test(line)) break;
+    mdLines.push(line.trim());
+  }
+}
+if (!mdLines.includes(markdownCanonical)) {
+  problems.push(`_headers: /rules/*.md lacks "${markdownCanonical}"`);
+}
 
 for (const problem of problems) process.stdout.write(`✗ ${problem}\n`);
 if (problems.length === 0) process.stdout.write(`✓ SEO checks passed on ${pages.length} pages\n`);

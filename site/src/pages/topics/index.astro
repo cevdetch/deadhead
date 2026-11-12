@@ -12,6 +12,23 @@ const topics = [...groupRules(await getCollection("rules"), (rule) => rule.data.
 <Layout title="HTML lint rules by topic" description="Every deadhead rule, grouped by the feature area or platform it is about.">
     <h1>Topics</h1>
     <p class="lede">The feature area or platform each rule is about. A rule can sit in more than one topic.</p>
+    <p>
+      A rule id says where its markup lives: <code>meta/keywords</code> is a{" "}
+      <code>&lt;meta&gt;</code> name, <code>link/shortcut-icon</code> a link relation. Topics
+      cut across that. Favicons are spread over link relations and <code>&lt;meta&gt;</code>{" "}
+      names, a Content Security Policy is a <code>&lt;meta&gt;</code> tag with directives
+      inside it, and Internet Explorer left attributes, elements and pragmas behind. A topic
+      gathers every rule about one feature or one platform, whatever its namespace.
+    </p>
+    <p>
+      Each topic page opens with what that markup does in the head, why it matters and how its
+      rules relate, then lists the rules, worst first. Start from a topic when you know the
+      feature but not the rule: you are cleaning up a favicon set, checking
+      what a search engine reads, or removing what a platform you no longer support left in
+      your templates. Topics are for browsing only; they change nothing about what the linter
+      reports. The same rules are listed by namespace in the <a href="/rules">rule index</a>{" "}
+      and by what they cost under <a href="/impacts">impacts</a>.
+    </p>
     <ul class="rules">
       {topics.map(([tag, list]) => (
         <li>
