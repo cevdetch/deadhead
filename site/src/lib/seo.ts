@@ -23,7 +23,7 @@ const MAX = 60;
 
 /** The core title plus the brand when both fit in 60 characters; the core alone otherwise. Never truncated. */
 export const pageTitle = (core: string): string => {
-  const branded = `${core} · ${SITE_NAME}`;
+  const branded = `${core} - ${SITE_NAME}`;
   return branded.length <= MAX ? branded : core;
 };
 
