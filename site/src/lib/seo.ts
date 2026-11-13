@@ -17,6 +17,7 @@ export const PERSON = {
   "@id": "https://cevdet.ch/#person",
   name: AUTHOR.name,
   url: AUTHOR.url,
+  sameAs: ["https://github.com/cevdetch"],
 } as const;
 const MAX = 60;
 
