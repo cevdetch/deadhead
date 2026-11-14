@@ -14,7 +14,7 @@ fix: { op: "none" }
 replacement: "Write the credit out on the page: {\"@type\": \"Person\", \"@id\": \"https://example.com/#person\", \"name\": \"Jane Doe\", \"url\": \"https://example.com/\"}. Keep the @id so the nodes still join."
 tags: ["search", "structured-data"]
 impacts: ["seo"]
-related: ["script/json-ld-syntax"]
+related: ["script/json-ld-required-properties", "script/json-ld-syntax"]
 ---
 
 A JSON-LD `author` written as `{"@id": "https://example.com/#person"}` names a node and says
