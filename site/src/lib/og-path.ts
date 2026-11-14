@@ -9,3 +9,6 @@ export function ogSlugForPath(path: string): string {
   if (path === "/") return "index";
   return path.replace(/^\/rules\//, "").replace(/^\//, "");
 }
+
+/** The site-relative URL of a page's OG image, for `og:image` and JSON-LD `image`. */
+export const ogImagePath = (path: string): string => `/og/${ogSlugForPath(path)}.png`;

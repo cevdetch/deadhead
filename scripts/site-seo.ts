@@ -5,7 +5,9 @@
  */
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { SITE_URL } from "../packages/core/vocabulary.ts";
+import { personReference } from "../site/src/lib/structured-data.ts";
 
 const dist = process.argv[2] ?? "site/dist";
 const problems: string[] = [];
@@ -79,17 +81,42 @@ const jsonLdNodes = (path: string, html: string): Record<string, unknown>[] => {
 
 const nodesByPage = new Map(pages.map(({ path, html }) => [path, jsonLdNodes(path, html)]));
 
-// The home page names the site for search results (decision S4).
+// The home page names the site for search results (decision S4), and
+// describes the project's source code.
 if (home !== undefined) {
-  const website = nodesByPage.get("index.html")?.find((n) => n["@type"] === "WebSite");
+  const nodes = nodesByPage.get("index.html") ?? [];
+  const website = nodes.find((n) => n["@type"] === "WebSite");
   if (website === undefined || typeof website["name"] !== "string" || typeof website["url"] !== "string") {
     problems.push("index.html: no JSON-LD WebSite node with name and url");
   }
+  const code = nodes.find((n) => n["@type"] === "SoftwareSourceCode");
+  if (code === undefined || typeof code["codeRepository"] !== "string" || typeof code["license"] !== "string") {
+    problems.push("index.html: no JSON-LD SoftwareSourceCode node with codeRepository and license");
+  }
 }
 
-// Rule pages are articles: headline, dates, author and the sources the rule
-// cites (decisions S4, S5). validate:rules guarantees two or more sources.
-const ARTICLE_FIELDS = ["headline", "description", "url", "datePublished", "dateModified", "author"] as const;
+// Every credit is the person behind every cevdet.ch site, as the shared
+// module writes it: @type, @id, name and url, nothing more. Google reads one
+// page at a time, so the name and url travel with each page.
+const PERSON = personReference();
+for (const [path, nodes] of nodesByPage) {
+  for (const node of nodes) {
+    for (const key of ["author", "creator", "publisher"] as const) {
+      const value = node[key];
+      if (value === undefined) continue;
+      for (const credit of Array.isArray(value) ? value : [value]) {
+        if (!isDeepStrictEqual(credit, PERSON)) {
+          problems.push(`${path}: ${String(node["@type"])} ${key} is not the shared person reference: ${JSON.stringify(credit)}`);
+        }
+      }
+    }
+  }
+}
+
+// Rule pages are articles: headline, dates, social image, author and the
+// sources the rule cites (decisions S4, S5). validate:rules guarantees two or
+// more sources.
+const ARTICLE_FIELDS = ["headline", "description", "url", "datePublished", "dateModified", "image", "author"] as const;
 for (const { path } of pages.filter((p) => p.path.startsWith("rules/"))) {
   const article = nodesByPage.get(path)?.find((n) => n["@type"] === "TechArticle");
   if (article === undefined) {
@@ -108,6 +135,8 @@ for (const { path } of pages.filter((p) => p.path.startsWith("rules/"))) {
   }
   const cited = Array.isArray(article["citation"]) ? article["citation"].length : 0;
   if (cited < 2) problems.push(`${path}: TechArticle cites ${cited} sources, want 2 or more`);
+  // The page shows a breadcrumb trail, so the markup carries it too.
+  if (!nodesByPage.get(path)?.some((n) => n["@type"] === "BreadcrumbList")) problems.push(`${path}: no JSON-LD BreadcrumbList node`);
 }
 
 // Blog posts are BlogPostings with the same article fields and an author.

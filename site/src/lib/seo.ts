@@ -2,23 +2,13 @@
 // <title> before truncating it, so the subject leads and the brand follows
 // only when it fits. `scripts/site-budget.ts` holds every built page to 60.
 import type { Severity, Status } from "../../../packages/core/vocabulary.ts";
+import { owner } from "./structured-data.ts";
 
 export const SITE_NAME = "deadhead";
 
-/** The person behind the site, for bylines, the feed and JSON-LD. */
-export const AUTHOR = { name: "Cevdet", url: "https://cevdet.ch/" } as const;
+/** The person behind the site, for bylines and the feed: the name and url its JSON-LD credits. */
+export const AUTHOR = { name: owner.name, url: owner.url } as const;
 
-/**
- * JSON-LD `author` and `publisher`: a reference to the Person that
- * cevdet.ch defines in full, so every site of the author's names one node.
- */
-export const PERSON = {
-  "@type": "Person",
-  "@id": "https://cevdet.ch/#person",
-  name: AUTHOR.name,
-  url: AUTHOR.url,
-  sameAs: ["https://github.com/cevdetch"],
-} as const;
 const MAX = 60;
 
 /** The core title plus the brand when both fit in 60 characters; the core alone otherwise. Never truncated. */

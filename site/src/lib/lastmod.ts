@@ -1,7 +1,8 @@
 // When a rule last changed, for sitemap `lastmod`, `article:modified_time`
 // and JSON-LD `dateModified`. Google uses `lastmod` when it is consistently
 // accurate, so a shallow clone, where every file shares the one fetched
-// commit, returns nothing and callers fall back to `pubDate`.
+// commit, returns nothing and callers fall back to `pubDate`. On Cloudflare
+// Pages, scripts/unshallow.ts fetches the full history before the build.
 import { execFileSync } from "node:child_process";
 
 /** Parses `git log --format=%x00%cs --name-only`: the first date seen per path is its newest commit. */

@@ -1,5 +1,5 @@
 {
-  "name": "deadhead by Cevdet",
+  "name": "deadhead by Cevdet Haran",
   "short_name": "deadhead",
   "description": "Documentation-driven linter for HTML <head>: finds deprecated, unnecessary and harmful markup and explains why. One rule set, three runtimes (CLI, browser, ESLint).",
   "start_url": "https://deadhead.cevdet.ch",
