@@ -454,6 +454,34 @@ test("metadata-position: a link moved out of the head, or written after an eleme
   assert.deepEqual(details(`<title>t</title><img src="p.gif" alt="">${canonical}`), []);
 });
 
+test("json-ld-author-without-name: a bare @id credit reports unless a node on the page names it", async () => {
+  const { check } = await import("../packages/rules/logic/script/json-ld-author-without-name.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const ld = (value: object) => `<script type="application/ld+json">${JSON.stringify(value)}</script>`;
+  const details = (head: string, page = true): unknown[] =>
+    check(parseHtml(page ? `<!doctype html><html><head>${head}</head></html>` : head).doc, { ...ctx, report });
+  const person = "https://example.com/#person";
+  const post = (credit: object) => ld({ "@context": "https://schema.org", "@type": "BlogPosting", author: credit });
+  assert.deepEqual(details(post({ "@id": person })), [`author ${person} has no name`]);
+  assert.deepEqual(details(post({ "@type": "Person", "@id": person, url: "https://example.com/" })), [`author ${person} has no name`]);
+  assert.deepEqual(details(post({ "@id": person, name: " " })), [`author ${person} has no name`]);
+  assert.deepEqual(details(ld({ "@type": "WebSite", publisher: [{ "@id": person }], "schema:creator": { "@id": "#org" } })), [
+    `publisher ${person} has no name; schema:creator #org has no name`,
+  ]);
+  // Named inline, or by a node with the same @id in this block's @graph or another block.
+  assert.deepEqual(details(post({ "@id": person, name: "Jane Doe" })), []);
+  assert.deepEqual(details(post({ "@id": person, name: { "@value": "Jane Doe", "@language": "en" } })), []);
+  assert.deepEqual(details(ld({ "@graph": [{ "@type": "Article", author: { "@id": person } }, { "@type": "Person", "@id": person, name: "Jane Doe" }] })), []);
+  assert.deepEqual(details(post({ "@id": person }) + ld({ "@type": "Person", "@id": person, name: "Jane Doe" })), []);
+  // A named node under another spelling of the @id does not count.
+  assert.equal(details(post({ "@id": "#person" }) + ld({ "@type": "Person", "@id": person, name: "Jane Doe" })).length, 1);
+  // No @id, a string, broken JSON or a fragment: some other rule's business, or the layout's.
+  assert.deepEqual(details(post({ "@type": "Person" })), []);
+  assert.deepEqual(details(ld({ "@type": "Article", author: "Jane Doe" })), []);
+  assert.deepEqual(details('<script type="application/ld+json">{"author": {"@id": "x"},}</script>'), []);
+  assert.deepEqual(details(post({ "@id": person }), false), []);
+});
+
 // --- Script hooks: placeholders that script fills later ----------------------
 
 test("href-missing: fixable unless an id or a data-* attribute marks a script hook", async () => {
