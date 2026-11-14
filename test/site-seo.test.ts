@@ -23,13 +23,30 @@ const page = ({ title = "A page", description = "A synthetic page, described at 
 
 const ld = (value: object) => `<script type="application/ld+json">${JSON.stringify(value)}</script>`;
 
+/** The credit every page carries, as `personReference()` writes it. */
+const PERSON = { "@type": "Person", "@id": "https://cevdet.ch/#person", name: "Cevdet Haran", url: "https://cevdet.ch/" };
+
 export const WEBSITE_LD = ld({
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "deadhead",
-  url: "https://deadhead.cevdet.ch/",
-  inLanguage: "en",
-  publisher: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetch" },
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://deadhead.cevdet.ch/#website",
+      url: "https://deadhead.cevdet.ch/",
+      name: "deadhead",
+      inLanguage: "en",
+      publisher: PERSON,
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://deadhead.cevdet.ch/#code",
+      url: "https://deadhead.cevdet.ch/",
+      name: "deadhead",
+      codeRepository: "https://github.com/cevdetch/deadhead",
+      license: "https://spdx.org/licenses/MIT.html",
+      author: PERSON,
+    },
+  ],
 });
 
 export const ARTICLE_LD = ld({
@@ -42,10 +59,18 @@ export const ARTICLE_LD = ld({
       url: "https://deadhead.cevdet.ch/rules/meta/a",
       datePublished: "2026-09-28T00:00:00.000Z",
       dateModified: "2026-09-29T00:00:00.000Z",
-      author: { "@type": "Person", name: "Cevdet", url: "https://github.com/cevdetch" },
+      image: "https://deadhead.cevdet.ch/og/meta/a.png",
+      author: PERSON,
       citation: ["https://example.com/one", "https://example.com/two"],
     },
-    { "@type": "BreadcrumbList", itemListElement: [] },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Rules", item: "https://deadhead.cevdet.ch/rules" },
+        { "@type": "ListItem", position: 2, name: "meta", item: "https://deadhead.cevdet.ch/rules#meta" },
+        { "@type": "ListItem", position: 3, name: "Rule meta/a" },
+      ],
+    },
   ],
 });
 
@@ -119,6 +144,40 @@ test("fails a home page without a WebSite node", async () => {
   const { status, out } = await runGate(pages);
   assert.equal(status, 1);
   assert.match(out, /index\.html: no JSON-LD WebSite node with name and url/);
+});
+
+test("fails a home page without a SoftwareSourceCode node", async () => {
+  const pages = defaultPages();
+  pages["index.html"] = page({
+    title: "deadhead",
+    description: HOME_DESCRIPTION,
+    head: ld({ "@context": "https://schema.org", "@type": "WebSite", name: "deadhead", url: "https://deadhead.cevdet.ch/", publisher: PERSON }),
+  });
+  const { status, out } = await runGate(pages);
+  assert.equal(status, 1);
+  assert.match(out, /index\.html: no JSON-LD SoftwareSourceCode node with codeRepository and license/);
+});
+
+test("fails a credit that is not the shared person reference", async () => {
+  for (const credit of [
+    { ...PERSON, sameAs: ["https://github.com/cevdetch"] },
+    { ...PERSON, name: "Cevdet" },
+    { "@id": "https://cevdet.ch/#person" },
+  ]) {
+    const pages = defaultPages();
+    pages["rules/meta/a.html"] = page({ title: "Rule meta/a", head: ARTICLE_LD.replace(JSON.stringify(PERSON), JSON.stringify(credit)) });
+    const { status, out } = await runGate(pages);
+    assert.equal(status, 1);
+    assert.match(out, /rules\/meta\/a\.html: TechArticle author is not the shared person reference/);
+  }
+});
+
+test("fails a rule page without a BreadcrumbList", async () => {
+  const pages = defaultPages();
+  pages["rules/meta/a.html"] = page({ title: "Rule meta/a", head: ARTICLE_LD.replace('"@type":"BreadcrumbList"', '"@type":"ItemList"') });
+  const { status, out } = await runGate(pages);
+  assert.equal(status, 1);
+  assert.match(out, /rules\/meta\/a\.html: no JSON-LD BreadcrumbList node/);
 });
 
 test("fails a JSON-LD block that does not parse", async () => {

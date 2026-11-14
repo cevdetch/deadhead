@@ -3,7 +3,9 @@ import Layout from "../../layouts/Layout.astro";
 import { replaceFigures } from "../../lib/figures.ts";
 import { getPosts } from "../../lib/posts.ts";
 import { loadResults } from "../../lib/results.ts";
-import { AUTHOR, PERSON } from "../../lib/seo.ts";
+import { ogImagePath } from "../../lib/og-path.ts";
+import { AUTHOR } from "../../lib/seo.ts";
+import { articleNode, graph } from "../../lib/structured-data.ts";
 
 export async function getStaticPaths() {
   return (await getPosts()).map((post) => ({ params: { slug: post.id }, props: { post } }));
@@ -14,21 +16,26 @@ const { data } = post;
 // Figures are filled in here, at page build, from the current results file.
 const body = post.rendered?.html ?? "";
 const html = data.results === undefined ? body : replaceFigures(body, loadResults(data.results));
-const url = new URL(`/blog/${post.id}`, Astro.site).href;
+const path = `/blog/${post.id}`;
+const url = new URL(path, Astro.site).href;
 const modified = data.updatedDate ?? data.pubDate;
 const day = (date: Date) => date.toISOString().slice(0, 10);
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  headline: data.title,
-  description: data.description,
-  url,
-  datePublished: data.pubDate.toISOString(),
-  dateModified: modified.toISOString(),
-  author: PERSON,
+// Dates come from frontmatter, never git. `isBasedOn` names the results file
+// the figures are filled from; the shared builder has no field for it.
+const jsonLd = graph({
+  ...articleNode("BlogPosting", {
+    url,
+    headline: data.title,
+    description: data.description,
+    datePublished: data.pubDate.toISOString(),
+    dateModified: modified.toISOString(),
+    image: new URL(ogImagePath(path), Astro.site).href,
+    inLanguage: "en",
+    site: new URL("/", Astro.site).href,
+  }),
   ...(data.results === undefined ? {} : { isBasedOn: new URL(`/data/${data.results}`, Astro.site).href }),
-};
+});
 ---
 
 <Layout title={data.title} description={data.description} ogType="article" publishedTime={data.pubDate} modifiedTime={modified} jsonLd={jsonLd}>

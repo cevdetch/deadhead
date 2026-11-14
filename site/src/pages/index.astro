@@ -3,7 +3,10 @@ import { getCollection } from "astro:content";
 import Layout, { REPO } from "../layouts/Layout.astro";
 import RuleList from "../components/RuleList.astro";
 import { getPosts } from "../lib/posts.ts";
-import { PERSON, SITE_NAME } from "../lib/seo.ts";
+import { SITE_NAME } from "../lib/seo.ts";
+import { graph, softwareSourceCodeNode, websiteNode } from "../lib/structured-data.ts";
+import cli from "../../../packages/cli/package.json";
+import eslintPlugin from "../../../packages/eslint-plugin/package.json";
 import { namespaceBlurbs } from "../vocabulary.ts";
 
 const rules = await getCollection("rules");
@@ -40,16 +43,21 @@ const description =
   "A documentation-driven linter for the HTML head: it finds deprecated, unnecessary and harmful markup, and every finding links to a sourced explanation.";
 
 // The site name Google shows in results comes from a WebSite node on the
-// home page. No SearchAction: meta/json-ld-search-action reports it.
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: SITE_NAME,
-  url: new URL("/", Astro.site).href,
-  description,
-  inLanguage: "en",
-  publisher: PERSON,
-};
+// home page. No SearchAction: script/json-ld-search-action reports it. The
+// SoftwareSourceCode node describes the project; no rich result reads it.
+const home = new URL("/", Astro.site).href;
+const jsonLd = graph(
+  websiteNode({ url: home, name: SITE_NAME, description, inLanguage: "en" }),
+  softwareSourceCodeNode({
+    url: home,
+    name: SITE_NAME,
+    description,
+    codeRepository: REPO,
+    programmingLanguage: "TypeScript",
+    license: cli.license,
+    sameAs: [cli, eslintPlugin].map((pkg) => `https://www.npmjs.com/package/${pkg.name}`),
+  }),
+);
 ---
 
 <Layout

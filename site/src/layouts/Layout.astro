@@ -1,8 +1,9 @@
 ---
 import styleURL from "../styles/global.css?url";
-import { ogSlugForPath } from "../lib/og-path.ts";
+import { ogImagePath } from "../lib/og-path.ts";
 import { getPosts } from "../lib/posts.ts";
 import { AUTHOR, pageTitle, SITE_NAME } from "../lib/seo.ts";
+import { serializeJsonLd } from "../lib/structured-data.ts";
 
 export const REPO = "https://github.com/cevdetch/deadhead";
 
@@ -16,8 +17,8 @@ interface Props {
   modifiedTime?: Date | undefined;
   /** True for pages with no lasting URL, like 404: no canonical, no Open Graph block. */
   noindex?: boolean;
-  /** Structured data, rendered as one JSON-LD script after the Open Graph tags. */
-  jsonLd?: object;
+  /** Structured data from `lib/structured-data.ts`, rendered as one JSON-LD script after the Open Graph tags. */
+  jsonLd?: Parameters<typeof serializeJsonLd>[0];
 }
 
 const { title, description, ogType = "website", publishedTime, modifiedTime, noindex = false, jsonLd } = Astro.props;
@@ -34,7 +35,7 @@ const path =
     ? "/"
     : Astro.url.pathname.replace(/\.html$/, "");
 const canonical = new URL(path, Astro.site);
-const ogImage = new URL(`/og/${ogSlugForPath(path)}.png`, Astro.site);
+const ogImage = new URL(ogImagePath(path), Astro.site);
 
 // The blog joins the nav once a post is built: with none, /blog does not exist.
 const hasBlog = (await getPosts()).length > 0;
@@ -98,7 +99,7 @@ const nav = [
       <script
         type="application/ld+json"
         is:inline
-        set:html={JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
+        set:html={serializeJsonLd(jsonLd)}
       />
     )}
     <slot name="head" />

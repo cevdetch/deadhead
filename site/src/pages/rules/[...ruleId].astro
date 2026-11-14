@@ -2,7 +2,9 @@
 import { getCollection, render } from "astro:content";
 import Layout, { REPO } from "../../layouts/Layout.astro";
 import RuleFacts from "../../components/RuleFacts.astro";
-import { PERSON, ruleCoreTitle } from "../../lib/seo.ts";
+import { ogImagePath } from "../../lib/og-path.ts";
+import { ruleCoreTitle } from "../../lib/seo.ts";
+import { articleNode, breadcrumbNode, graph } from "../../lib/structured-data.ts";
 import { resourceUrls } from "../../lib/citations.ts";
 import { modifiedDate, ruleCommitDates } from "../../lib/lastmod.ts";
 
@@ -26,33 +28,32 @@ const { data } = rule;
 const sourceUrl = `${REPO}/blob/main/content/rules/${data.ruleId}.md`;
 const namespace = data.ruleId.split("/")[0]!;
 
-const url = new URL(`/rules/${data.ruleId}`, Astro.site).href;
+const path = `/rules/${data.ruleId}`;
+const url = new URL(path, Astro.site).href;
 
-// The rule as an article, plus the visible breadcrumb. `citation` carries the
-// sources every rule is required to have; that is the site's point.
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "TechArticle",
-      headline: data.title,
-      description: data.description,
-      url,
-      datePublished: data.pubDate.toISOString(),
-      dateModified: `${modified}T00:00:00.000Z`,
-      author: PERSON,
-      citation: resourceUrls(rule.body ?? ""),
-    },
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Rules", item: new URL("/rules", Astro.site).href },
-        { "@type": "ListItem", position: 2, name: `${namespace}/`, item: new URL(`/rules#${namespace}`, Astro.site).href },
-        { "@type": "ListItem", position: 3, name: data.title },
-      ],
-    },
-  ],
-};
+// The rule as an article, plus the breadcrumb the page shows: Rules, the
+// namespace, then the rule itself as the h1. `citation` carries the sources
+// every rule is required to have; that is the site's point. datePublished is
+// the rule's pubDate frontmatter; dateModified is the same date the sitemap
+// and article:modified_time carry, from lib/lastmod.ts.
+const jsonLd = graph(
+  articleNode("TechArticle", {
+    url,
+    headline: data.title,
+    description: data.description,
+    datePublished: data.pubDate.toISOString(),
+    dateModified: `${modified}T00:00:00.000Z`,
+    image: new URL(ogImagePath(path), Astro.site).href,
+    inLanguage: "en",
+    site: new URL("/", Astro.site).href,
+    citation: resourceUrls(rule.body ?? ""),
+  }),
+  breadcrumbNode(url, [
+    { name: "Rules", url: new URL("/rules", Astro.site).href },
+    { name: namespace, url: new URL(`/rules#${namespace}`, Astro.site).href },
+    { name: data.title },
+  ]),
+);
 ---
 
 <Layout
