@@ -482,6 +482,41 @@ test("json-ld-author-without-name: a bare @id credit reports unless a node on th
   assert.deepEqual(details(post({ "@id": person }), false), []);
 });
 
+test("json-ld-required-properties: ProfilePage and BreadcrumbList against Google's required lists", async () => {
+  const { check } = await import("../packages/rules/logic/script/json-ld-required-properties.ts");
+  const report = ((_: unknown, extra: { detail: string }) => extra.detail) as unknown as RuleContext["report"];
+  const ld = (value: object) => `<script type="application/ld+json">${JSON.stringify(value)}</script>`;
+  const details = (head: string, page = true): unknown[] =>
+    check(parseHtml(page ? `<!doctype html><html><head>${head}</head></html>` : head).doc, { ...ctx, report });
+  const crumbs = (...items: object[]) => ld({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items });
+  const books = { "@type": "ListItem", position: 1, name: "Books", item: "https://example.com/books" };
+  assert.deepEqual(details(crumbs(books, { "@type": "ListItem", position: 2, name: "Science fiction" })), []);
+  // A Thing item with a name stands in for the ListItem's, here or under its @id elsewhere on the page.
+  assert.deepEqual(details(crumbs({ position: 1, item: { "@id": "https://example.com/books", name: "Books" } }, { position: 2, name: "SF" })), []);
+  assert.deepEqual(details(crumbs({ position: 1, item: { "@id": "#books" } }, { position: 2, name: "SF" }) + ld({ "@id": "#books", name: "Books" })), []);
+  assert.deepEqual(details(crumbs(books)), ["BreadcrumbList has 1 ListItem, want 2 or more"]);
+  assert.deepEqual(details(crumbs()), ["BreadcrumbList has 0 ListItems, want 2 or more"]);
+  assert.deepEqual(details(crumbs({ name: "Books" }, { position: 2 })), ["ListItem 1 has no position; ListItem 1 has no item; ListItem 2 has no name"]);
+  // The last of the trail is the highest position, wherever it sits in the array.
+  assert.deepEqual(details(crumbs({ position: 2, name: "SF" }, books)), []);
+  assert.deepEqual(details(crumbs({ position: 2, name: "SF", item: "https://example.com/sf" }, { position: 1, name: "Books" })), ["ListItem 2 has no item"]);
+  // ProfilePage: mainEntity with a name or alternateName, inline or by @id on the page.
+  const profile = (mainEntity?: unknown) => ld({ "@type": "ProfilePage", ...(mainEntity === undefined ? {} : { mainEntity }) });
+  assert.deepEqual(details(profile({ "@type": "Person", name: "Jane Doe" })), []);
+  assert.deepEqual(details(profile({ "@type": "Person", alternateName: "janedoe" })), []);
+  assert.deepEqual(details(ld({ "@graph": [{ "@type": "ProfilePage", mainEntity: { "@id": "#me" } }, { "@type": "Person", "@id": "#me", name: "Jane Doe" }] })), []);
+  assert.deepEqual(details(profile()), ["ProfilePage has no mainEntity"]);
+  assert.deepEqual(details(profile({ "@type": "Person" })), ["ProfilePage mainEntity has no name"]);
+  assert.deepEqual(details(profile({ "@id": "#me" })), ["ProfilePage mainEntity has no name"]);
+  // A fragment leaves an unresolved @id to the layout and still reports what it holds.
+  assert.deepEqual(details(profile({ "@id": "#me" }), false), []);
+  assert.deepEqual(details(profile({ "@type": "Person" }), false), ["ProfilePage mainEntity has no name"]);
+  // Other types, schema:-prefixed spellings and broken JSON.
+  assert.deepEqual(details(ld({ "@type": "Article" })), []);
+  assert.deepEqual(details(ld({ "@type": "schema:BreadcrumbList", "schema:itemListElement": [books] })), ["BreadcrumbList has 1 ListItem, want 2 or more"]);
+  assert.deepEqual(details('<script type="application/ld+json">{"@type": "ProfilePage",}</script>'), []);
+});
+
 // --- Script hooks: placeholders that script fills later ----------------------
 
 test("href-missing: fixable unless an id or a data-* attribute marks a script hook", async () => {
