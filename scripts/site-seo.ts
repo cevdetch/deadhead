@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
  * SEO gate over the built site, run by `pnpm check:site` after the byte
- * budget. Reads site/dist as files; builds nothing. Each check guards a
- * decision in .claude/plans/2026-09-29-seo.md.
+ * budget. Reads site/dist as files; builds nothing.
  */
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
