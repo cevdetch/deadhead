@@ -27,7 +27,7 @@ reports four, all unnecessary:
 What replaces them is four lines:
 
 ```html
-<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/app.webmanifest">
@@ -35,5 +35,5 @@ What replaces them is four lines:
 
 [favseed](https://favseed.cevdet.ch/) builds those files from one SVG: the ICO, the SVG,
 the touch icon and the 192 and 512 pixel PNGs a manifest lists. It prints the `<link>` tags
-too. The
+too, and it built this site's own set. The
 HTML Standard defines the [`icon` link type](https://html.spec.whatwg.org/multipage/links.html#rel-icon).
