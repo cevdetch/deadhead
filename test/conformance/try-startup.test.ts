@@ -3,7 +3,6 @@ import test from "node:test";
 import { setImmediate } from "node:timers/promises";
 import { parseHTML } from "linkedom";
 import { encodeHandoff } from "../../packages/browser/handoff.ts";
-import { loadRuntimeRules } from "../../packages/rules/load.ts";
 import { encodeShare } from "../../site/src/lib/playground.ts";
 
 const PAGE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Page</title><meta name="keywords" content="x"></head><body></body></html>';
@@ -22,7 +21,6 @@ async function withPage(fragment: string, check: (page: Dom & { location: URL })
   try {
     for (const [name, value] of Object.entries(globals)) Object.defineProperty(globalThis, name, { value, configurable: true });
     (document.getElementById("try-input") as HTMLTextAreaElement).value = PAGE;
-    await loadRuntimeRules();
     await import(`../../site/src/scripts/try.ts?startup=${visit++}`);
     await check({ document, window, location });
   } finally {

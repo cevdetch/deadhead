@@ -5,7 +5,7 @@
  */
 import { decodeHandoff } from "../../../packages/browser/handoff.ts";
 import { compileForRun } from "../../../packages/cli/source.ts";
-import { loadRuntimeRules } from "../../../packages/rules/load.ts";
+import { RULES as runtimeRules } from "../../../packages/rules/registry.runtime.gen.ts";
 import { codeRuns } from "../lib/code-runs.ts";
 import { decodeShare, encodeShare, lintHtml, SHARE_LIMIT, type LintView } from "../lib/playground.ts";
 
@@ -51,7 +51,7 @@ const note = document.createTextNode("");
 let reported = false;
 
 const say = (message: string): void => {
-  note.data = `${summary.length > 0 ? " " : ""}${message}`;
+  note.textContent = `${summary.length > 0 ? " " : ""}${message}`;
   if (note.parentNode !== status) status.append(note);
 };
 
@@ -107,15 +107,9 @@ const reset = (message: string): void => {
   status.replaceChildren(message);
 };
 
-const run = async (): Promise<void> => {
+const run = (): void => {
   try {
-    if (compiled === undefined) status.replaceChildren("Loading the rules…");
-    compiled ??= compileForRun(await loadRuntimeRules(), {});
-  } catch {
-    reset("Could not load the rules. Check your connection, then press Lint again.");
-    return;
-  }
-  try {
+    compiled ??= compileForRun(runtimeRules, {});
     if (input.value.trim() === "") reset("Nothing to check. Paste HTML or open a file.");
     else render(lintHtml(input.value, compiled));
   } catch (error) {
@@ -133,14 +127,14 @@ const release = (): void => {
 // the form, reload the page and lose the pasted HTML.
 lint.addEventListener("click", () => {
   release();
-  void run();
+  run();
 });
 
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
     release();
-    void run();
+    run();
   }
 });
 
@@ -154,7 +148,7 @@ file.addEventListener("change", async () => {
     from.textContent = `Opened ${chosen.name}.`;
     from.hidden = false;
     release();
-    await run();
+    run();
   } catch { say("Could not read this file. Paste its HTML instead."); }
 });
 
@@ -172,10 +166,12 @@ share.addEventListener("click", async () => {
       return;
     }
     history.replaceState(null, "", fragment);
-    await copyText(location.href, "Link copied. It holds the HTML.", "Could not copy the link. Copy it from the address bar.");
   } catch (error) {
     say(error instanceof RangeError ? error.message : "Could not create a link. Copy the HTML instead.");
+    return;
   } finally { share.disabled = false; }
+  // Outside the try: copyText reports its own failure.
+  await copyText(location.href, "Link copied. It holds the HTML.", "Could not copy the link. Copy it from the address bar.");
 });
 
 copy.addEventListener("click", async () => {
@@ -209,4 +205,4 @@ if (unreadable) {
   input.value = "";
   status.textContent = "Could not read this link. Paste HTML or open a file.";
 }
-else await run();
+else run();
