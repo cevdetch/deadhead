@@ -17,7 +17,7 @@ so add an `id` before deleting it. And a `<meta name="referrer">` with an unknow
 ignored, so the page falls back to the default policy and can send more of its URL than
 intended.
 
-Deadhead reports sixteen:
+Sixteen rules apply:
 
 - [`meta/referrer-value`](/rules/meta/referrer-value): an unknown referrer token. Harmful.
 - [`link/anchor-keywords`](/rules/link/anchor-keywords): `<a>`-only keywords on `<link>`.

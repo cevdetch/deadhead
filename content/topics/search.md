@@ -17,7 +17,7 @@ page out of the index leaves it in. And much of what templates still carry is re
 engine at all: `keywords`, `revisit-after`, `distribution`, a `title` meta, a sitemap link,
 verification tags for services that closed.
 
-Deadhead reports twenty-seven:
+Twenty-nine rules apply:
 
 - Canonicals: [`head/canonical-multiple`](/rules/head/canonical-multiple),
   [`link/canonical-relative`](/rules/link/canonical-relative),
@@ -36,6 +36,9 @@ Deadhead reports twenty-seven:
 - Structured data with no rich result:
   [`script/json-ld-search-action`](/rules/script/json-ld-search-action) and
   [`script/json-ld-howto-faq-announcement`](/rules/script/json-ld-howto-faq-announcement).
+- Structured data that loses its rich result or credit:
+  [`script/json-ld-required-properties`](/rules/script/json-ld-required-properties) and
+  [`script/json-ld-author-without-name`](/rules/script/json-ld-author-without-name).
 - Tags nothing reads: [`meta/keywords`](/rules/meta/keywords),
   [`meta/news-keywords`](/rules/meta/news-keywords), [`meta/title`](/rules/meta/title),
   [`meta/abstract`](/rules/meta/abstract), [`meta/revisit-after`](/rules/meta/revisit-after),

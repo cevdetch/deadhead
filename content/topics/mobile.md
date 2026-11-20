@@ -15,7 +15,7 @@ suited small screens. It also brought a way to do harm. `user-scalable=no` or a 
 page without it, and fails
 [WCAG 1.4.4 Resize Text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html).
 
-Deadhead reports five, three of them harmful:
+Five rules apply, three of them harmful:
 
 - [`head/viewport-missing`](/rules/head/viewport-missing): a page with no viewport tag, laid
   out at desktop width and shrunk.

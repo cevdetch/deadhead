@@ -18,7 +18,7 @@ looks protected. A robots directive in `http-equiv` is not read, so a `noindex` 
 nothing. `refresh` works, and moves the reader on a timer the back button cannot undo. And a
 Content Security Policy in meta loses `frame-ancestors`, reporting and sandboxing.
 
-Deadhead reports twenty-seven. The harmful ones:
+Twenty-seven rules apply. The harmful ones:
 
 - [`meta/http-equiv-header-only-pragmas`](/rules/meta/http-equiv-header-only-pragmas),
   [`meta/http-equiv-content-security-policy`](/rules/meta/http-equiv-content-security-policy)

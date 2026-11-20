@@ -16,7 +16,7 @@ default colour, or the page declares no scheme. With a light and a dark `theme-c
 `media` queries, one bad value breaks one mode only, and an author who tests in the other
 never sees it.
 
-Deadhead reports three ways to lose the colour, all harmful:
+Three rules catch ways to lose the colour, all harmful:
 
 - [`meta/theme-color-value`](/rules/meta/theme-color-value): content that is not a CSS
   colour, such as `ff0000` without its `#`, a five-digit hex, or `var(--brand)`, which a meta

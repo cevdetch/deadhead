@@ -9,8 +9,8 @@ installed apps a home-screen image; Safari has read manifest icons when a page d
 `apple-touch-icon` since version 15.4.
 
 Favicon generators still write much more, mostly for browsers and devices that are gone,
-and every extra declaration is another file to replace when the logo changes. Deadhead
-reports four, all unnecessary:
+and every extra declaration is another file to replace when the logo changes. Four
+rules apply, all unnecessary:
 
 - [`link/shortcut-icon`](/rules/link/shortcut-icon): the `shortcut` in
   `rel="shortcut icon"`, an Internet Explorer 5 spelling. Browsers act on the `icon` token

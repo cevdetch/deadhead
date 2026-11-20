@@ -16,8 +16,8 @@ and later swept the remaining code out of bookmarks.
 63 removed the feature as buggy and complex. Every other engine had always treated such a
 link as an ordinary one.
 
-What is left in old templates is dead weight that suggests a feature still works. Deadhead
-reports each as unnecessary:
+What is left in old templates is dead weight that suggests a feature still works. Each is
+reported as unnecessary:
 
 - [`link/microsummary`](/rules/link/microsummary)
 - [`link/sidebar`](/rules/link/sidebar)

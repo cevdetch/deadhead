@@ -15,7 +15,7 @@ nothing once the APIs are gone. Separately, `allowpaymentrequest` on `<iframe>` 
 from HTML in 2020 in favour of `allow="payment"`, but Chrome still reads the old spelling and
 grants payment to every origin with it.
 
-Deadhead reports twelve, all deprecated:
+Twelve rules apply, all deprecated:
 
 - [`element/object-embed-plugin`](/rules/element/object-embed-plugin),
   [`element/applet`](/rules/element/applet), [`element/param`](/rules/element/param),

@@ -16,7 +16,7 @@ behaviour: `module`, `importmap` and `speculationrules` change what the element 
 [10,000 home pages](/blog/what-10000-home-pages-put-in-their-head) deadhead linted,
 `type="text/javascript"` was the most common finding of all.
 
-Deadhead reports three defaults, all unnecessary and all fixed by deleting them:
+Three rules apply, all unnecessary and all fixed by deleting the default:
 
 - [`attr/script-type-javascript`](/rules/attr/script-type-javascript): a JavaScript MIME
   type such as `text/javascript` in `type`. The

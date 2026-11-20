@@ -17,7 +17,7 @@ cross-site scripting worked. The
 for new content, UTF-8, and one declaration does the job:
 `<meta charset="utf-8">`, first in the head.
 
-Deadhead checks the declaration and the attributes that compete with it:
+The rules check the declaration and the attributes that compete with it:
 
 - [`head/charset-position`](/rules/head/charset-position): the declaration ends past byte
   1,024. Harmful. A charset in the `Content-Type` header takes precedence, which the

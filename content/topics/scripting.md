@@ -16,7 +16,7 @@ an import map that is not valid JSON maps nothing, so every bare `import` fails.
 `async` or `defer` where they do nothing, `language`, the default `type`, and `nomodule` on a
 fallback script no current browser runs.
 
-Deadhead reports sixteen:
+Sixteen rules apply:
 
 - [`attr/script-src`](/rules/attr/script-src),
   [`script/importmap-syntax`](/rules/script/importmap-syntax),

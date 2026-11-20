@@ -16,7 +16,7 @@ A [`<caption>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elem
 reaches everyone. Header cells are marked with `<th>`, and `scope` on a `<th>` says whether
 it heads a row or a column; `abbr`, `axis` and `scope` on the wrong cells say nothing.
 
-Deadhead reports five, all deprecated:
+Five rules apply, all deprecated:
 
 - [`attr/table-presentational`](/rules/attr/table-presentational) and
   [`attr/table-part-presentational`](/rules/attr/table-part-presentational): the

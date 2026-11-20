@@ -22,7 +22,7 @@ file, and whatever depends on it breaks.
 
 The repair is the same attribute each time: a bare `crossorigin`, which means `anonymous`.
 A cross-origin host must also answer with `Access-Control-Allow-Origin`, or the CORS request
-fails in turn. Deadhead reports the three cases as harmful:
+fails in turn. Three rules report these cases, all harmful:
 
 - [`link/preload-font-crossorigin-missing`](/rules/link/preload-font-crossorigin-missing)
 - [`link/preload-fetch-crossorigin-missing`](/rules/link/preload-fetch-crossorigin-missing)

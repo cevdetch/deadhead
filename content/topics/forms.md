@@ -13,7 +13,7 @@ The rest is attributes in the wrong place. `accept` belongs on file inputs, not 
 `size` do nothing on a number input, whose limits are `min`, `max` and `step`. And `align`,
 `border`, `hspace` and `vspace` on inputs are presentational attributes CSS replaced.
 
-Deadhead reports six:
+Six rules apply:
 
 - [`element/isindex`](/rules/element/isindex) and [`element/keygen`](/rules/element/keygen):
   the two dead controls. Replace `isindex` with a form and a text input; certificate
