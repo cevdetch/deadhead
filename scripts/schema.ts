@@ -357,12 +357,13 @@ export function validateFrontmatter(
     typeof ruleId === "string" &&
     !ruleId.startsWith("head/") &&
     !ruleId.startsWith("document/") &&
-    !title.startsWith("<")
+    !title.startsWith("<") &&
+    !title.startsWith("[")
   ) {
     issues.push(
       field(
         ["title"],
-        'must start with `<`: element and attribute titles show the markup (CONTRIBUTING § Naming a rule)',
+        "must start with `<` or `[`: element and attribute titles show the markup, and an attribute on no one element is an attribute selector (CONTRIBUTING § Naming a rule)",
       ),
     );
   }

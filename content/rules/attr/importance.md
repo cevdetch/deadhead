@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/importance"
-title: "<importance> priority hint"
+title: "[importance] priority hint"
 description: "importance was the origin-trial name of fetchpriority; no browser reads it, so it sets no priority at all."
 pubDate: "2026-10-01"
 updatedDate: "2026-11-13"

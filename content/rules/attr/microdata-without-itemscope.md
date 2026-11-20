@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/microdata-without-itemscope"
-title: "<itemtype, itemref, itemid> without itemscope"
+title: "[itemtype], [itemref], [itemid] without [itemscope]"
 description: "itemtype, itemref and itemid need itemscope; without it no microdata item forms, and the attributes type and link nothing."
 pubDate: "2026-09-23"
 status: "avoid"

@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/xmlns-prefix"
-title: "<xmlns:*> prefix in HTML"
+title: "[xmlns:*] prefix in HTML"
 description: "xmlns:* declares no namespace in HTML; drop it, or declare RDFa prefixes with prefix."
 pubDate: "2026-09-23"
 status: "avoid"

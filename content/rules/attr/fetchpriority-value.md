@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/fetchpriority-value"
-title: "<fetchpriority> other than high, low or auto"
+title: "[fetchpriority] other than high, low or auto"
 description: "A fetchpriority value other than high, low or auto falls back to auto, and the priority the author asked for is lost."
 pubDate: "2026-10-01"
 updatedDate: "2026-11-13"

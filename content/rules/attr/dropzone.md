@@ -1,6 +1,6 @@
 ---
 ruleId: "attr/dropzone"
-title: "<dropzone>"
+title: "[dropzone]"
 description: "dropzone is obsolete; handle dragenter and dragover in script instead."
 pubDate: "2026-09-21"
 updatedDate: "2026-11-13"
