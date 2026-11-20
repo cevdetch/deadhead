@@ -17,6 +17,7 @@ const meta = (overrides: Partial<RuleMeta> & { ruleId: string }): RuleMeta => ({
   title: "Test rule",
   description: "A description.",
   pubDate: "2026-01-01",
+  updatedDate: null,
   status: "avoid",
   severity: "unnecessary",
   standardsBasis: "spec",

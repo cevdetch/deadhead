@@ -7,24 +7,19 @@ import { ruleCoreTitle } from "../../lib/seo.ts";
 import { articleNode, breadcrumbNode, graph } from "../../lib/structured-data.ts";
 import { resourceUrls } from "../../lib/citations.ts";
 import { codeRuns } from "../../lib/code-runs.ts";
-import { modifiedDate, ruleCommitDates } from "../../lib/lastmod.ts";
 
 // The route is `[...ruleId]` rather than `[ruleId]` because a ruleId contains a
 // slash: `meta/keywords` is one id, not two segments. This URL is the contract
 // `packages/core/vocabulary.ts` prints in every finding.
 export async function getStaticPaths() {
   const rules = await getCollection("rules");
-  // One git pass for all rule pages, not one per page.
-  const committed = ruleCommitDates(process.cwd());
-  return rules.map((rule) => ({
-    params: { ruleId: rule.data.ruleId },
-    props: { rule, modified: modifiedDate(rule.data.pubDate.toISOString().slice(0, 10), committed.get(rule.data.ruleId)) },
-  }));
+  return rules.map((rule) => ({ params: { ruleId: rule.data.ruleId }, props: { rule } }));
 }
 
-const { rule, modified } = Astro.props;
+const { rule } = Astro.props;
 const { Content } = await render(rule);
 const { data } = rule;
+const modified = data.updatedDate ?? data.pubDate;
 
 const sourceUrl = `${REPO}/blob/main/content/rules/${data.ruleId}.md`;
 const namespace = data.ruleId.split("/")[0]!;
@@ -35,15 +30,15 @@ const url = new URL(path, Astro.site).href;
 // The rule as an article, plus the breadcrumb the page shows: Rules, the
 // namespace, then the rule itself as the h1. `citation` carries the sources
 // every rule is required to have; that is the site's point. datePublished is
-// the rule's pubDate frontmatter; dateModified is the same date the sitemap
-// and article:modified_time carry, from lib/lastmod.ts.
+// the rule's pubDate frontmatter; dateModified is its updatedDate, else
+// pubDate, the same date the sitemap and article:modified_time carry.
 const jsonLd = graph(
   articleNode("TechArticle", {
     url,
     headline: data.title,
     description: data.description,
     datePublished: data.pubDate.toISOString(),
-    dateModified: `${modified}T00:00:00.000Z`,
+    dateModified: modified.toISOString(),
     image: new URL(ogImagePath(path), Astro.site).href,
     inLanguage: "en",
     site: new URL("/", Astro.site).href,
@@ -62,7 +57,7 @@ const jsonLd = graph(
   description={data.description}
   ogType="article"
   publishedTime={data.pubDate}
-  modifiedTime={new Date(`${modified}T00:00:00Z`)}
+  modifiedTime={modified}
   jsonLd={jsonLd}
 >
   <article>

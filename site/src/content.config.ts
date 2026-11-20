@@ -44,6 +44,7 @@ const rules = defineCollection({
       title: z.string().min(1),
       description: z.string().min(1).max(160),
       pubDate: z.coerce.date(),
+      updatedDate: z.coerce.date().optional(),
       status: enumOf(STATUS),
       severity: enumOf(SEVERITY),
       standardsBasis: enumOf(STANDARDS_BASIS),

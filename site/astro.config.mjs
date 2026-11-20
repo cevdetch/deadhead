@@ -5,17 +5,15 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import { SITE_URL } from "../packages/core/vocabulary.ts";
-import { modifiedDate, ruleCommitDates } from "./src/lib/lastmod.ts";
 
-// Sitemap `lastmod` per rule: the later of its `pubDate` frontmatter and the
-// rule file's newest commit, so a revised rule signals the change. Read here
-// rather than in a content loader: the sitemap integration only sees final
-// URLs, so the config joins them.
+// Sitemap `lastmod` per rule: its `updatedDate` frontmatter, else its
+// `pubDate`, so a revised rule signals the change and a typo fix does not.
+// Read here rather than in a content loader: the sitemap integration only
+// sees final URLs, so the config joins them.
 const contentRulesDir = fileURLToPath(new URL("../content/rules/", import.meta.url));
 
 /** @returns {Map<string, string>} URL path (`/rules/<ruleId>`) to `YYYY-MM-DD`. */
 function loadLastmod() {
-  const committed = ruleCommitDates(process.cwd());
   const out = new Map();
   let files = [];
   try {
@@ -27,8 +25,8 @@ function loadLastmod() {
     if (typeof file !== "string" || !file.endsWith(".md")) continue;
     const ruleId = file.replace(/\.md$/, "").split("\\").join("/");
     const body = readFileSync(join(contentRulesDir, file), "utf8");
-    const match = /^pubDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body);
-    if (match?.[1]) out.set(`/rules/${ruleId}`, modifiedDate(match[1], committed.get(ruleId)));
+    const date = /^updatedDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body) ?? /^pubDate:\s*"(\d{4}-\d{2}-\d{2})"/m.exec(body);
+    if (date?.[1]) out.set(`/rules/${ruleId}`, date[1]);
   }
   return out;
 }

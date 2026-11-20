@@ -39,6 +39,15 @@ tool.
 
 The pull request template carries the full definition of done.
 
+## Changing a rule
+
+Set `updatedDate: "YYYY-MM-DD"` under `pubDate` when the guidance changes: the
+verdict, severity, explanation, sources, detection or fix. Leave it alone for
+typos, formatting, tags and related links. The rule page, its sitemap entry
+and its structured data show this date, so a reader can tell when the advice
+last moved. `pnpm validate:rules` rejects a date that is not after `pubDate`
+or lies in the future, but it cannot tell when a bump was forgotten.
+
 ### Rule checklist
 
 - [ ] Frontmatter validates (`pnpm validate:rules`), and `ruleId` matches the file path

@@ -111,6 +111,11 @@ export type RuleMeta = {
   title: string;
   description: string;
   pubDate: string;
+  /**
+   * The last day the guidance changed: verdict, explanation, sources or fix.
+   * Not bumped for typos, formatting or tags. `null` until the first such change.
+   */
+  updatedDate: string | null;
   status: Status;
   severity: Severity;
   standardsBasis: StandardsBasis;
