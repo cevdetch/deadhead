@@ -73,6 +73,13 @@ test("lintHtml: counts per severity, the fixable flag, and the advice a reader a
   assert.equal(view.counts.harmful + view.counts.deprecated + view.counts.unnecessary, view.findings.length);
 });
 
+test("lintHtml: says whether the HTML was checked as a page or a fragment, as the CLI decides", () => {
+  assert.equal(lintHtml("<!doctype html><title>t</title>", compiled).page, true);
+  assert.equal(lintHtml('<html lang="en"><head></head></html>', compiled).page, true);
+  assert.equal(lintHtml('<meta name="keywords" content="x">', compiled).page, false);
+  assert.equal(lintHtml("hello", compiled).page, false);
+});
+
 test("lintHtml: an empty paste has nothing to report and nothing to fix", () => {
   const view = lintHtml("", compiled);
   assert.deepEqual(view.findings, []);

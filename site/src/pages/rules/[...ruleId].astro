@@ -6,6 +6,7 @@ import { ogImagePath } from "../../lib/og-path.ts";
 import { ruleCoreTitle } from "../../lib/seo.ts";
 import { articleNode, breadcrumbNode, graph } from "../../lib/structured-data.ts";
 import { resourceUrls } from "../../lib/citations.ts";
+import { codeRuns } from "../../lib/code-runs.ts";
 import { modifiedDate, ruleCommitDates } from "../../lib/lastmod.ts";
 
 // The route is `[...ruleId]` rather than `[ruleId]` because a ruleId contains a
@@ -70,9 +71,11 @@ const jsonLd = graph(
     <p class="lede">{data.description}</p>
     <aside>
       <h2>Instead</h2>
-      <p>{data.replacement}</p>
+      <p>{codeRuns(data.replacement).map((run, i) => (i % 2 === 1 ? <code>{run}</code> : run))}</p>
     </aside>
-    <RuleFacts rule={rule} sourceUrl={sourceUrl} />
+    <RuleFacts rule={rule} sourceUrl={sourceUrl} part="action" />
     <Content />
+    <h2>About this rule</h2>
+    <RuleFacts rule={rule} sourceUrl={sourceUrl} part="details" />
   </article>
 </Layout>

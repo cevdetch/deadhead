@@ -23,10 +23,11 @@ const day = (date: Date) => date.toISOString().slice(0, 10);
     links to its page and sources. Release posts explain a new feature, what it
     checks and how to set it up.
   </p>
-  <ul>
+  <ul class="rules">
     {posts.map((post) => (
       <li>
-        <a href={`/blog/${post.id}`}>{post.data.title}</a>, <time datetime={day(post.data.pubDate)}>{day(post.data.pubDate)}</time>
+        <a href={`/blog/${post.id}`}>{post.data.title}</a>{" "}
+        <time datetime={day(post.data.pubDate)}>{day(post.data.pubDate)}</time>
         <p>{post.data.description}</p>
       </li>
     ))}

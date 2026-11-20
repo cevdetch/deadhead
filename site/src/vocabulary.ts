@@ -62,7 +62,7 @@ export const detectLabels: Record<Detectability, string> = {
 };
 
 export const detectBlurbs: Record<Detectability, string> = {
-  yes: "Matched exactly. Autofixable when the rule carries a fix.",
+  yes: "Matched exactly.",
   partial: "Reported as possible, and never autofixed.",
   no: "Needs human review.",
 };
@@ -79,12 +79,12 @@ export const scopeLabels: Record<Scope, string> = {
 };
 
 export const fixLabels: Record<FixOp, string> = {
-  "remove-element": "Removes the element",
-  "remove-attribute": "Removes the attribute",
-  "remove-attributes": "Removes the attributes",
-  "remove-token": "Removes the keyword",
-  "remove-tokens": "Removes the dead keywords",
-  none: "None — reports only",
+  "remove-element": "Automatic: removes the element",
+  "remove-attribute": "Automatic: removes the attribute",
+  "remove-attributes": "Automatic: removes the attributes",
+  "remove-token": "Automatic: removes the keyword",
+  "remove-tokens": "Automatic: removes the dead keywords",
+  none: "Manual change",
 };
 
 export const impactLabels: Record<Impact, string> = {

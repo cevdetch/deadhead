@@ -16,12 +16,12 @@ const INK = "#191a17";
 const MUTED = "#64665e";
 const PAPER = "#fdfdfb";
 const RULE = "#e3e3dc";
-const ACCENT = "#2f6f4f";
+const ACCENT = "#1a7244";
 
 const SEVERITY_COLORS = {
   harmful: "#b0242b",
   deprecated: "#8a5b14",
-  unnecessary: "#56576a",
+  unnecessary: "#45558a",
 } as const;
 
 export type OgSeverity = keyof typeof SEVERITY_COLORS;

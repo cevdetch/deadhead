@@ -32,7 +32,7 @@ const topics = [...groupRules(await getCollection("rules"), (rule) => rule.data.
     <ul class="rules">
       {topics.map(([tag, list]) => (
         <li>
-          <a href={`/topics/${tag}`}><code>{tagLabels[tag]}</code></a> <span>{list.length} rules</span><p>{tagBlurbs[tag]}</p>
+          <a href={`/topics/${tag}`}>{tagLabels[tag]}</a> <small>{list.length} rules</small><p>{tagBlurbs[tag]}</p>
         </li>
       ))}
     </ul>

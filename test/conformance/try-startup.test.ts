@@ -11,7 +11,7 @@ type Dom = Pick<ReturnType<typeof parseHTML>, "document" | "window">;
 let visit = 0;
 
 async function withPage(fragment: string, check: (page: Dom & { location: URL }) => Promise<void>): Promise<void> {
-  const { document, window } = parseHTML('<html><body><form id="try-form"><textarea id="try-input"></textarea><input id="try-file"></form><button id="try-share"></button><p id="try-status"></p><div id="try-results"></div><details id="try-fixed" hidden><textarea id="try-output"></textarea><button id="try-copy"></button></details><p id="try-from" hidden></p></body></html>');
+  const { document, window } = parseHTML('<html><body><form id="try-form"><textarea id="try-input"></textarea><button id="try-lint" type="button"></button><input id="try-file"></form><button id="try-share"></button><section id="try-report"><p id="try-from" hidden></p><p id="try-status"></p><div id="try-results"></div><details id="try-fixed" hidden><textarea id="try-output"></textarea><button id="try-copy"></button></details></section></body></html>');
   const location = new URL("https://deadhead.cevdet.ch/try" + fragment);
   const globals: Record<string, unknown> = {
     document, location,

@@ -23,10 +23,8 @@ const count = rules.length;
 >
     <h1>Rules</h1>
     <p class="lede">
-      {count} rules, grouped by where the thing lives.
-      Severity is a mutable field; the namespace in a ruleId is
-      permanent, because suppression comments and CI baselines are written
-      against it.
+      {count} rules, grouped by where the markup lives. A rule's id never
+      changes, so your suppression comments and baselines keep working.
     </p>
     <p>Browse the same rules <a href="/topics">by topic</a> or <a href="/impacts">by impact</a>.</p>
 
