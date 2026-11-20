@@ -33,7 +33,7 @@ test("try page handles clipboard and file failures, then recovers", async () => 
     denied = false;
     await click("try-copy");
     assert.equal(copied.includes('name="keywords"'), false);
-    assert.equal(status.textContent, "HTML copied.");
+    assert.match(status.textContent!, /^1 finding .* remaining\. HTML copied\.$/, "copy feedback keeps the report summary");
     const file = document.getElementById("try-file")!;
     Object.defineProperty(file, "files", { value: [{ async text() { throw new Error("unreadable"); } }], configurable: true });
     file.dispatchEvent(new window.Event("change"));
