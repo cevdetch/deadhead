@@ -28,6 +28,8 @@ export type LintView = {
   fixed: number;
   remaining: number;
   output: string;
+  /** Checked as a page (doctype or written `<html>`); otherwise a fragment. */
+  page: boolean;
 };
 
 const view = (finding: Finding): ViewFinding => ({
@@ -50,11 +52,11 @@ const view = (finding: Finding): ViewFinding => ({
  * each finding carries its edit; `lintSource` runs the full fix loop.
  */
 export function lintHtml(html: string, compiled: CompiledRules): LintView {
-  const { output, fixed, initialFindings, findings: remaining } = lintSource(html, "input.html", compiled, { fix: true });
+  const { output, fixed, initialFindings, findings: remaining, page } = lintSource(html, "input.html", compiled, { fix: true });
   const findings = initialFindings.map(view);
   const counts: Record<Severity, number> = { harmful: 0, deprecated: 0, unnecessary: 0 };
   for (const finding of findings) counts[finding.severity]++;
-  return { findings, counts, fixed, remaining: remaining.length, output };
+  return { findings, counts, fixed, remaining: remaining.length, output, page };
 }
 
 /**

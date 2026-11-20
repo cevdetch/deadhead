@@ -21,9 +21,15 @@ import {
 interface Props {
   rule: CollectionEntry<"rules">;
   sourceUrl: string;
+  /**
+   * "action" is what a reader arriving from a finding needs before the
+   * explanation: how bad it is, what --fix does and how to keep the markup.
+   * "details" is the reference record, after the explanation.
+   */
+  part: "action" | "details";
 }
 
-const { rule, sourceUrl } = Astro.props;
+const { rule, sourceUrl, part } = Astro.props;
 const { data } = rule;
 
 const known = new Set((await getCollection("rules")).map((r) => r.data.ruleId));
@@ -53,13 +59,18 @@ const matcher =
       : data.selector;
 ---
 
+{part === "action" ? (
 <dl>
   <div><dt>Severity</dt><dd data-severity={data.severity}>{severityLabels[data.severity]} <small>{severityBlurbs[data.severity]}</small></dd></div>
+  <div><dt>Fix</dt><dd>{fixLabels[data.fix.op]}{fixDetail}</dd></div>
+  <div><dt>Keep it</dt><dd><code>&lt;!-- deadhead-disable-next-line {data.ruleId} <span>--&gt;</span></code> <small><a href="/install#suppress">Other ways</a></small></dd></div>
+</dl>
+) : (
+<dl>
   <div><dt>Status</dt><dd>{statusLabels[data.status]}</dd></div>
   <div><dt>Basis</dt><dd>{basisLabels[data.standardsBasis]} <small>{basisBlurbs[data.standardsBasis]}</small></dd></div>
   <div><dt>Detectable</dt><dd>{detectLabels[data.detectability]} <small>{detectBlurbs[data.detectability]}</small></dd></div>
   <div><dt>Matches</dt><dd>{matcher ? <code>{matcher}</code> : "the whole document"} <small>{kindLabels[data.kind]} rule, {scopeLabels[data.scope]}.</small></dd></div>
-  <div><dt>Fix</dt><dd>{fixLabels[data.fix.op]}{fixDetail}</dd></div>
   {data.impacts.length > 0 && <div><dt>Impacts</dt><dd>{data.impacts.map((impact, i) => <>{i > 0 && ", "}<a href={`/impacts/${impact}`}>{impactLabels[impact]}</a></>)}</dd></div>}
   {data.tags.length > 0 && <div><dt>Topics</dt><dd>{data.tags.map((tag, i) => <>{i > 0 && ", "}<a href={`/topics/${tag}`}>{tagLabels[tag]}</a></>)}</dd></div>}
   {data.related.length > 0 && (
@@ -68,3 +79,4 @@ const matcher =
   <div><dt>Published</dt><dd><time datetime={data.pubDate.toISOString().slice(0, 10)}>{data.pubDate.toISOString().slice(0, 10)}</time></dd></div>
   <div><dt>Source</dt><dd><a href={sourceUrl}><code>content/rules/{data.ruleId}.md</code></a>. Out of date? <a href={`${REPO}/issues/new`}>Say so</a>.</dd></div>
 </dl>
+)}

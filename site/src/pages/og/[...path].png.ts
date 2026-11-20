@@ -4,7 +4,7 @@ import { generateOG, type OgInput } from "../../lib/og.ts";
 import { groupRules } from "../../lib/group.ts";
 import { ogSlugForPath } from "../../lib/og-path.ts";
 import { getPosts } from "../../lib/posts.ts";
-import { impactLabels, severityLabels, tagLabels } from "../../vocabulary.ts";
+import { impactLabels, tagLabels } from "../../vocabulary.ts";
 
 interface OgPage extends OgInput {
   path: string;
@@ -26,7 +26,7 @@ export async function getStaticPaths(): Promise<
         eyebrow: rule.data.ruleId,
         title: rule.data.title,
         badge: {
-          label: severityLabels[rule.data.severity],
+          label: rule.data.severity,
           severity: rule.data.severity,
         },
       } as OgInput,

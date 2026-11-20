@@ -65,6 +65,7 @@ const jsonLd = graph(
   description={description}
   jsonLd={jsonLd}
 >
+    <style slot="head" is:inline>@media (max-width:40rem){main>pre{white-space:pre-wrap;overflow-wrap:anywhere}}</style>
     <h1>Lint the HTML head for dead, deprecated and harmful markup</h1>
     <p class="lede">
       Deadheading is cutting the spent growth off a plant. This does that to
@@ -102,7 +103,8 @@ const jsonLd = graph(
       <h3>CLI</h3>
       <p>
         Walks files and directories, and expands globs itself. Stylish, JSON and
-        SARIF output, so CI annotates the diff. Exit codes are the contract. The{" "}
+        SARIF output. Exit codes are the contract, so it{" "}
+        <a href="/install#ci">fails a CI job</a> on findings. The{" "}
         <a href="/install#vite">Vite plugin</a> checks served HTML during
         development with the same parser and rules.
       </p>
@@ -130,14 +132,13 @@ const jsonLd = graph(
     </p>
 
     <h2>What it catches</h2>
-    <dl>
+    <ul class="rules">
       {namespaces.map(({ namespace, count, blurb }) => (
-        <div>
-          <dt><a href={`/rules#${namespace}`}><code>{namespace}/</code></a></dt>
-          <dd>{blurb}<small>{count} rules</small></dd>
-        </div>
+        <li>
+          <a href={`/rules#${namespace}`}><code>{namespace}/</code></a> <small>{count} rules</small><p>{blurb}</p>
+        </li>
       ))}
-    </dl>
+    </ul>
 
     <h2>The rules</h2>
     <p>

@@ -32,16 +32,17 @@ const example = `<!doctype html>
     .try-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-block-start:.6rem}
     .try-row small,#try-from{color:var(--muted);margin-inline-start:auto;overflow-wrap:anywhere}
     main button,#try-file::file-selector-button,#try-fixed summary{font:inherit;font-size:var(--small);padding:.45rem .9rem;border:1px solid var(--field);border-radius:6px;background:var(--sunk);color:var(--text);cursor:pointer}
-    #try-form [type=submit]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+    #try-lint{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
     #try-file{font:inherit;font-size:var(--small);color:var(--muted)}
     #try-status{padding:.6rem 1rem;border-radius:6px;background:var(--accent-bg)}
     #try-status:empty{display:none}
     #try-status span,.rules li>span{font-size:.75rem;border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem;margin-inline-start:.15rem;white-space:nowrap}
     .rules pre{grid-column:1/-1;margin:0}
     .rules li>p:last-child{color:var(--text)}
-    .rules small{color:var(--muted)}
-    #try-results p code{white-space:nowrap}
-    #try-fixed summary{display:inline-block}
+    #try-results h2{font:inherit}
+    #try-fixed summary{display:list-item;width:fit-content}
+    @media (max-width:40rem){#try-input{min-height:10rem}}
+    @media (pointer:coarse){.try-row small{display:none}}
   </style>
   <h1>Try deadhead</h1>
   <p class="lede">
@@ -51,17 +52,16 @@ const example = `<!doctype html>
     <label for="try-input">HTML</label>
     <textarea id="try-input" spellcheck="false">{example}</textarea>
     <div class="try-row">
-      <button type="submit">Lint</button>
+      <button id="try-lint" type="button">Lint</button>
       <input id="try-file" type="file" accept=".html,.htm,text/html" aria-label="Open an HTML file" />
       <button id="try-share" type="button">Copy link</button>
       <small><kbd>Ctrl</kbd> + <kbd>Enter</kbd> lints</small>
     </div>
   </form>
-  <p><small>Share links hold up to 16,000 characters of compressed HTML. Open larger files directly.</small></p>
   <noscript><p>The linter runs in your browser and needs JavaScript. The CLI does the same offline: see <a href="/install">Install</a>.</p></noscript>
   <section id="try-report" aria-label="Lint report">
     <p id="try-from" hidden></p>
-    <p id="try-status" role="status"></p>
+    <p id="try-status" role="status" aria-atomic="false"></p>
     <section id="try-results"></section>
     <details id="try-fixed" hidden>
       <summary>HTML after automatic fixes</summary>
@@ -99,7 +99,8 @@ const example = `<!doctype html>
     </li>
     <li>
       Copy link compresses the HTML into the address and copies it. Whoever opens
-      the link gets the same report.
+      the link gets the same report. Links hold up to 16,000 characters of
+      compressed HTML; open larger files directly.
     </li>
     <li>
       The <a href="/install#bookmarklet">bookmarklet</a>'s full report button

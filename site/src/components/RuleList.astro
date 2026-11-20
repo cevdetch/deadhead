@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { severityLabels } from "../vocabulary.ts";
 
 interface Props {
   rules: CollectionEntry<"rules">[];
@@ -13,7 +12,7 @@ const { rules } = Astro.props;
   {rules.map((rule) => (
     <li>
       <a href={`/rules/${rule.data.ruleId}`}><code>{rule.data.ruleId}</code></a>{" "}
-      <span data-severity={rule.data.severity}>{severityLabels[rule.data.severity]}</span>
+      <span data-severity={rule.data.severity}>{rule.data.severity}</span>
       <p>{rule.data.description}</p>
     </li>
   ))}

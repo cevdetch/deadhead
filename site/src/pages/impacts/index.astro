@@ -37,7 +37,7 @@ const impacts = [...groupRules(await getCollection("rules"), (rule) => rule.data
     <ul class="rules">
       {impacts.map(([impact, list]) => (
         <li>
-          <a href={`/impacts/${impact}`}><code>{impactLabels[impact]}</code></a> <span>{list.length} rules</span><p>{impactBlurbs[impact]}</p>
+          <a href={`/impacts/${impact}`}>{impactLabels[impact]}</a> <small>{list.length} rules</small><p>{impactBlurbs[impact]}</p>
         </li>
       ))}
     </ul>

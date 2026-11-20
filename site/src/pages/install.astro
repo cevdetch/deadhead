@@ -3,26 +3,40 @@ import Layout, { REPO } from "../layouts/Layout.astro";
 import { bookmarkletUrl } from "../../../packages/browser/bookmarklet-url.ts";
 import bundle from "../../../packages/browser/bookmarklet.js?raw";
 const href = bookmarkletUrl(bundle);
+
+const contents = [
+  ["Set up", [["cli", "CLI"], ["ci", "CI"], ["eslint", "ESLint"], ["vite", "Vite"], ["bookmarklet", "Bookmarklet"]]],
+  ["Reference", [["suppress", "Suppressing"], ["pages", "Pages and fragments"], ["fixes", "Fixes"]]],
+] as const;
 ---
 
 <Layout
   title="Install deadhead: CLI, Vite, ESLint and bookmarklet"
   description="Install and run deadhead: the CLI, Vite plugin, bookmarklet, ESLint plugin, suppression comments and CI configuration."
 >
+  <style slot="head" is:inline>
+    [aria-label="On this page"]{flex-direction:column;gap:.2rem}
+    .bookmarklet{display:inline-block;padding:.45rem .9rem;border:1px solid color-mix(in oklab,var(--muted) 75%,var(--bg));border-radius:6px;background:var(--sunk);font:650 1rem var(--mono);text-decoration:none;cursor:grab}
+  </style>
     <h1>Install</h1>
     <p class="lede">
       Check HTML in your browser, from your terminal or as you develop.
       The CLI and ESLint plugin need Node 24.8 or newer and use ESM.
     </p>
+    <nav aria-label="On this page">
+      {contents.map(([group, links]) => (
+        <p>{group}: {links.map(([id, label], i) => <>{i > 0 && " · "}<a href={`#${id}`}>{label}</a></>)}</p>
+      ))}
+    </nav>
 
-    <h2>Try without installing</h2>
+    <h2 id="try">Try without installing</h2>
     <p>
       <a href="/try">Paste HTML into Try</a> to see findings, explanations and
       the fixed HTML. To inspect a page you have open, use the{" "}
       <a href="#bookmarklet">bookmarklet</a>.
     </p>
 
-    <h2>CLI</h2>
+    <h2 id="cli">CLI</h2>
     <p>Check one file or a built site. No configuration is required:</p>
     <pre><code>npx deadhead index.html
 npx deadhead dist</code></pre>
@@ -71,6 +85,60 @@ cat page.html | npx deadhead - --stdin-filename page.html</code></pre>
       <code>--fail-on</code> threshold, <strong>1</strong> threshold met,{" "}
       <strong>2</strong> usage, config or I/O error. A broken invocation never
       looks like a clean run.
+    </p>
+
+    <h2 id="ci">CI</h2>
+    <p>
+      Build the site, then run the CLI over its output. Any finding fails the
+      job, and the log lists each one with its line and rule link. For GitHub
+      Actions, in <code>.github/workflows/html.yml</code>:
+    </p>
+    <pre><code>name: HTML
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  deadhead:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build
+      - run: npx deadhead dist</code></pre>
+    <p>
+      On a site with existing findings, record them in a baseline and commit
+      it. From then on the job fails only on findings the baseline does not
+      cover:
+    </p>
+    <pre><code>npx deadhead --baseline .deadhead-baseline.json --update-baseline dist  # once
+npx deadhead --baseline .deadhead-baseline.json dist                    # in CI</code></pre>
+    <p>
+      The baseline counts findings per file and rule rather than storing line
+      numbers, so moving markup around does not break it. To start with only
+      the worst, add <code>--fail-on=harmful</code>.
+    </p>
+
+    <h2 id="eslint">ESLint</h2>
+    <p>
+      <code>eslint-plugin-deadhead</code> reports the same findings through{" "}
+      <code>@html-eslint/parser</code>, with autofix. It is a convenience for
+      editor feedback: if your head tags live in JSX, Vue or Svelte, an HTML
+      parser will not see them, and the bookmarklet will. It needs ESLint 10.
+    </p>
+    <pre><code>npm install --save-dev eslint eslint-plugin-deadhead</code></pre>
+    <pre><code>// eslint.config.js
+import &lbrace; defineConfig &rbrace; from "eslint/config";
+import deadhead from "eslint-plugin-deadhead";
+
+export default defineConfig([deadhead.configs.recommended]);</code></pre>
+    <p>
+      <code>recommended</code> turns on every harmful and deprecated rule:
+      harmful ones are errors and the rest warnings. <code>all</code> adds the
+      unnecessary ones. Rule names are the rule ids:{" "}
+      <code>deadhead/meta/keywords</code>.
     </p>
 
     <h2 id="vite">Vite</h2>
@@ -127,51 +195,9 @@ export default defineConfig(&lbrace;
       your framework finishes its build.
     </p>
 
-    <h2>Pages and fragments</h2>
-    <p>
-      A file with a doctype or an <code>&lt;html&gt;</code> tag is a page.
-      Anything else is a fragment: a layout partial, a component, a template.
-      A fragment is checked for the markup it holds, never for head content it
-      lacks, since other files supply that. Markup outside a written{" "}
-      <code>&lt;head&gt;</code> or <code>&lt;body&gt;</code> gets both the head
-      and the body rules.
-    </p>
-
-    <h2>Fixes are text edits, never re-serialised markup</h2>
-    <p>
-      <code>--fix</code> splices byte ranges out of the original file. It never
-      parses your document and prints it back, because that rewrites quote
-      style and attribute order across the
-      whole file. Whitespace and character references shift with them, turning
-      a one-line fix into a thousand-line diff.
-    </p>
-    <p>
-      Two things are never fixed automatically: a rule declaring{" "}
-      <code>fix: &lbrace; op: "none" &rbrace;</code>, and any rule whose
-      detectability is{" "}
-      <code>partial</code>. If the rule is not certain, it does not get to edit
-      your file.
-    </p>
-
-    <h2>Suppressing a finding</h2>
-    <pre><code>&lt;!-- deadhead-disable-next-line meta/http-equiv-x-ua-compatible --&gt;
-&lt;!-- deadhead-disable link/shortcut-icon --&gt;
-&lt;!-- deadhead-enable --&gt;</code></pre>
-    <p>
-      A bare <code>deadhead-disable</code> with no rule id suppresses everything
-      until the matching enable. The engine reads the contents of{" "}
-      <code>&lt;pre&gt;</code>, <code>&lt;code&gt;</code>,{" "}
-      <code>&lt;textarea&gt;</code>, <code>&lt;samp&gt;</code> and{" "}
-      <code>&lt;kbd&gt;</code> as content rather than markup, and skips{" "}
-      <code>&lt;iframe&gt;</code>, <code>&lt;noembed&gt;</code>,{" "}
-      <code>&lt;noframes&gt;</code>, <code>&lt;noscript&gt;</code>,{" "}
-      <code>&lt;plaintext&gt;</code>, <code>&lt;title&gt;</code> and{" "}
-      <code>&lt;xmp&gt;</code>, which an HTML parser reads as text.
-    </p>
-
     <h2 id="bookmarklet">Bookmarklet</h2>
-    <p>Drag this link to your bookmarks bar, then click it on any page:</p>
-    <p><a href={href}>deadhead</a></p>
+    <p>Drag this to your bookmarks bar, then click it on any page:</p>
+    <p><a class="bookmarklet" href={href}>deadhead</a></p>
     <p>
       It reads the rendered page, where frameworks have already assembled the head,
       and draws its findings in a panel. It loads nothing and runs no eval, so a
@@ -187,24 +213,59 @@ export default defineConfig(&lbrace;
       a page and the offending tags outline themselves.
     </p>
 
-    <h2>ESLint</h2>
+    <h2 id="suppress">Suppressing a finding</h2>
     <p>
-      <code>eslint-plugin-deadhead</code> reports the same findings through{" "}
-      <code>@html-eslint/parser</code>, with autofix. It is a convenience for
-      editor feedback: if your head tags live in JSX, Vue or Svelte, an HTML
-      parser will not see them, and the bookmarklet will. It needs ESLint 10.
+      To keep markup a rule reports, put a comment on the line before the one
+      the finding names, or around a block:
     </p>
-    <pre><code>npm install --save-dev eslint eslint-plugin-deadhead</code></pre>
-    <pre><code>// eslint.config.js
-import &lbrace; defineConfig &rbrace; from "eslint/config";
-import deadhead from "eslint-plugin-deadhead";
-
-export default defineConfig([deadhead.configs.recommended]);</code></pre>
+    <pre><code>&lt;!-- deadhead-disable-next-line meta/http-equiv-x-ua-compatible --&gt;
+&lt;!-- deadhead-disable link/shortcut-icon --&gt;
+&lt;!-- deadhead-enable --&gt;</code></pre>
     <p>
-      <code>recommended</code> turns on every harmful and deprecated rule:
-      harmful ones are errors and the rest warnings. <code>all</code> adds the
-      unnecessary ones. Rule names are the rule ids:{" "}
-      <code>deadhead/meta/keywords</code>.
+      A bare <code>deadhead-disable</code> with no rule id suppresses everything
+      until the matching enable. The engine reads the contents of{" "}
+      <code>&lt;pre&gt;</code>, <code>&lt;code&gt;</code>,{" "}
+      <code>&lt;textarea&gt;</code>, <code>&lt;samp&gt;</code> and{" "}
+      <code>&lt;kbd&gt;</code> as content rather than markup, and skips{" "}
+      <code>&lt;iframe&gt;</code>, <code>&lt;noembed&gt;</code>,{" "}
+      <code>&lt;noframes&gt;</code>, <code>&lt;noscript&gt;</code>,{" "}
+      <code>&lt;plaintext&gt;</code>, <code>&lt;title&gt;</code> and{" "}
+      <code>&lt;xmp&gt;</code>, which an HTML parser reads as text.
+    </p>
+    <p>To turn a rule off for every file, set it to <code>"off"</code> in <code>deadhead.config.ts</code>:</p>
+    <pre><code>import &lbrace; defineConfig &rbrace; from "deadhead";
+
+export default defineConfig(&lbrace; rules: &lbrace; "meta/keywords": "off" &rbrace; &rbrace;);</code></pre>
+    <p>
+      The bookmarklet and <code>deadhead.css</code> read the rendered page, which
+      carries no line numbers to match comments against, so they still show
+      suppressed findings.
+    </p>
+
+    <h2 id="pages">Pages and fragments</h2>
+    <p>
+      A file with a doctype or an <code>&lt;html&gt;</code> tag is a page.
+      Anything else is a fragment: a layout partial, a component, a template.
+      A fragment is checked for the markup it holds, never for head content it
+      lacks, since other files supply that. Markup outside a written{" "}
+      <code>&lt;head&gt;</code> or <code>&lt;body&gt;</code> gets both the head
+      and the body rules.
+    </p>
+
+    <h2 id="fixes">Fixes are text edits, never re-serialised markup</h2>
+    <p>
+      <code>--fix</code> splices byte ranges out of the original file. It never
+      parses your document and prints it back, because that rewrites quote
+      style and attribute order across the
+      whole file. Whitespace and character references shift with them, turning
+      a one-line fix into a thousand-line diff.
+    </p>
+    <p>
+      Two things are never fixed automatically: a rule declaring{" "}
+      <code>fix: &lbrace; op: "none" &rbrace;</code>, and any rule whose
+      detectability is{" "}
+      <code>partial</code>. If the rule is not certain, it does not get to edit
+      your file.
     </p>
 
     <p>

@@ -21,7 +21,7 @@ export type LintOptions = { skipTemplates?: boolean; fix?: boolean; headOnly?: b
 const MAX_FIX_PASSES = 10;
 
 function analyse(source: string, compiled: CompiledRules, options: LintOptions): {
-  findings: Finding[]; warnings: { line: number; id: string }[];
+  findings: Finding[]; warnings: { line: number; id: string }[]; page: boolean;
 } {
   const parsed = parseHtml(source);
   const suppressions = parseSuppressions(parsed.comments);
@@ -32,7 +32,11 @@ function analyse(source: string, compiled: CompiledRules, options: LintOptions):
     // is null and the attrRange lookups are skipped.
     fix: options.fix === true,
   });
-  return { findings, warnings: suppressions.ids().filter(({ id }) => !compiled.ruleIds.has(id)) };
+  return {
+    findings,
+    warnings: suppressions.ids().filter(({ id }) => !compiled.ruleIds.has(id)),
+    page: parsed.doc.isPage(),
+  };
 }
 
 /**
@@ -44,12 +48,18 @@ export function lintSource(
   file: string,
   compiled: CompiledRules,
   options: LintOptions,
-): { file: string; findings: Finding[]; initialFindings: Finding[]; fixed: number; output: string; warnings: { line: number; id: string }[] } {
+): {
+  file: string; findings: Finding[]; initialFindings: Finding[]; fixed: number; output: string;
+  warnings: { line: number; id: string }[];
+  /** Whether the original source was checked as a page; false for a fragment. */
+  page: boolean;
+} {
   let current = source;
   let fixed = 0;
   let analysis = analyse(current, compiled, options);
   // The playground displays original findings alongside the final fixed text.
   const initialFindings = analysis.findings;
+  const { page } = analysis;
 
   if (options.fix === true) {
     for (let pass = 0; pass < MAX_FIX_PASSES; pass++) {
@@ -67,7 +77,7 @@ export function lintSource(
     }
   }
 
-  return { file, ...analysis, initialFindings, fixed, output: current };
+  return { file, ...analysis, page, initialFindings, fixed, output: current };
 }
 
 /**
