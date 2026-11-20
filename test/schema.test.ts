@@ -147,12 +147,16 @@ test("no rule id is exempt from the naming checks", async () => {
   assert.equal("LONG_DESCRIPTION_IDS" in schema, false);
 });
 
-test("an element title that does not start with < is rejected", () => {
-  assert.match(messages({ title: "meta name example" }).join("\n"), /must start with `<`/);
+test("an element title that does not start with < or [ is rejected", () => {
+  assert.match(messages({ title: "meta name example" }).join("\n"), /must start with `<` or `\[`/);
 });
 
 test("an element title in code shape passes", () => {
   assert.deepEqual(messages({ title: '<meta name="example">' }), []);
+});
+
+test("an attribute-selector title passes", () => {
+  assert.deepEqual(messages({ title: "[dropzone]" }), []);
 });
 
 test("a head-namespace title without < passes", () => {
