@@ -32,7 +32,7 @@ import { decodeAttribute, decodeText } from "./char-refs.ts";
 type Node = {
   type: string;
   range?: [number, number];
-  loc?: { start: { line: number; column: number } };
+  loc?: { start: { line: number; column: number }; end: { line: number; column: number } };
   name?: string;
   /** A string on `Text`; a `ScriptTagContent`/`StyleTagContent` node on `ScriptTag`/`StyleTag`. */
   value?: string | Node;
@@ -250,7 +250,7 @@ export function fromProgram(program: unknown, source: string): Parsed {
     const tag = ELEMENT_TAG(node);
     if (node.type === "Comment" && node.range && node.loc) {
       const text = typeof node.value === "string" ? node.value : node.value?.value;
-      if (typeof text === "string") comments.push({ text, line: node.loc.start.line, offset: node.range[0] });
+      if (typeof text === "string") comments.push({ text, line: node.loc.start.line, endLine: node.loc.end.line, offset: node.range[0] });
     }
     if (tag !== null) {
       elements.push(node);

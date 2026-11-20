@@ -255,6 +255,7 @@ Silence a finding in the markup itself:
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 ```
 
+A next-line comment wrapped over several lines covers the line after its `-->`.
 `<!-- deadhead-disable -->` (optionally with rule ids) turns findings off until
 `<!-- deadhead-enable -->`. Only actual HTML comments act as directives; strings
 inside scripts, styles or attributes do not. The engine never lints contents of `<pre>`, `<code>`,

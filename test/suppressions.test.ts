@@ -19,6 +19,14 @@ test("disable-next-line suppresses only the following line", () => {
   assert.equal(is("meta/y", 3), false, "a different rule is untouched");
 });
 
+test("a disable-next-line comment wrapped over lines counts from the line after -->", () => {
+  // Formatters wrap long comments; the author still means the line after the comment.
+  const is = at(["a", "<!-- deadhead-disable-next-line", "     meta/x -->", "d", "e"].join("\n"));
+  assert.equal(is("meta/x", 3), false, "not the comment's last line");
+  assert.equal(is("meta/x", 4), true);
+  assert.equal(is("meta/x", 5), false);
+});
+
 test("a bare disable-next-line suppresses every rule", () => {
   const is = at(["a", "<!-- deadhead-disable-next-line -->", "c"].join("\n"));
   assert.equal(is("anything/at-all", 3), true);
