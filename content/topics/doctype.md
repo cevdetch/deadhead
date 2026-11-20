@@ -17,7 +17,7 @@ sizing and parts of CSS parsing follow the pre-standard behaviour that the
 out this page differently from the rest of the site. Nothing on the page shows it;
 `document.compatMode` reads `BackCompat`.
 
-Deadhead checks two things:
+Two rules apply:
 
 - [`document/doctype`](/rules/document/doctype) reports a page with no doctype, a doctype
   after text or an element, which the browser ignores, and any form other than

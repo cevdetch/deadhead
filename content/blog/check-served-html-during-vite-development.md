@@ -1,11 +1,11 @@
 ---
 title: "Check served HTML during Vite development"
-description: "Deadhead 0.3.0 adds a Vite plugin: check the HTML your dev server sends, with findings and advice in the terminal and DevTools console."
+description: "Version 0.3.0 adds a Vite plugin to deadhead: check the HTML your dev server sends, with findings and advice in the terminal and DevTools console."
 pubDate: "2026-10-13"
 draft: false
 ---
 
-Deadhead 0.3.0 adds `deadhead/vite`. Open a page during development and read its
+Version 0.3.0 of deadhead adds `deadhead/vite`. Open a page during development and read its
 findings in your terminal or DevTools console, with advice and a link to the
 sources behind each rule.
 
@@ -34,7 +34,7 @@ export default defineConfig({
 });
 ```
 
-Start the dev server and open a page. Deadhead checks the HTML Astro sends and
+Start the dev server and open a page. The plugin checks the HTML Astro sends and
 reports in the terminal and DevTools. A clean page reports no findings. Astro
 does not register the plugin from a top-level `plugins` property.
 

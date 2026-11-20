@@ -16,7 +16,7 @@ differently in Safari. And `xml:space` and `xlink:href` still work in every brow
 need their replacement written first: CSS `white-space` for the first, a plain `href` for the
 second.
 
-Deadhead reports eleven, all deprecated:
+Eleven rules apply, all deprecated:
 
 - [`attr/svg-version`](/rules/attr/svg-version),
   [`attr/svg-baseprofile`](/rules/attr/svg-baseprofile) and

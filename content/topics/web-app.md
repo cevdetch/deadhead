@@ -15,7 +15,7 @@ The leftover tags are dead weight at best. At worst they are a second copy of th
 name or behaviour that drifts away from the manifest, and nobody can tell from the markup
 which one a device uses.
 
-Deadhead reports eight, all unnecessary and all deleted by the fix:
+Eight rules apply, all unnecessary and all deleted by the fix:
 
 - [`meta/apple-mobile-web-app-capable`](/rules/meta/apple-mobile-web-app-capable),
   [`meta/apple-touch-fullscreen`](/rules/meta/apple-touch-fullscreen) and

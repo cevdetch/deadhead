@@ -14,7 +14,7 @@ and, since Safari 15.4, `icons` the home-screen image when no `apple-touch-icon`
 declared. The tags left over cost little,
 but each is a second place to keep a name or an icon in step with the manifest.
 
-Deadhead reports six, all unnecessary:
+Six rules apply, all unnecessary:
 
 - [`meta/apple-mobile-web-app-capable`](/rules/meta/apple-mobile-web-app-capable) and
   [`meta/apple-touch-fullscreen`](/rules/meta/apple-touch-fullscreen): standalone launch,

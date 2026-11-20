@@ -18,7 +18,7 @@ looks until the CSS that replaces it exists. Some of it no longer works at all. 
 are accessibility problems: `<marquee>` still scrolls, and moving text with no way to pause
 it fails WCAG 2.2.2, the criterion that also rules out recreating `<blink>`.
 
-Deadhead reports seventeen, all deprecated:
+Seventeen rules apply, all deprecated:
 
 - Attributes: [`attr/body-presentational`](/rules/attr/body-presentational),
   [`attr/text-presentational`](/rules/attr/text-presentational),

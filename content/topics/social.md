@@ -14,7 +14,7 @@ the card loses its picture. They read `property`, so an Open Graph name in `name
 invisible to them. And a page with Open Graph tags but no `og:image` shares as a card
 without one, since nothing else on the page stands in for the image.
 
-Deadhead reports eight:
+Eight rules apply:
 
 - [`meta/og-relative-url`](/rules/meta/og-relative-url): a relative URL in an Open Graph
   property. Harmful: write absolute `https://` URLs.

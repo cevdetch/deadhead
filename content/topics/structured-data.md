@@ -16,7 +16,7 @@ left: Google retired the data-vocabulary.org vocabulary in 2020, stopped showing
 sitelinks search box that `SearchAction` fed in November 2024, and retired the HowTo, FAQ
 and COVID announcement displays.
 
-Deadhead reports ten:
+Twelve rules apply:
 
 - [`script/json-ld-syntax`](/rules/script/json-ld-syntax) and
   [`script/json-ld-unescaped-lt`](/rules/script/json-ld-unescaped-lt): broken JSON, and a
@@ -26,6 +26,12 @@ Deadhead reports ten:
   and [`attr/data-vocabulary`](/rules/attr/data-vocabulary): markup for displays Google no
   longer draws. HowTo and FAQ are still valid schema.org, so keep them if another consumer
   reads them.
+- [`script/json-ld-required-properties`](/rules/script/json-ld-required-properties): a
+  ProfilePage or BreadcrumbList missing a property Google requires, so it gets no rich
+  result. Harmful.
+- [`script/json-ld-author-without-name`](/rules/script/json-ld-author-without-name): an
+  author, creator or publisher given as a bare `@id`, which credits nobody. Google reads
+  one page and finds no name there.
 - [`attr/microdata-without-itemscope`](/rules/attr/microdata-without-itemscope) and
   [`meta/dublin-core-without-schema`](/rules/meta/dublin-core-without-schema): metadata that
   binds to no item or vocabulary, so readers skip it.

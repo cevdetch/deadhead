@@ -15,7 +15,7 @@ The other problem is age. CSP has gone through three levels and several drafts, 
 directives that were dropped live on in copied policies. A policy that still lists them
 reads as stronger than the one the browser enforces.
 
-Deadhead reports nine:
+Nine rules apply:
 
 - [`meta/http-equiv-content-security-policy`](/rules/meta/http-equiv-content-security-policy):
   every meta policy. Harmful: send the header first, then delete the tag.

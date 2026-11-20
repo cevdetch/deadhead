@@ -14,7 +14,7 @@ CSS overrides them. Firefox still exposes `longdesc` on an image to screen reade
 deleting it can remove a description someone uses. And `<bgsound>` now plays nothing at all,
 so a page that depends on it is silent.
 
-Deadhead reports seven, all deprecated:
+Seven rules apply, all deprecated:
 
 - [`attr/media-presentational`](/rules/attr/media-presentational): layout written as
   attributes on images, objects and embeds.

@@ -16,7 +16,7 @@ no tag says. Two titles, or none, leave tabs, search results and screen readers 
 name for the page. Two visible `<main>` elements break landmark navigation, because people
 who jump to the main content get whichever comes first.
 
-Deadhead reports each:
+Each has a rule:
 
 - [`head/title`](/rules/head/title): zero, duplicate or empty `<title>`. Harmful.
 - [`head/canonical-multiple`](/rules/head/canonical-multiple),

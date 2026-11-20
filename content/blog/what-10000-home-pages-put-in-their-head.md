@@ -1,6 +1,6 @@
 ---
 title: "What 10,000 home pages put in their head"
-description: "Deadhead 0.2.1 on the Tranco top 10,000 home pages, as served and after scripts ran: what the most visited sites ship, with the data behind every number."
+description: "The Tranco top 10,000 home pages through deadhead 0.2.1, as served and after scripts ran: what the most visited sites ship, with the data behind every number."
 pubDate: "2026-10-05"
 draft: false
 results: "2026-10-04-top10000.json"
@@ -93,7 +93,7 @@ Some markup exists only after scripts run. Of the rendered pages that carry an
 {{rate attr/charset-obsolete injected}}, and for [`<style type>`](/rules/attr/style-type)
 {{rate attr/style-type injected}}. These come from third-party tags. A linter that reads only
 the served HTML misses them, and one that reads only the DOM reports markup the site did not
-write. Deadhead's CLI reads the first; its bookmarklet reads the second.
+write. The deadhead CLI reads the first; its bookmarklet reads the second.
 
 ## Platforms
 

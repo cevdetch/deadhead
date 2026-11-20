@@ -21,7 +21,7 @@ the code around version 95, and Firefox and Safari had deprecated it years befor
 [Service workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) took
 over offline support.
 
-Deadhead reports both:
+Each has a rule:
 
 - [`meta/http-equiv-cache-pragmas`](/rules/meta/http-equiv-cache-pragmas) reports the five
   cache names in `http-equiv`, and the fix deletes the element. If the tag records an

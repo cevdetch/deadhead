@@ -16,7 +16,7 @@ show the markup it was used to show. And the ruby elements `<rb>` and `<rtc>` re
 differently across engines: `<rtc>` was Gecko's alone, and Chromium and WebKit misplace its
 annotations.
 
-Deadhead reports nine, all deprecated and none autofixed, because each replacement is a
+Nine rules apply, all deprecated and none autofixed, because each replacement is a
 choice about what the text means:
 
 - [`element/tt`](/rules/element/tt): use `code`, `kbd`, `samp` or `var`, or CSS for the

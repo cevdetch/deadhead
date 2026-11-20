@@ -16,7 +16,7 @@ went in Chrome 80, in early 2020. Since then the old markup does nothing in any 
 link loads nothing. The leftovers still look like working component plumbing, which is why
 they are worth reporting.
 
-Deadhead reports three:
+Three rules apply:
 
 - [`element/content`](/rules/element/content) and [`element/shadow`](/rules/element/shadow),
   both deprecated. Neither has an autofix: either can hold fallback content that renders

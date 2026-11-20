@@ -16,7 +16,7 @@ both still honour `X-UA-Compatible`. Microsoft's
 [lifecycle FAQ](https://learn.microsoft.com/en-us/lifecycle/faq/internet-explorer-microsoft-edge)
 has the dates.
 
-Deadhead reports seven:
+Seven rules apply:
 
 - [`meta/http-equiv-x-ua-compatible`](/rules/meta/http-equiv-x-ua-compatible): the document
   mode switch. Unnecessary, with no autofix, because a site served in IE mode may still

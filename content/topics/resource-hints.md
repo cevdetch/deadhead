@@ -16,7 +16,7 @@ image applies to a request that starts late. Speculation rules that fail to pars
 dropped whole. Then there are hints from older drafts: `importance`, `rel="subresource"` and
 `rel="prerender"`, which Chrome now maps to a prefetch with no render.
 
-Deadhead reports twelve:
+Twelve rules apply:
 
 - Preloads that waste the download:
   [`link/preload-as-missing`](/rules/link/preload-as-missing),
