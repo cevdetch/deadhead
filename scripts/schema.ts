@@ -68,6 +68,7 @@ export const META_KEYS = [
   "title",
   "description",
   "pubDate",
+  "updatedDate",
   "status",
   "severity",
   "standardsBasis",
@@ -239,15 +240,42 @@ function stringList(
   return out;
 }
 
+/**
+ * A quoted `YYYY-MM-DD` that is a real calendar date, or null when absent or
+ * invalid (a missing required date is reported elsewhere).
+ */
+function isoDate(raw: unknown, key: string, issues: Issue[]): string | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== "string") {
+    issues.push(field([key], 'must be a quoted ISO date string, e.g. "2026-07-12"'));
+    return null;
+  }
+  if (!ISO_DATE.test(raw)) {
+    issues.push(field([key], `\`${raw}\` is not an ISO date (YYYY-MM-DD)`));
+    return null;
+  }
+  // Round-trip so 2026-02-30 and 2026-13-01 are rejected, not silently rolled over.
+  const iso = new Date(`${raw}T00:00:00Z`);
+  if (Number.isNaN(iso.getTime()) || iso.toISOString().slice(0, 10) !== raw) {
+    issues.push(field([key], `\`${raw}\` is not a real calendar date`));
+    return null;
+  }
+  return raw;
+}
+
 export type FrontmatterResult =
   | { ok: true; meta: RuleMeta }
   | { ok: false; issues: Issue[] };
 
 /**
  * Validate parsed frontmatter. Takes a plain object so this stays independent
- * of the YAML library; the caller maps `issue.path` back to a line.
+ * of the YAML library; the caller maps `issue.path` back to a line. `today`
+ * (`YYYY-MM-DD`, UTC) bounds `updatedDate`; tests pin it.
  */
-export function validateFrontmatter(data: unknown): FrontmatterResult {
+export function validateFrontmatter(
+  data: unknown,
+  today: string = new Date().toISOString().slice(0, 10),
+): FrontmatterResult {
   const issues: Issue[] = [];
 
   if (!isPlainObject(data)) {
@@ -303,27 +331,12 @@ export function validateFrontmatter(data: unknown): FrontmatterResult {
   }
   const replacement = nonEmptyString(data["replacement"], ["replacement"], issues);
 
-  const pubDateRaw: unknown = data["pubDate"];
-  let pubDate: string | null = null;
-  if (pubDateRaw === undefined || pubDateRaw === null) {
-    // already reported as missing
-  } else if (typeof pubDateRaw !== "string") {
-    issues.push(
-      field(["pubDate"], 'must be a quoted ISO date string, e.g. "2026-07-12"'),
-    );
-  } else {
-    const m = ISO_DATE.exec(pubDateRaw);
-    if (!m) {
-      issues.push(field(["pubDate"], `\`${pubDateRaw}\` is not an ISO date (YYYY-MM-DD)`));
-    } else {
-      // Round-trip so 2026-02-30 and 2026-13-01 are rejected, not silently rolled over.
-      const iso = new Date(`${pubDateRaw}T00:00:00Z`);
-      if (Number.isNaN(iso.getTime()) || iso.toISOString().slice(0, 10) !== pubDateRaw) {
-        issues.push(field(["pubDate"], `\`${pubDateRaw}\` is not a real calendar date`));
-      } else {
-        pubDate = pubDateRaw;
-      }
-    }
+  const pubDate = isoDate(data["pubDate"], "pubDate", issues);
+  const updatedDate = isoDate(data["updatedDate"], "updatedDate", issues);
+  if (updatedDate !== null && pubDate !== null && updatedDate <= pubDate) {
+    issues.push(field(["updatedDate"], `\`${updatedDate}\` must be later than pubDate (\`${pubDate}\`)`));
+  } else if (updatedDate !== null && updatedDate > today) {
+    issues.push(field(["updatedDate"], `\`${updatedDate}\` is in the future`));
   }
 
   const status = oneOf(data["status"], STATUS, ["status"], issues);
@@ -584,6 +597,7 @@ export function validateFrontmatter(data: unknown): FrontmatterResult {
       title: title as string,
       description: description as string,
       pubDate: pubDate as string,
+      updatedDate,
       status: status as Status,
       severity: severity as Severity,
       standardsBasis: standardsBasis as StandardsBasis,

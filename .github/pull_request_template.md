@@ -12,6 +12,7 @@
 ruleId: <!-- namespace/name; must match the file path -->
 
 - [ ] Frontmatter validates (`pnpm validate:rules`), and `ruleId` matches the file path
+- [ ] A changed rule whose guidance moved has a new `updatedDate` (CONTRIBUTING § Changing a rule)
 - [ ] At least two independent sources under `## Resources`
 - [ ] `## Why avoid` (or `## Why use`) states the concrete consequence, not just "it's old"
 - [ ] `## Use instead` has runnable markup, or explicitly says "delete it"

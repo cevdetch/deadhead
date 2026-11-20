@@ -20,6 +20,7 @@ const meta = (overrides: Partial<RuleMeta> = {}): RuleMeta => ({
   title: "Test rule",
   description: "A description.",
   pubDate: "2026-01-01",
+  updatedDate: null,
   status: "avoid",
   severity: "unnecessary",
   standardsBasis: "spec",
@@ -51,7 +52,7 @@ test("slim literals carry exactly the keys the bookmarklet reads", () => {
   ]);
   // Prose and site data must not ride the javascript: URL; the replacement
   // lives on the rule page each finding links to.
-  for (const dropped of ["title", "pubDate", "status", "standardsBasis", "tags", "impacts", "related", "fix", "replacement"]) {
+  for (const dropped of ["title", "pubDate", "updatedDate", "status", "standardsBasis", "tags", "impacts", "related", "fix", "replacement"]) {
     assert.ok(!(dropped in slim), `${dropped} leaked into the slim literal`);
   }
 });

@@ -48,9 +48,9 @@ export const GLOBAL = "__deadhead";
 /**
  * Exactly the keys the bookmarklet reads: the engine dispatches on selector,
  * kind, scope and match, and reports ruleId, severity, description and
- * detectability. The rest (title, pubDate, status, standardsBasis, tags,
- * impacts, related) is prose and site data that would ride the javascript:
- * URL unread; `fix` feeds `computeFix` alone, which the bookmarklet swaps for
+ * detectability. The rest (title, pubDate, updatedDate, status,
+ * standardsBasis, tags, impacts, related) is prose and site data that would
+ * ride the javascript: URL unread; `fix` feeds `computeFix` alone, which the bookmarklet swaps for
  * a stub. `replacement` stays on the rule page each finding links to: it was
  * a third of the payload (10.9 kB of 29.3) against the browsers' 64 kB cap.
  */

@@ -4,9 +4,11 @@
 import type { CollectionEntry } from "astro:content";
 import type { RuleDoc } from "./rule-markdown.ts";
 
-/** A collection entry as a `RuleDoc`, dated with the git commit map from `ruleCommitDates`. */
-export const toRuleDoc = (rule: CollectionEntry<"rules">, committed: Map<string, string>, modifiedDate: (p: string, c: string | undefined) => string): RuleDoc => {
-  const pubDate = rule.data.pubDate.toISOString().slice(0, 10);
+const day = (date: Date): string => date.toISOString().slice(0, 10);
+
+/** A collection entry as a `RuleDoc`. */
+export const toRuleDoc = (rule: CollectionEntry<"rules">): RuleDoc => {
+  const pubDate = day(rule.data.pubDate);
   return {
     ruleId: rule.data.ruleId,
     title: rule.data.title,
@@ -17,7 +19,7 @@ export const toRuleDoc = (rule: CollectionEntry<"rules">, committed: Map<string,
     fixOp: rule.data.fix.op,
     replacement: rule.data.replacement,
     pubDate,
-    modified: modifiedDate(pubDate, committed.get(rule.data.ruleId)),
+    modified: rule.data.updatedDate ? day(rule.data.updatedDate) : pubDate,
     body: rule.body ?? "",
   };
 };

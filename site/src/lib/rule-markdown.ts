@@ -13,7 +13,7 @@ export type RuleDoc = {
   replacement: string;
   /** `YYYY-MM-DD` */
   pubDate: string;
-  /** `YYYY-MM-DD`, the later of `pubDate` and the newest commit */
+  /** `YYYY-MM-DD`: `updatedDate`, else `pubDate` */
   modified: string;
   body: string;
 };

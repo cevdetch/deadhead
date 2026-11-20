@@ -159,6 +159,23 @@ test("a head-namespace title without < passes", () => {
   assert.deepEqual(messages({ ruleId: "head/title", kind: "document", title: "Head with no title", selector: undefined, match: "logic" }), []);
 });
 
+test("updatedDate is optional, later than pubDate and not in the future", () => {
+  const dated = (updatedDate: unknown) => {
+    const result = validateFrontmatter({ ...base(), updatedDate }, "2026-03-01");
+    return result.ok ? result.meta.updatedDate : result.issues.map((i) => i.message).join("\n");
+  };
+  const plain = validateFrontmatter(base());
+  assert.ok(plain.ok);
+  assert.equal(plain.meta.updatedDate, null);
+  assert.equal(dated("2026-02-01"), "2026-02-01");
+  assert.equal(dated("2026-03-01"), "2026-03-01");
+  assert.match(String(dated("2026-01-02")), /must be later than pubDate/);
+  assert.match(String(dated("2026-01-01")), /must be later than pubDate/);
+  assert.match(String(dated("2026-03-02")), /in the future/);
+  assert.match(String(dated("2026-02-30")), /not a real calendar date/);
+  assert.match(String(dated(20260201)), /quoted ISO date/);
+});
+
 test("pubDate must be a real ISO calendar date", () => {
   assert.match(messages({ pubDate: "12/07/2026" }).join("\n"), /not an ISO date/);
   assert.match(messages({ pubDate: "2026-02-30" }).join("\n"), /not a real calendar date/);
