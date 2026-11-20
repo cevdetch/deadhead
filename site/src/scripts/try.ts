@@ -40,16 +40,24 @@ const badge = (severity: string, text: string): HTMLSpanElement => {
   return span;
 };
 
+// The summary of the last report. Copy and file messages are added after it
+// rather than replacing it, so the status keeps describing the findings shown.
+let summary: (string | Node)[] = [];
+
+const say = (message: string): void => {
+  status.replaceChildren(...summary, summary.length > 0 ? " " : "", message);
+};
+
 function render(view: LintView): void {
   results.replaceChildren();
   const total = view.findings.length;
-  if (total === 0) status.textContent = "No findings.";
+  if (total === 0) summary = ["No findings."];
   else {
-    status.replaceChildren(`${total} finding${total === 1 ? "" : "s"}`);
+    summary = [`${total} finding${total === 1 ? "" : "s"}`];
     for (const severity of ["harmful", "deprecated", "unnecessary"] as const) {
-      if (view.counts[severity] > 0) status.append(badge(severity, `${view.counts[severity]} ${severity}`));
+      if (view.counts[severity] > 0) summary.push(" ", badge(severity, `${view.counts[severity]} ${severity}`));
     }
-    status.append(` · ${view.fixed} automatically fixed · ${view.remaining} remaining`);
+    summary.push(` · ${view.fixed} automatically fixed · ${view.remaining} remaining.`);
     const list = el("ol");
     list.className = "rules";
     for (const finding of view.findings) {
@@ -63,13 +71,14 @@ function render(view: LintView): void {
       const snippet = el("pre");
       snippet.append(el("code", finding.snippet));
       const advice = el("p", finding.replacement);
-      advice.append(finding.fixable ? " Automatic fix." : " Manual change.");
+      advice.append(" ", el("small", finding.fixable ? "Automatic fix." : "Manual change."));
       if (finding.detail !== null) advice.append(el("br"), el("small", finding.detail));
       item.append(link, badge(finding.severity, `${finding.severity}${finding.possible ? ", possible" : ""}`), message, snippet, advice);
       list.append(item);
     }
     results.append(list);
   }
+  status.replaceChildren(...summary);
   fixedBox.hidden = view.fixed === 0;
   output.value = view.output;
 }
@@ -80,6 +89,7 @@ const run = async (): Promise<void> => {
     render(lintHtml(input.value, compiled));
   }
   catch {
+    summary = [];
     results.replaceChildren();
     fixedBox.hidden = true;
     output.value = "";
@@ -107,12 +117,12 @@ file.addEventListener("change", async () => {
     if (file.files?.[0] !== chosen) return;
     input.value = text;
     await run();
-  } catch { status.textContent = "Could not read this file. Paste its HTML instead."; }
+  } catch { say("Could not read this file. Paste its HTML instead."); }
 });
 
 async function copyText(text: string, success: string, failure: string): Promise<void> {
-  try { await navigator.clipboard.writeText(text); status.textContent = success; }
-  catch { status.textContent = failure; }
+  try { await navigator.clipboard.writeText(text); say(success); }
+  catch { say(failure); }
 }
 
 share.addEventListener("click", async () => {
@@ -120,13 +130,13 @@ share.addEventListener("click", async () => {
   try {
     const fragment = await encodeShare(input.value);
     if (fragment.length > SHARE_LIMIT) {
-      status.textContent = `This HTML is too long for a share link (${fragment.length} of ${SHARE_LIMIT} characters).`;
+      say(`This HTML is too long for a share link (${fragment.length} of ${SHARE_LIMIT} characters).`);
       return;
     }
     history.replaceState(null, "", fragment);
     await copyText(location.href, "Link copied. It holds the HTML.", "Could not copy the link. Copy it from the address bar.");
   } catch (error) {
-    status.textContent = error instanceof RangeError ? error.message : "Could not create a link. Copy the HTML instead.";
+    say(error instanceof RangeError ? error.message : "Could not create a link. Copy the HTML instead.");
   } finally { share.disabled = false; }
 });
 

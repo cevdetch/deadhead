@@ -25,19 +25,21 @@ const example = `<!doctype html>
   description="Paste HTML or open a file to read deadhead findings and explanations, then copy HTML after automatic fixes. Runs in your browser."
 >
   <style slot="head" is:inline>
-    #try-input,#try-output{width:100%;padding:.8rem 1rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:inherit;font:var(--small)/1.55 var(--mono);resize:vertical}
+    main{--field:color-mix(in oklab,var(--muted) 75%,var(--bg))}
+    #try-input,#try-output{width:100%;padding:.8rem 1rem;border:1px solid var(--field);border-radius:6px;background:var(--sunk);color:inherit;font:var(--small)/1.55 var(--mono);resize:vertical}
     #try-input{min-height:18rem}
     #try-report{min-height:100svh}
     .try-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-block-start:.6rem}
     .try-row small,#try-from{color:var(--muted);margin-inline-start:auto;overflow-wrap:anywhere}
-    #try-form button,#try-file::file-selector-button,#try-fixed summary{font:inherit;font-size:var(--small);padding:.45rem .9rem;border:1px solid var(--line);border-radius:6px;background:var(--sunk);color:var(--text);cursor:pointer}
+    main button,#try-file::file-selector-button,#try-fixed summary{font:inherit;font-size:var(--small);padding:.45rem .9rem;border:1px solid var(--field);border-radius:6px;background:var(--sunk);color:var(--text);cursor:pointer}
     #try-form [type=submit]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
-    #try-file{font-size:var(--small);color:var(--muted)}
+    #try-file{font:inherit;font-size:var(--small);color:var(--muted)}
     #try-status{padding:.6rem 1rem;border-radius:6px;background:var(--accent-bg)}
     #try-status:empty{display:none}
-    #try-status span,.rules li>span{font-size:.75rem;border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem;margin-inline-start:.4rem;white-space:nowrap}
+    #try-status span,.rules li>span{font-size:.75rem;border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem;margin-inline-start:.15rem;white-space:nowrap}
     .rules pre{grid-column:1/-1;margin:0}
-    .rules li>p:first-of-type{color:var(--text)}
+    .rules li>p:last-child{color:var(--text)}
+    .rules small{color:var(--muted)}
     #try-results p code{white-space:nowrap}
     #try-fixed summary{display:inline-block}
   </style>
@@ -60,7 +62,7 @@ const example = `<!doctype html>
   <section id="try-report" aria-label="Lint report">
     <p id="try-from" hidden></p>
     <p id="try-status" role="status"></p>
-    <section id="try-results" aria-live="polite"></section>
+    <section id="try-results"></section>
     <details id="try-fixed" hidden>
       <summary>HTML after automatic fixes</summary>
       <textarea id="try-output" readonly rows="16" spellcheck="false"></textarea>

@@ -63,7 +63,7 @@ pre > * { font-size: inherit; }
 blockquote { border-inline-start: 3px solid var(--accent); padding-inline-start: 1rem; color: var(--muted); }
 .lede { font-size: 1.125rem; color: var(--muted); }
 [aria-label="Breadcrumb"] { font-family: var(--mono); color: var(--muted); }
-aside { border-inline-start: 3px solid var(--accent); background: var(--accent-bg); border-radius: 0 4px 4px 0; padding: 0.75rem 1rem; }
+aside { background: var(--accent-bg); border-radius: 6px; padding: 0.75rem 1rem; }
 aside h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin: 0 0 0.2rem; }
 [data-severity="harmful"] { color: var(--harmful); }
 [data-severity="deprecated"] { color: var(--deprecated); }
@@ -75,7 +75,7 @@ dt, dd small, .rules p { color: var(--muted); }
 dd, .rules a { overflow-wrap: anywhere; }
 dd small { display: block; font-size: 0.8125rem; line-height: 1.4; }
 dd code { background: none; padding: 0; }
-@media (max-width: 30rem) { dl > div { grid-template-columns: 1fr; } }
+@media (max-width: 30rem) { dl > div { grid-template-columns: 6rem 1fr; gap: 0 0.75rem; } }
 .rules { list-style: none; padding: 0; border-block-start: 1px solid var(--line); }
 .rules li {
   display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: baseline;
