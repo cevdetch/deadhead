@@ -5,6 +5,55 @@ Adding or renaming a rule is a minor release; prose-only and fix-only changes
 are patches. Rule ids are permanent from 0.1.0: a rename leaves a redirect and
 is marked as breaking.
 
+## 0.4.0 - 2026-11-21
+
+Add two JSON-LD rules, make wrapped suppression comments work, and give SARIF
+rules the help text GitHub code scanning requires. Both packages move to 0.4.0
+together; the catalogue grows from 203 to 205 rules.
+
+### New rules
+
+- `script/json-ld-author-without-name`: an author, creator or publisher given as
+  a bare `@id` credits nobody, because Google reads one page and finds no name
+  there ([#539](https://github.com/cevdetch/deadhead/pull/539)).
+- `script/json-ld-required-properties`: a ProfilePage or BreadcrumbList without a
+  property Google requires is not eligible for its rich result ([#540](https://github.com/cevdetch/deadhead/pull/540)).
+
+### Suppression comments
+
+- A `deadhead-disable-next-line` comment wrapped over several lines, as
+  formatters do with long ones, covers the line after its `-->`. It used to
+  target a line inside the comment and suppress nothing ([#548](https://github.com/cevdetch/deadhead/pull/548)).
+
+### SARIF
+
+- Every rule carries `help.text`: the rule's description, its advice and the
+  link to its page. GitHub's SARIF reference requires it and code scanning
+  shows it beside each result ([#549](https://github.com/cevdetch/deadhead/pull/549)).
+
+### Rule text
+
+- Nine rules about an HTML attribute that no one element owns are titled as
+  attribute selectors, such as `[dropzone]` and `[fetchpriority] other than
+  high, low or auto`. Ids and URLs are unchanged ([#547](https://github.com/cevdetch/deadhead/pull/547)).
+- Rules carry an optional `updatedDate`, set when their guidance changes; rule
+  pages, the sitemap and structured data use it instead of git history
+  ([#545](https://github.com/cevdetch/deadhead/pull/545)).
+
+### Bookmarklet and site
+
+- The bookmarklet's rule payload is base85 and leaves out rules a live page
+  cannot trigger, which frees 1.3 kB of the 64 kB URL cap for new rules
+  ([#550](https://github.com/cevdetch/deadhead/pull/550)).
+- Rule pages lead with severity, fix and the exact suppression comment, and
+  show when the guidance last changed. /install gains a CI recipe ([#544](https://github.com/cevdetch/deadhead/pull/544)).
+- Seventy-seven rule explanations are rewritten in depth
+  ([#526](https://github.com/cevdetch/deadhead/pull/526)–[#534](https://github.com/cevdetch/deadhead/pull/534)),
+  and every topic and impact page opens with an introduction ([#522](https://github.com/cevdetch/deadhead/pull/522)), ([#524](https://github.com/cevdetch/deadhead/pull/524)),
+  ([#527](https://github.com/cevdetch/deadhead/pull/527)).
+- The playground keeps pasted HTML when Lint is pressed early, says whether it
+  checked a page or a fragment and marks a stale report ([#543](https://github.com/cevdetch/deadhead/pull/543)), ([#544](https://github.com/cevdetch/deadhead/pull/544)).
+
 ## 0.3.1 - 2026-10-14
 
 Fix CLI input handling, suppression comments and byte preservation, and reduce
