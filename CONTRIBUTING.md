@@ -116,11 +116,11 @@ thinks of it.
 8. **Titles show the markup.** An element or attribute rule's title is the markup in angle brackets with quoted values: `<meta name="keywords">`, `<link rel="copyright">`, `<svg baseProfile>`. A group's title is the markup plus its plural noun: `<table> presentational attributes`, `<link rel> navigation keywords`. An HTML attribute that no one element owns is written as a CSS attribute selector: `[dropzone]`, `[fetchpriority] other than high, low or auto`. SVG attributes keep the `<svg …>` family form. A document or head rule's title is a short sentence-case phrase: `Doctype missing or in quirks mode`. **Descriptions are ≤140 characters** and state the consequence. The site builds the page `<title>` from these. `pnpm check:site` enforces the built result: every page title is unique and at most 60 characters, a rule page showing `<title>: <verdict>` when that fits and the bare title otherwise, so a title over 60 characters fails; every page description, including a rule's `description`, a topic or impact blurb, must be 50 to 160 characters.
 9. **Severity and basis follow the spec text.** HTML §16.1 "obsolete but conforming" and "authors should omit" → `unnecessary` / `spec`. HTML §16.2 non-conforming, or dropped from a spec that once defined it → `deprecated` / `spec-obsolete` when inert. Anything that breaks behaviour for users → `harmful`, whatever its basis.
 
-`pnpm validate:rules` enforces rules 5 and 8's length limit: a `ruleId` carrying a
-verdict word, or a `description` over 140 characters, fails with `file:line:col`, unless
-the id is in `scripts/schema.ts`'s `LEGACY_IDS` (predates this convention; shrinks to
-empty as rules are renamed) or `LONG_DESCRIPTION_IDS` (predates the length limit; shrinks
-to empty as descriptions are rewritten).
+`pnpm validate:rules` enforces rules 5 and 8: a `ruleId` carrying a verdict word, an
+element or attribute title that does not start with `<` or `[`, or a `description` over
+140 characters fails with `file:line:col`. The only exception is rule 1's
+`attr/<attribute>-obsolete`, listed in `OBSOLETE_ATTRIBUTE_IDS`. Every rule meets these
+limits; there is no list of older ids or descriptions let through.
 
 ## Disagreeing with a rule
 
