@@ -121,6 +121,42 @@ npx deadhead --baseline .deadhead-baseline.json dist                    # in CI<
       the worst, add <code>--fail-on=harmful</code>.
     </p>
 
+    <h3 id="code-scanning">Code scanning</h3>
+    <p>
+      For HTML you commit, such as templates or a static site's pages, GitHub
+      code scanning can show findings as alerts. Upload the SARIF report
+      instead of reading the log:
+    </p>
+    <pre><code>name: HTML
+on: [push, pull_request]
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  deadhead:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx deadhead --format=sarif --output-file deadhead.sarif src
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: deadhead.sarif
+          category: deadhead</code></pre>
+    <p>
+      <code>if: always()</code> uploads the report when findings make the
+      check exit 1, so the job still fails on them. On a pull request, code
+      scanning comments on findings in the changed lines; the Security tab
+      lists every alert with the rule's advice and a link to its page. Each
+      result points at a committed file, so build output that is not in the
+      repository cannot be scanned this way. Code scanning is free on public
+      repositories; private ones need GitHub Code Security.
+    </p>
+
     <h2 id="eslint">ESLint</h2>
     <p>
       <code>eslint-plugin-deadhead</code> reports the same findings through{" "}
