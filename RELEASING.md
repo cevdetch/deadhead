@@ -11,6 +11,12 @@ publishing only once it exists. For both packages, configure the trusted publish
 as GitHub Actions, `cevdetch/deadhead`, `release.yml`, environment `npm`, stage only.
 Verify these settings after a repository rename and before the next release.
 
+A new trusted publisher configuration must complete its first publish within two
+days. Until then npm shows it as pending validation, which is normal: the release
+validates it. Unused past two days, it expires and can no longer be used or edited;
+delete it and create a new one. Create or recreate it after the dry run in step 2
+passes, then tag within two days. 0.4.0 needed both configurations recreated.
+
 **Which CLI.** Every registry write that needs 2FA (approve, publish, unpublish,
 deprecate) goes through npm: it confirms 2FA in the browser, which a security key
 or passkey requires, while `pnpm` can only pass a 6-digit `--otp` code. Log in for
@@ -40,19 +46,6 @@ which the PR title workflow holds to Conventional Commits.
 
    (`pnpm dlx git-cliff@2.14.2` takes the same arguments.) Read the section,
    edit it if needed, open the release PR (`chore: release X.Y.Z`), merge it.
-
-   **First release after the identity migration.** The commit-message rewrite
-   preserved the signed release tags on their original history. Until a release
-   tag exists on the current history, `--unreleased` includes entries that already
-   shipped. For this first release, replace the command above with:
-
-   ```sh
-   uvx git-cliff@2.14.2 84998652a6e3e6cb77897440cfccbee4ed9fb9f7..HEAD --tag vX.Y.Z --prepend CHANGELOG.md
-   ```
-
-   That commit has the same file tree as the published `v0.3.1` tag and is its
-   counterpart on the rewritten history. After the next release tag, resume the
-   normal `--unreleased` command. Keep the existing published tags unchanged.
 
 2. Dry-run the Release workflow on `main` and wait for it to pass: it runs the
    whole job up to `npm stage publish --dry-run`, uploads nothing and creates no
