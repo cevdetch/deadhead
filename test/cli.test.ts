@@ -180,7 +180,7 @@ test("sarif output is parseable and declares every rule it references", () => {
   const report = JSON.parse(run.stdout) as {
     version: string;
     runs: {
-      tool: { driver: { rules: { id: string; helpUri: string }[] } };
+      tool: { driver: { rules: { id: string; helpUri: string; shortDescription: { text: string }; fullDescription: { text: string }; help: { text: string } }[] } };
       results: { ruleId: string; level: string; locations: unknown[] }[];
     }[];
   };
@@ -195,6 +195,9 @@ test("sarif output is parseable and declares every rule it references", () => {
   }
   for (const rule of first.tool.driver.rules) {
     assert.match(rule.helpUri, /^https:\/\/deadhead\.cevdet\.ch\/rules\//);
+    // GitHub code scanning requires these three texts on every rule.
+    assert.ok(rule.shortDescription.text !== "" && rule.fullDescription.text !== "", rule.id);
+    assert.ok(rule.help.text.includes(rule.helpUri), `${rule.id} help.text links its page`);
   }
 });
 

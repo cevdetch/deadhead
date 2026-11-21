@@ -1,11 +1,14 @@
 /**
- * SARIF 2.1.0, which is what buys GitHub code-scanning annotations: upload
- * this and findings appear inline on the pull request diff.
+ * SARIF 2.1.0, the format GitHub code scanning ingests. Code scanning maps a
+ * result to a file committed to the repository, so findings in build output
+ * have no file to point at.
  *
  * The `rules` array is populated from the findings actually produced rather
  * than from the whole catalogue, so the report stays proportional to what was
  * found. `helpUri` is the rule's documentation page — the same link the
- * stylish reporter prints.
+ * stylish reporter prints. `help.text` is required by code scanning, which
+ * shows it beside each result; it is plain text because the advice quotes
+ * markup that Markdown would render.
  */
 
 import { SITE_URL, type Severity } from "../../core/vocabulary.ts";
@@ -30,6 +33,7 @@ export const sarif = (results: FileResult[], version: string): string => {
           name: finding.ruleId,
           shortDescription: { text: finding.message },
           fullDescription: { text: `${finding.message} ${finding.replacement}` },
+          help: { text: `${finding.message}\n\nInstead: ${finding.replacement}\n\nWhy, with sources: ${finding.url}` },
           helpUri: finding.url,
           defaultConfiguration: { level: LEVEL[finding.severity] },
         });
