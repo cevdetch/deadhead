@@ -198,7 +198,8 @@ export function parseHtml(source: string): Parsed {
   while (stack.length > 0) {
     const [node, parent] = stack.pop()!;
     if (node.nodeName === "#comment" && "data" in node && node.sourceCodeLocation != null) {
-      comments.push({ text: node.data, line: node.sourceCodeLocation.startLine, offset: node.sourceCodeLocation.startOffset });
+      const at = node.sourceCodeLocation;
+      comments.push({ text: node.data, line: at.startLine, endLine: at.endLine, offset: at.startOffset });
     }
     // On a fragment an element parse5 invented is left out, and its children
     // move up to the nearest written ancestor, as the author wrote them.

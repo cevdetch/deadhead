@@ -127,6 +127,11 @@ test("suppression comments work through ESLint too", () => {
     lint(markup("\n<!-- deadhead-disable-next-line meta/http-equiv-x-ua-compatible -->\n")).length,
     0,
   );
+  assert.equal(
+    lint(markup("\n<!-- deadhead-disable-next-line\n     meta/http-equiv-x-ua-compatible -->\n")).length,
+    0,
+    "a comment wrapped over lines counts from the line after -->",
+  );
 });
 
 test("only the enabled rule runs, so severity stays the user's to configure", async () => {

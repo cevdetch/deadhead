@@ -6,6 +6,8 @@
  *     <!-- deadhead-enable -->
  *
  * A bare `deadhead-disable` with no rule id suppresses everything.
+ * `disable-next-line` targets the line after the comment's `-->`, so a
+ * comment wrapped over several lines still suppresses the line below it.
  *
  * Source adapters supply actual comment nodes so strings inside scripts or
  * attributes cannot masquerade as directives. The DOM adapter supplies no
@@ -67,7 +69,8 @@ export function parseSuppressions(comments: readonly SourceComment[] | null): Su
     const ids = parseIds(directive[2] ?? "");
 
     if (kind === "disable-next-line") {
-      const target = line + 1;
+      // The line after the comment ends: a formatter may wrap a long one.
+      const target = comment.endLine + 1;
       const existing = nextLine.get(target) ?? { all: false, ids: new Set<string>() };
       if (ids.length === 0) existing.all = true;
       for (const id of ids) {
