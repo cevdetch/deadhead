@@ -20,7 +20,7 @@ import { collectFiles } from "../../packages/cli/lint.ts";
 import { loadRules } from "../../packages/rules/load.ts";
 import { run } from "../../packages/core/index.ts";
 import type { Finding } from "../../packages/core/types.ts";
-import { bundleBookmarklet } from "../../scripts/build-bookmarklet.ts";
+import { bundleBookmarklet, domRules } from "../../scripts/build-bookmarklet.ts";
 import { decodeHandoff } from "../../packages/browser/handoff.ts";
 import { SITE_URL } from "../../packages/core/vocabulary.ts";
 
@@ -55,22 +55,24 @@ test("the bundle finds exactly what the modules find, on every fixture", async (
   }
 });
 
-test("the bundle carries every rule, including the ones that need code", async () => {
+test("the bundle carries every rule a live page can trigger, including the ones that need code", async () => {
   // The metadata rides gzipped, so rule ids are not plain text in the bundle
   // outside the logic map. Inflate the payload and compare the id sets.
   const payload = bundle.match(/\.start\("([^"]+)",/)?.[1];
   assert.ok(payload, "no start payload in the bundle");
   const { gunzipSync } = await import("node:zlib");
-  const metas = JSON.parse(gunzipSync(Buffer.from(payload, "base64")).toString("utf8"));
-  assert.deepEqual(
-    metas.map((m: { ruleId: string }) => m.ruleId).sort(),
-    rules.map((r) => r.meta.ruleId).sort(),
-  );
+  const { decode85 } = await import("../../packages/browser/base85.ts");
+  const metas = JSON.parse(gunzipSync(decode85(payload)).toString("utf8"));
+  const live = (await domRules(rulesJson.rules)).map((m) => m.ruleId);
+  assert.deepEqual(metas.map((m: { ruleId: string }) => m.ruleId).sort(), [...live].sort());
+  // Left out: only rules whose logic needs source offsets.
+  assert.deepEqual(rules.map((r) => r.meta.ruleId).filter((id) => !live.includes(id)), ["head/charset-position"]);
   // The logic modules must be inlined too, not merely referenced. Rolldown
   // minifies internal identifiers, so assert on the assembly's stable wiring:
   // the logic map reaching each inlined entry by rule id.
   assert.ok(bundle.includes(JSON.stringify("attr/script-type-javascript")), "script logic missing");
-  assert.ok(bundle.includes(JSON.stringify("head/charset-position")), "charset logic missing");
+  assert.ok(bundle.includes(JSON.stringify("head/title")), "title logic missing");
+  assert.ok(!bundle.includes(JSON.stringify("head/charset-position")), "source-only logic inlined");
 });
 
 test("nothing in the bundle can be blocked by a Content-Security-Policy", () => {
