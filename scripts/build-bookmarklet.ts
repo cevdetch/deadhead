@@ -36,7 +36,8 @@ import { gzipSync } from "node:zlib";
 import { rolldown } from "rolldown";
 
 import type { RuleMeta } from "../packages/core/vocabulary.ts";
-import { bookmarkletUrl, MAX_URL_BYTES } from "../packages/browser/bookmarklet-url.ts";
+import { encode85 } from "../packages/browser/base85.ts";
+import { bookmarkletUrl, MAX_URL_BYTES, WARN_URL_BYTES } from "../packages/browser/bookmarklet-url.ts";
 import { ROOT, rel } from "./rules-source.ts";
 
 const ENTRY = resolve(ROOT, "packages/browser/bookmarklet.ts");
@@ -97,9 +98,21 @@ export function needsLogic(meta: RuleMeta): boolean {
  * of the module is inlined.
  */
 export async function exportsEntry(meta: RuleMeta): Promise<boolean> {
-  const file = resolve(ROOT, "packages/rules/logic", `${meta.ruleId}.ts`);
-  const module: Record<string, unknown> = await import(pathToFileURL(file).href);
-  return typeof module[logicEntryFor(meta)] === "function";
+  return typeof (await logicModule(meta))[logicEntryFor(meta)] === "function";
+}
+
+const logicModule = async (meta: RuleMeta): Promise<Record<string, unknown>> =>
+  import(pathToFileURL(resolve(ROOT, "packages/rules/logic", `${meta.ruleId}.ts`)).href);
+
+/**
+ * The rules that can report on a live page. A logic module exporting
+ * `sourceOnly` needs source offsets the DOM never has, so its rule would
+ * only add bytes: the bookmarklet leaves it out, metadata and all.
+ */
+export async function domRules(rules: RuleMeta[]): Promise<RuleMeta[]> {
+  const kept: RuleMeta[] = [];
+  for (const meta of rules) if (!needsLogic(meta) || (await logicModule(meta))["sourceOnly"] !== true) kept.push(meta);
+  return kept;
 }
 
 export function logicVarName(meta: RuleMeta): string {
@@ -111,7 +124,8 @@ const NO_FIX_ID = "\0deadhead-no-fix";
 const ENGINE_SUFFIX = join("packages", "core", "engine.ts");
 
 /** The bookmarklet for a rule set, bundled in memory. No file is written. */
-export async function bundleBookmarklet(rules: RuleMeta[]): Promise<string> {
+export async function bundleBookmarklet(all: RuleMeta[]): Promise<string> {
+  const rules = await domRules(all);
   const toImport = (file: string): string => JSON.stringify(file.replace(/\\/g, "/"));
   const imports = [`import { start } from ${toImport(ENTRY)};`];
   const logicPairs: string[] = [];
@@ -124,7 +138,7 @@ export async function bundleBookmarklet(rules: RuleMeta[]): Promise<string> {
     imports.push(`import { ${logicEntryFor(meta)} as ${name} } from ${toImport(file)};`);
     logicPairs.push(`${JSON.stringify(meta.ruleId)}: ${name}`);
   }
-  const payload = gzipSync(JSON.stringify(rules.map(toSlimMeta)), { level: 9 }).toString("base64");
+  const payload = encode85(gzipSync(JSON.stringify(rules.map(toSlimMeta)), { level: 9 }));
   const entryCode = `${imports.join("\n")}\nexport const logic = { ${logicPairs.join(", ")} };\nexport { start };\n`;
 
   const built = await rolldown({
@@ -171,8 +185,14 @@ if (import.meta.main) {
     );
     process.exit(1);
   }
+  if (bytes > WARN_URL_BYTES) {
+    process.stderr.write(
+      `${styleText("yellow", "warning")} bookmarklet URL is ${(bytes / 1024).toFixed(1)} kB, within ${((MAX_URL_BYTES - bytes) / 1024).toFixed(1)} kB of the cap. Make room before the next rules land.\n`,
+    );
+  }
+  const inlined = (await domRules(rules)).length;
   process.stdout.write(
-    `${styleText("green", "✓")} ${rules.length} rule(s) → ${rel(OUT)}\n` +
+    `${styleText("green", "✓")} ${inlined} of ${rules.length} rule(s) → ${rel(OUT)}, the rest need source text\n` +
       `  snippet: paste the file into devtools → Sources → Snippets\n` +
       `  bookmarklet URL: ${(bytes / 1024).toFixed(1)} kB\n`,
   );

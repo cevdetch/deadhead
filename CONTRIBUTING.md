@@ -61,6 +61,8 @@ or lies in the future, but it cannot tell when a bump was forgotten.
 - [ ] A rule that reports head content as missing returns nothing when
       `!doc.isPage()`: a fragment (no doctype, no `<html>`) gets that content from
       another file. Every other rule ignores `isPage()`
+- [ ] Logic that returns nothing without source offsets (`range()` is null in the
+      DOM) exports `sourceOnly = true`, so the bookmarklet leaves the rule out
 
 ### Rules never touch a parser
 

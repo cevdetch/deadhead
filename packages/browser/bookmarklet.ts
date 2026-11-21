@@ -13,6 +13,7 @@
 import { type Rule, run } from "../core/index.ts";
 import type { CheckFn, Finding, MatchFn, RuleMeta } from "../core/index.ts";
 import { fromDocument } from "./adapter.ts";
+import { decode85 } from "./base85.ts";
 import { PANEL as HOST, sendToTry } from "./send.ts";
 
 /**
@@ -116,10 +117,9 @@ function render(findings: Finding[]): HTMLElement {
   return host;
 }
 
-/** Base64 of gzip of the slim rule metadata: about a fifth of the literal JSON. */
+/** Base85 of gzip of the slim rule metadata: about a sixth of the literal JSON. */
 async function inflate(payload: string): Promise<unknown> {
-  const bytes = Uint8Array.from(atob(payload), (c) => c.charCodeAt(0));
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const stream = new Blob([decode85(payload)]).stream().pipeThrough(new DecompressionStream("gzip"));
   return JSON.parse(await new Response(stream).text());
 }
 

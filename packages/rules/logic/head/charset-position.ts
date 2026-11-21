@@ -20,6 +20,9 @@ const PRESCAN_LIMIT = 1024;
  *   character before the declaration only makes that count larger, so this
  *   under-reports and never fabricates a finding.
  */
+/** Needs source offsets, which a live page never has: the bookmarklet leaves this rule out. */
+export const sourceOnly = true;
+
 export const check: CheckFn = (doc, ctx) => {
   const element = doc.querySelector("meta[charset]");
   if (element === null) return [];

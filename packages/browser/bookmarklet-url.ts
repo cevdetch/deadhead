@@ -7,6 +7,9 @@
 /** Firefox and Safari cap a `javascript:` URL at this many bytes. */
 export const MAX_URL_BYTES = 65_536;
 
+/** Past this, the build warns: room for only a few more rules is left. */
+export const WARN_URL_BYTES = MAX_URL_BYTES - 1024;
+
 /**
  * A javascript: URL escaping only what a bookmark would mangle, not all of
  * encodeURIComponent's set. The bundle's leading comment is for readers of
