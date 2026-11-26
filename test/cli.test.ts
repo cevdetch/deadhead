@@ -17,9 +17,9 @@ import { parseHtml } from "../packages/cli/adapter.ts";
 
 const BIN = fileURLToPath(new URL("../packages/cli/bin/deadhead.ts", import.meta.url));
 
-// rules.json is built once by `pnpm test` before any test process starts.
+// rules.json is built once by `bun run test` before any test process starts.
 
-// Test pipe detection independently of colour settings inherited from pnpm or CI.
+// Test pipe detection independently of colour settings inherited from the package manager or CI.
 const cliEnv = { ...process.env };
 delete cliEnv["FORCE_COLOR"];
 delete cliEnv["NO_COLOR"];

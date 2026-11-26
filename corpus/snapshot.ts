@@ -37,7 +37,7 @@ if (import.meta.main) {
       out: { type: "string", default: "corpus/data/snapshot" },
     },
   });
-  if (values.list === undefined) throw new Error("--list <csv> is required; run pnpm corpus:list first");
+  if (values.list === undefined) throw new Error("--list <csv> is required; run bun run corpus:list first");
   const listId = /list-([A-Za-z0-9]+)-\d+\.csv$/.exec(values.list)?.[1] ?? "unknown";
   const all = parseList(await readFile(values.list, "utf8"));
   const sites = values.limit === undefined ? all : all.slice(0, Number(values.limit));

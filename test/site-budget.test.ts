@@ -1,6 +1,6 @@
 /**
  * The byte budget gate must work on a synthetic dist, never the real
- * site/dist: this suite runs in the root `pnpm test`, which does not build
+ * site/dist: this suite runs in the root `bun run test`, which does not build
  * the site.
  */
 import assert from "node:assert/strict";

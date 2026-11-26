@@ -22,38 +22,29 @@ jobs:
           # Nothing here pushes, so skip the credential helper entirely.
           persist-credentials: false
 
-      # One step installs the pinned pnpm (read from "packageManager") as a
-      # native binary — no npm self-install, no v11-then-switch-to-v12 — plus
-      # the Node floor. This replaces pnpm/action-setup (npm-based: ~12s of
-      # self-installer + version switch, and it left a stale v11 store path
-      # behind) followed by setup-node (~5s, mostly a cache lookup that
-      # missed anyway). `require-lockfile` installs with --frozen-lockfile,
-      # which fails on a missing or out-of-date lockfile.
-      # No store cache: a cold install is ~2.5s for 368 packages, cheaper
-      # than restoring + uploading a ~94MB cache on every run.
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      # setup-bun installs the pinned Bun binary, then an explicit
+      # `bun install --frozen-lockfile` fails on a missing or out-of-date
+      # lockfile rather than resolving one from the registry.
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          # Single version: 24 is the floor declared in engines. If it passes
-          # on the floor it passes above; a second runner doubles minutes
-          # for no signal on this codebase.
-          runtime: node@24
-          require-lockfile: true
+          bun-version: 1.4.5
+      - run: bun install --frozen-lockfile
 
       # Rules first: a malformed frontmatter field should fail in two seconds,
       # not after the whole suite has run.
-      - run: pnpm validate:rules
-      - run: pnpm build
+      - run: bun --bun run validate:rules
+      - run: bun --bun run build
       # The browser artifacts are generated from rules.json, so they break the
       # same way a rule does. Build them here rather than finding out at
       # release time.
-      - run: pnpm build:css
-      - run: pnpm build:bookmarklet
-      - run: pnpm typecheck
-      - run: pnpm test
+      - run: bun --bun run build:css
+      - run: bun --bun run build:bookmarklet
+      - run: bun --bun run typecheck
+      - run: bun --bun run test
       # Lint our own clean fixtures with our own CLI. It targets valid.html
       # only: the invalid.html files next to them are supposed to have
       # findings, so pointing this at the whole tree could only ever fail.
-      - run: pnpm check:self
+      - run: bun --bun run check:self
 
       # Folded into this job instead of a second runner: one checkout, one
       # install. A linter about shipping things you do not need should hold
@@ -68,7 +59,7 @@ jobs:
       # linkedom, and now Astro under site/ — none of it shipped, none of it
       # ours to fix. They still print. Revisit when the packages are published
       # and the analysis has real output to judge.
-      - run: pnpm lint:deps
+      - run: bun run lint:deps
 
   site:
     runs-on: ubuntu-latest
@@ -77,25 +68,30 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          runtime: node@24
-          require-lockfile: true
+          bun-version: 1.4.5
+      - run: bun install --frozen-lockfile
+      # The site build stays on Node: ultrahtml/satori-html fails under the Bun
+      # runtime during OG image rendering. Follow-up: retry with --bun later.
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
 
       # The documentation site is built from the same content/rules markdown,
       # so a rule that breaks the linter breaks the site too. Building it here
       # also typechecks the .astro files, and check:site then runs the CLI over
       # the rendered output: the head this project ships is held to the rules
       # this project ships.
-      - run: pnpm build
-      - run: pnpm site:check
-      - run: pnpm check:site
+      - run: bun --bun run build
+      - run: bun run site:check
+      - run: bun run check:site
       # A draft post builds only with DEADHEAD_DRAFTS=1. When one exists, build
       # that way too, so a broken draft fails here and not on the day it ships.
       - name: check:site with draft posts
         run: |
           if grep -lqs '^draft: true' content/blog/*.md; then
-            DEADHEAD_DRAFTS=1 pnpm check:site
+            DEADHEAD_DRAFTS=1 bun run check:site
           else
             echo "No draft posts in content/blog."
           fi
@@ -108,16 +104,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          runtime: node@24
-          require-lockfile: true
+          bun-version: 1.4.5
+      - run: bun install --frozen-lockfile
 
       # What would be published, checked as npm and a consumer see it: publint
       # and the pack list, then the tarballs installed into an empty ESM
       # project with ESLint 10 and TypeScript 7 and used for real.
-      - run: pnpm check:packages
-      - run: pnpm smoke:packages
+      - run: bun run check:packages
+      - run: bun run smoke:packages
 
   workflows:
     runs-on: ubuntu-latest
@@ -133,3 +129,24 @@ jobs:
         with:
           version: 1.30.1
           advanced-security: false
+
+  node-compat:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.5
+      - run: bun install --frozen-lockfile
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+      # Confirms the published CLI and ESLint plugin run under the Node
+      # floor declared in `engines`, not just under Bun.
+      - run: bun run build
+      - run: node --test 'test/conformance/**/*.test.ts'
+      - run: node packages/cli/bin/deadhead.ts "test/fixtures/*/*/valid.html"

@@ -9,7 +9,7 @@
 test/fixtures/** text eol=lf
 test/fragments/** text eol=lf
 
-pnpm-lock.yaml linguist-generated=true -diff
+bun.lock linguist-generated=true -diff
 
 # The repo is mostly markdown by volume. Without this GitHub calls it a
 # Markdown project and hides the language it is actually written in.

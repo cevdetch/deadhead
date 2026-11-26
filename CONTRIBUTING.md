@@ -15,14 +15,12 @@ Node `>=24` is required and enforced at install time (see `engines` in
 [`package.json`](package.json) and `engine-strict=true` in [`.npmrc`](.npmrc)).
 
 ```bash
-npm install -g pnpm  # skip if you already have any pnpm
-pnpm install
-pnpm test
+bun install
+bun run test
 ```
 
-Any pnpm bootstraps itself to the version pinned in the `packageManager`
-field of [`package.json`](package.json), so every contributor runs the same
-tool.
+Bun has no self-bootstrap step; CI installs the version pinned in the `packageManager`
+field of [`package.json`](package.json) via setup-bun.
 
 ## Adding a rule
 
@@ -35,7 +33,7 @@ tool.
    `test/fixtures/<ruleId>/invalid.html` and `valid.html`.
 3. Most rules need no code. If the selector subset cannot express the match, add
    `packages/rules/logic/<ruleId>.ts`.
-4. `pnpm validate:rules && pnpm test`.
+4. `bun run validate:rules && bun run test`.
 
 The pull request template carries the full definition of done.
 
@@ -45,12 +43,12 @@ Set `updatedDate: "YYYY-MM-DD"` under `pubDate` when the guidance changes: the
 verdict, severity, explanation, sources, detection or fix. Leave it alone for
 typos, formatting, tags and related links. The rule page, its sitemap entry
 and its structured data show this date, so a reader can tell when the advice
-last moved. `pnpm validate:rules` rejects a date that is not after `pubDate`
+last moved. `bun run validate:rules` rejects a date that is not after `pubDate`
 or lies in the future, but it cannot tell when a bump was forgotten.
 
 ### Rule checklist
 
-- [ ] Frontmatter validates (`pnpm validate:rules`), and `ruleId` matches the file path
+- [ ] Frontmatter validates (`bun run validate:rules`), and `ruleId` matches the file path
 - [ ] At least two independent sources under `## Resources` (spec text, browser bug
       tracker, vendor documentation, or a well-argued primary post)
 - [ ] `## Why avoid` (or `## Why use`) states the concrete consequence for users,
@@ -113,10 +111,10 @@ thinks of it.
 5. **Never a verdict word:** obsolete, deprecated, removed, retired, dead, dropped, legacy, invalid, misuse, old, bad, broken. One exception, from rule 1: `attr/<attribute>-obsolete`, where `obsolete` is HTML §16's own category for an attribute that stays valid elsewhere. The validator lists those ids in `OBSOLETE_ATTRIBUTE_IDS`. A spec version is allowed when it is the only thing the members share (`attr/svg-1-1-attributes`).
 6. **Group by kind and consequence, never by era.** Split out any member whose fix or consequence differs, so the safe members keep an autofix.
 7. **One owner per keyword.** A catch-all (`meta/http-equiv-unregistered-pragmas`) excludes every value another rule owns.
-8. **Titles show the markup.** An element or attribute rule's title is the markup in angle brackets with quoted values: `<meta name="keywords">`, `<link rel="copyright">`, `<svg baseProfile>`. A group's title is the markup plus its plural noun: `<table> presentational attributes`, `<link rel> navigation keywords`. An HTML attribute that no one element owns is written as a CSS attribute selector: `[dropzone]`, `[fetchpriority] other than high, low or auto`. SVG attributes keep the `<svg …>` family form. A document or head rule's title is a short sentence-case phrase: `Doctype missing or in quirks mode`. **Descriptions are ≤140 characters** and state the consequence. The site builds the page `<title>` from these. `pnpm check:site` enforces the built result: every page title is unique and at most 60 characters, a rule page showing `<title>: <verdict>` when that fits and the bare title otherwise, so a title over 60 characters fails; every page description, including a rule's `description`, a topic or impact blurb, must be 50 to 160 characters.
+8. **Titles show the markup.** An element or attribute rule's title is the markup in angle brackets with quoted values: `<meta name="keywords">`, `<link rel="copyright">`, `<svg baseProfile>`. A group's title is the markup plus its plural noun: `<table> presentational attributes`, `<link rel> navigation keywords`. An HTML attribute that no one element owns is written as a CSS attribute selector: `[dropzone]`, `[fetchpriority] other than high, low or auto`. SVG attributes keep the `<svg …>` family form. A document or head rule's title is a short sentence-case phrase: `Doctype missing or in quirks mode`. **Descriptions are ≤140 characters** and state the consequence. The site builds the page `<title>` from these. `bun run check:site` enforces the built result: every page title is unique and at most 60 characters, a rule page showing `<title>: <verdict>` when that fits and the bare title otherwise, so a title over 60 characters fails; every page description, including a rule's `description`, a topic or impact blurb, must be 50 to 160 characters.
 9. **Severity and basis follow the spec text.** HTML §16.1 "obsolete but conforming" and "authors should omit" → `unnecessary` / `spec`. HTML §16.2 non-conforming, or dropped from a spec that once defined it → `deprecated` / `spec-obsolete` when inert. Anything that breaks behaviour for users → `harmful`, whatever its basis.
 
-`pnpm validate:rules` enforces rules 5 and 8: a `ruleId` carrying a verdict word, an
+`bun run validate:rules` enforces rules 5 and 8: a `ruleId` carrying a verdict word, an
 element or attribute title that does not start with `<` or `[`, or a `description` over
 140 characters fails with `file:line:col`. The only exception is rule 1's
 `attr/<attribute>-obsolete`, listed in `OBSOLETE_ATTRIBUTE_IDS`. Every rule meets these
@@ -135,7 +133,7 @@ stopped being true because browsers changed, is the most useful issue you can fi
   no enums, namespaces, or parameter properties (`erasableSyntaxOnly` enforces this).
 - `packages/core` and `packages/rules` have zero runtime dependencies. `parse5`
   belongs to the CLI adapter alone.
-- Run `pnpm typecheck` before pushing.
+- Run `bun run typecheck` before pushing.
 - PR titles are Conventional Commits, because a squash merge makes the title the
   commit subject and git-cliff (`cliff.toml`) builds the changelog from those subjects:
   `feat(rule): meta/keywords` for a new rule, `fix(rule): …` for a rule fix,
