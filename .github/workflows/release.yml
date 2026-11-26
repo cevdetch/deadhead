@@ -38,6 +38,10 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.5
+      # Node and npm for the tag check and the npm staging step below.
+      - uses: actions/setup-node@0669eb4a159c9c5cdf56fa27dbca59c6c4ff55cf # v6
+        with:
+          node-version: 24
       - run: bun install --frozen-lockfile
 
       - name: Tag matches both manifests
@@ -60,8 +64,7 @@ jobs:
       # below, so what was tested is what ships.
       - run: bun scripts/smoke-packages.ts --out tarballs
 
-      # setup-bun does not install Node, so `npm` on PATH is the
-      # runner image's (10.9.9 on 2026-10-01), which has no `stage`, and
+      # setup-node's bundled `npm` (10.9.9 on 2026-10-01) has no `stage`, and
       # `npm install --global` lands in a prefix that is not first on PATH.
       # So the step runs a pinned npm through npx, by version, on this job's
       # Node: `stage` needs 11.15, trusted publishing (OIDC) 11.5.1. No token

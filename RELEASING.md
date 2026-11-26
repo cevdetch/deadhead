@@ -27,7 +27,7 @@ the task and out afterwards (`npm login`, `npm logout`). Read-only commands
 manager can put an older npm first on `PATH` (mise's Node 24.15 ships 11.12.1),
 which answers `Unknown command: "stage"`. Run the system npm by its path, or
 `npx npm@12.2.0 stage list`. The Release workflow runs `npx --yes npm@12.2.0` for the same
-reason: `setup-bun` installs no npm of its own, the runner's npm is older, and a
+reason: the npm bundled with setup-node is older, and a
 global npm install lands off `PATH`.
 
 The changelog is written with [git-cliff](https://git-cliff.org), run by hand
