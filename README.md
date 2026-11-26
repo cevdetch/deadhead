@@ -265,23 +265,26 @@ inside scripts, styles or attributes do not. The engine never lints contents of 
 Other commands:
 
 ```bash
-pnpm validate:rules   # frontmatter and rule docs fail fast, before the suite
-pnpm test             # full test suite (node:test)
-pnpm test:conformance # every fixture through every adapter
-pnpm typecheck        # strict typecheck (core, rules, cli, scripts, tests)
-pnpm check:self       # run the linter over its own clean fixtures
-pnpm check:site       # build the docs site, lint its own <head>, and check the byte budget, headers, 404 page, and page titles and descriptions
-pnpm lint:deps        # dependency hygiene check
+bun run validate:rules   # frontmatter and rule docs fail fast, before the suite
+bun run test             # full test suite (node:test)
+bun run test:conformance # every fixture through every adapter
+bun run typecheck        # strict typecheck (core, rules, cli, scripts, tests)
+bun run check:self       # run the linter over its own clean fixtures
+bun run check:site       # build the docs site, lint its own <head>, and check the byte budget, headers, 404 page, and page titles and descriptions
+bun run lint:deps        # dependency hygiene check
 ```
 
 ### Documentation site
 
 ```bash
-pnpm site:dev         # Astro dev server on the rule markdown
-pnpm site:build       # static build to site/dist
-pnpm site:preview     # preview static build of site/dist
-pnpm site:check       # typecheck the .astro files
+bun run site:dev         # Astro dev server on the rule markdown
+bun run site:build       # static build to site/dist
+bun run site:preview     # preview static build of site/dist
+bun run site:check       # typecheck the .astro files
 ```
+
+The site build runs Astro on Node, not the Bun runtime: `ultrahtml`/`satori-html` fails under Bun
+during OG image rendering. Use plain `bun run` for these scripts, not `bun --bun run`.
 
 [`site/`](site) is an Astro project that reads `content/rules/**/*.md` in place -- no
 copy, no second corpus -- and publishes each one at `/rules/<ruleId>`, the exact url
@@ -289,7 +292,7 @@ every finding prints. Its enums are imported from
 [`packages/core/vocabulary.ts`](packages/core/vocabulary.ts), so a site that could
 render a severity the engine rejects will not typecheck.
 
-It is also a fixture. `pnpm check:site` runs the CLI over the rendered output, which
+It is also a fixture. `bun run check:site` runs the CLI over the rendered output, which
 means the head this project ships is held to the rules this project ships -- in a
 document assembled by a framework, which is where head markup goes wrong.
 
@@ -302,7 +305,7 @@ document assembled by a framework, which is where head markup goes wrong.
   foundation: for framework users the head tags live in JSX, Vue or Svelte where
   an HTML parser never sees them.
 
-All three use the same core and rule set. `pnpm test:conformance` checks their
+All three use the same core and rule set. `bun run test:conformance` checks their
 agreement on shared capabilities, including the built bookmarklet, executed as a
 bundle. The rendered DOM has no source locations or source fixes; those differences
 are described below and checked by the suite.
@@ -310,7 +313,7 @@ are described below and checked by the suite.
 ### Browser artifacts
 
 ```bash
-pnpm build && pnpm build:bookmarklet && pnpm build:css
+bun run build && bun run build:bookmarklet && bun run build:css
 ```
 
 `packages/browser/bookmarklet.js` is one self-contained IIFE with the rules inlined.
@@ -378,12 +381,12 @@ contribution workflow and help, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for com
 standards, and [SECURITY.md](SECURITY.md) for sensitive findings.
 
 Working from a clone needs Node 24.8 or newer (`engine-strict=true` in [`.npmrc`](.npmrc))
-and pnpm at the version pinned in [`package.json`](package.json)'s `packageManager`:
+and Bun at the version pinned in [`package.json`](package.json)'s `packageManager`:
 
 ```bash
-pnpm install
-pnpm build              # generates the rule registry that typecheck and tests read
-pnpm check path/to/html
+bun install
+bun run build              # generates the rule registry that typecheck and tests read
+bun run check path/to/html
 ```
 
 ## License

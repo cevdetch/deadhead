@@ -22,7 +22,7 @@ coverage/
 # Logs
 *.log
 
-# Package tarballs from `pnpm pack`
+# Package tarballs from `npm pack`
 *.tgz
 
 # Local secrets for testing the GitHub Action.

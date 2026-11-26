@@ -19,7 +19,7 @@ passes, then tag within two days. 0.4.0 needed both configurations recreated.
 
 **Which CLI.** Every registry write that needs 2FA (approve, publish, unpublish,
 deprecate) goes through npm: it confirms 2FA in the browser, which a security key
-or passkey requires, while `pnpm` can only pass a 6-digit `--otp` code. Log in for
+or passkey requires, while other clients can only pass a 6-digit `--otp` code. Log in for
 the task and out afterwards (`npm login`, `npm logout`). Read-only commands
 (`view`, `stage list`) work with either.
 
@@ -27,7 +27,7 @@ the task and out afterwards (`npm login`, `npm logout`). Read-only commands
 manager can put an older npm first on `PATH` (mise's Node 24.15 ships 11.12.1),
 which answers `Unknown command: "stage"`. Run the system npm by its path, or
 `npx npm@12.2.0 stage list`. The Release workflow runs `npx --yes npm@12.2.0` for the same
-reason: `pnpm/setup` installs Node without npm, the runner's npm is older, and a
+reason: `setup-bun` installs no npm of its own, the runner's npm is older, and a
 global npm install lands off `PATH`.
 
 The changelog is written with [git-cliff](https://git-cliff.org), run by hand
@@ -44,7 +44,7 @@ which the PR title workflow holds to Conventional Commits.
    uvx git-cliff@2.14.2 --tag vX.Y.Z --unreleased --prepend CHANGELOG.md
    ```
 
-   (`pnpm dlx git-cliff@2.14.2` takes the same arguments.) Read the section,
+   (`bunx git-cliff@2.14.2` takes the same arguments.) Read the section,
    edit it if needed, open the release PR (`chore: release X.Y.Z`), merge it.
 
 2. Dry-run the Release workflow on `main` and wait for it to pass: it runs the
@@ -65,7 +65,7 @@ which the PR title workflow holds to Conventional Commits.
    ```
 
 3. The Release workflow checks the tag against both manifests, runs the full
-   chain, `pnpm check:packages` and the smoke test, stages the exact tarballs the
+   chain, `bun run check:packages` and the smoke test, stages the exact tarballs the
    smoke test installed, and creates the GitHub Release.
 
    If the workflow fails before it stages anything (no staged package, no GitHub
@@ -163,8 +163,8 @@ were for 0.1.0) gets its first version by hand. What 0.1.0 taught:
    it writes, and those are what you publish:
 
    ```sh
-   pnpm install
-   pnpm check:packages
+   bun install
+   bun run check:packages
    node scripts/smoke-packages.ts --out tarballs
    ```
 

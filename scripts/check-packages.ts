@@ -10,7 +10,7 @@ const ALLOWED = /^(package\.json|README\.md|dist\/.+)$/;
 
 let failed = false;
 for (const dir of PACKAGES) {
-  execFileSync("pnpm", ["exec", "publint", "--strict", dir], { stdio: "inherit" });
+  execFileSync("bunx", ["publint", "--strict", dir], { stdio: "inherit" });
   const [pack] = packEntries(execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: dir, encoding: "utf8" }));
   if (pack === undefined) throw new Error(`${dir}: npm pack listed no package`);
   const paths = pack.files.map((f) => f.path);

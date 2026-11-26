@@ -4,7 +4,7 @@
  * because es-html-parser returns attribute values and text as written.
  *
  * Usage: node scripts/build-entities.ts [path-or-url]
- * Default: https://html.spec.whatwg.org/entities.json. Not part of `pnpm build`:
+ * Default: https://html.spec.whatwg.org/entities.json. Not part of `bun run build`:
  * the table changes only when the HTML Standard adds a name.
  */
 import { createHash } from "node:crypto";

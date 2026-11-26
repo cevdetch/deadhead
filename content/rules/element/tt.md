@@ -43,7 +43,7 @@ give `kbd` and `var` roles of their own, while `tt` has no mapping at all.
 Pick the element that matches what the text is:
 
 ```html
-<p>Run <code>pnpm build</code>, then press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop the watcher.</p>
+<p>Run <code>bun run build</code>, then press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop the watcher.</p>
 <p>When it finishes it prints <samp>✓ 37 rule(s) valid</samp>.</p>
 <p>The area of the box is <var>w</var> × <var>h</var>.</p>
 ```

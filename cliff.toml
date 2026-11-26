@@ -1,6 +1,6 @@
 # git-cliff configuration (https://git-cliff.org). Run by hand, never installed:
 #   uvx git-cliff@2.14.2 --tag vX.Y.Z --unreleased --prepend CHANGELOG.md
-# (or pnpm dlx git-cliff@2.14.2 with the same arguments). It writes the section
+# (or bunx git-cliff@2.14.2 with the same arguments). It writes the section
 # for the commits since the last tag; the 0.1.0 section is written by hand,
 # because rule ids were renamed before the first release (roadmap D4) and the
 # commits before it name ids that no longer exist.

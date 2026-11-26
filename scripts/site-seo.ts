@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEO gate over the built site, run by `pnpm check:site` after the byte
+ * SEO gate over the built site, run by `bun run check:site` after the byte
  * budget. Reads site/dist as files; builds nothing.
  */
 import { readdir, readFile } from "node:fs/promises";

@@ -5,7 +5,7 @@ Private to this repo: never published in a package.
 
 ## Method
 
-1. **List.** A Tranco top-N list, pinned by its ID (`pnpm corpus:list --id <ID> --n 10000`).
+1. **List.** A Tranco top-N list, pinned by its ID (`bun run corpus:list --id <ID> --n 10000`).
 2. **Snapshot, once.** For each domain: robots.txt, then `https://<domain>/`, then
    `https://www.<domain>/` unless the apex answered with a page or a wall (401, 403,
    429). Then headless Chromium on the final URL, for every domain that is not skipped
@@ -68,11 +68,11 @@ Measured on the 2026-10-04 run (Tranco Y83KG, top 10,000):
 Runs on a machine with a residential connection, `chromium` on `PATH` (or `$CHROMIUM`) and
 about 1 GB free. Not in CI.
 
-    pnpm corpus:list --id Q2K34 --n 1000
-    pnpm corpus:snapshot --list corpus/data/list-Q2K34-1000.csv
-    pnpm corpus:lint
-    pnpm corpus:aggregate --lint corpus/data/lint-<commit>.jsonl --list-meta corpus/data/list-Q2K34.json
+    bun run corpus:list --id Q2K34 --n 1000
+    bun run corpus:snapshot --list corpus/data/list-Q2K34-1000.csv
+    bun run corpus:lint
+    bun run corpus:aggregate --lint corpus/data/lint-<commit>.jsonl --list-meta corpus/data/list-Q2K34.json
 
-Triage one rule from the snapshot: `pnpm corpus:lint --rule <ruleId> --samples 20`.
+Triage one rule from the snapshot: `bun run corpus:lint --rule <ruleId> --samples 20`.
 
 Only `corpus/results/` is committed; `corpus/data/` is gitignored.

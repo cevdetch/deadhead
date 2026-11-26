@@ -35,10 +35,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          runtime: node@24
-          require-lockfile: true
+          bun-version: 1.4.5
+      - run: bun install --frozen-lockfile
 
       - name: Tag matches both manifests
         if: github.event_name == 'push'
@@ -49,18 +49,18 @@ jobs:
             test "v$(node -p "require('./$pkg/package.json').version")" = "$TAG"
           done
 
-      - run: pnpm validate:rules
-      - run: pnpm build
-      - run: pnpm build:css
-      - run: pnpm build:bookmarklet
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm check:packages
+      - run: bun --bun run validate:rules
+      - run: bun --bun run build
+      - run: bun --bun run build:css
+      - run: bun --bun run build:bookmarklet
+      - run: bun --bun run typecheck
+      - run: bun --bun run test
+      - run: bun run check:packages
       # Packs into tarballs/, installs and uses them. The same files are staged
       # below, so what was tested is what ships.
-      - run: node scripts/smoke-packages.ts --out tarballs
+      - run: bun scripts/smoke-packages.ts --out tarballs
 
-      # pnpm/setup installs Node without its npm, so `npm` on PATH is the
+      # setup-bun does not install Node, so `npm` on PATH is the
       # runner image's (10.9.9 on 2026-10-01), which has no `stage`, and
       # `npm install --global` lands in a prefix that is not first on PATH.
       # So the step runs a pinned npm through npx, by version, on this job's

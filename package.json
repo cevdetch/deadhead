@@ -8,31 +8,31 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "packageManager": "pnpm@12.6.0",
+  "packageManager": "bun@1.4.5",
   "scripts": {
-    "build": "node scripts/build-rules.ts",
-    "build:css": "node scripts/build-css.ts",
-    "build:bookmarklet": "node --disable-warning=ExperimentalWarning scripts/build-bookmarklet.ts",
-    "build:packages": "pnpm build && node scripts/build-packages.ts",
-    "bench": "node scripts/bench.ts",
-    "test": "node scripts/build-rules.ts && node --test",
-    "test:conformance": "node scripts/build-rules.ts && node --test test/conformance/",
-    "check": "node packages/cli/bin/deadhead.ts",
-    "check:self": "node packages/cli/bin/deadhead.ts \"test/fixtures/*/*/valid.html\"",
-    "check:bookmarklet": "node scripts/check-bookmarklet-csp.ts",
-    "check:packages": "pnpm build:packages && node scripts/check-packages.ts",
-    "smoke:packages": "node scripts/smoke-packages.ts",
-    "check:site": "pnpm site:build && node packages/cli/bin/deadhead.ts site/dist && node scripts/site-budget.ts site/dist && node scripts/site-seo.ts site/dist && node scripts/site-crawlers.ts site/dist",
-    "corpus:list": "node corpus/list.ts",
-    "corpus:snapshot": "node corpus/snapshot.ts",
-    "corpus:lint": "node scripts/build-rules.ts && node corpus/lint.ts",
-    "corpus:aggregate": "node scripts/build-rules.ts && node corpus/aggregate.ts",
+    "build": "bun scripts/build-rules.ts",
+    "build:css": "bun scripts/build-css.ts",
+    "build:bookmarklet": "bun scripts/build-bookmarklet.ts",
+    "build:packages": "bun run build && bun scripts/build-packages.ts",
+    "bench": "bun scripts/bench.ts",
+    "test": "bun scripts/build-rules.ts && bun test",
+    "test:conformance": "bun scripts/build-rules.ts && bun test test/conformance/",
+    "check": "bun packages/cli/bin/deadhead.ts",
+    "check:self": "bun packages/cli/bin/deadhead.ts \"test/fixtures/*/*/valid.html\"",
+    "check:bookmarklet": "bun scripts/check-bookmarklet-csp.ts",
+    "check:packages": "bun run build:packages && bun scripts/check-packages.ts",
+    "smoke:packages": "bun scripts/smoke-packages.ts",
+    "check:site": "bun run site:build && bun packages/cli/bin/deadhead.ts site/dist && bun scripts/site-budget.ts site/dist && bun scripts/site-seo.ts site/dist && bun scripts/site-crawlers.ts site/dist",
+    "corpus:list": "bun corpus/list.ts",
+    "corpus:snapshot": "bun corpus/snapshot.ts",
+    "corpus:lint": "bun run build && bun corpus/lint.ts",
+    "corpus:aggregate": "bun run build && bun corpus/aggregate.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p packages/browser/tsconfig.json && tsc --noEmit -p test/conformance/tsconfig.json",
-    "validate:rules": "node scripts/validate-rules.ts",
-    "site:dev": "pnpm --filter @deadhead/site dev",
-    "site:build": "pnpm build && pnpm build:css && pnpm build:bookmarklet && pnpm --filter @deadhead/site build",
-    "site:preview": "pnpm --filter @deadhead/site preview",
-    "site:check": "pnpm --filter @deadhead/site check",
+    "validate:rules": "bun scripts/validate-rules.ts",
+    "site:dev": "bun --filter @deadhead/site dev",
+    "site:build": "bun run build && bun run build:css && bun run build:bookmarklet && bun --filter @deadhead/site build",
+    "site:preview": "bun --filter @deadhead/site preview",
+    "site:check": "bun --filter @deadhead/site check",
     "lint:deps": "e18e-cli analyze --log-level error --report-level warn"
   },
   "devDependencies": {
@@ -58,5 +58,14 @@
     "eslint-plugin",
     "bookmarklet",
     "static-analysis"
-  ]
+  ],
+  "workspaces": [
+    "packages/*",
+    "site"
+  ],
+  "overrides": {
+    "fflate@0.7.3": "0.7.5",
+    "minimatch@10.2.6": "11.0.4"
+  },
+  "trustedDependencies": []
 }
