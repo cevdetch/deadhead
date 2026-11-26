@@ -148,5 +148,5 @@ jobs:
       # Confirms the published CLI and ESLint plugin run under the Node
       # floor declared in `engines`, not just under Bun.
       - run: bun run build
-      - run: node --test test/conformance/
+      - run: node --test 'test/conformance/**/*.test.ts'
       - run: node packages/cli/bin/deadhead.ts "test/fixtures/*/*/valid.html"
